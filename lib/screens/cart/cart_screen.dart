@@ -1,0 +1,173 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/utils/bdt_formatter.dart';
+import '../../core/utils/error_handler.dart';
+import '../../providers/auth_provider.dart';
+import '../../routes/app_router.dart';
+import '../../providers/cart_provider.dart';
+import '../../providers/products_provider.dart';
+import '../../services/sale_service.dart';
+
+/// Review cart lines, adjust quantities, complete sale (writes Firestore).
+class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  bool _busy = false;
+
+  Future<void> _checkout() async {
+    final uid = context.read<AuthProvider>().firebaseUser?.uid;
+    if (uid == null) return;
+    final cart = context.read<CartProvider>();
+    final products = context.read<ProductsProvider>();
+    if (cart.isEmpty) return;
+
+    for (final line in cart.lines) {
+      final p = products.byId(line.productId);
+      if (p == null || p.quantity < line.quantity) {
+        ErrorHandler.showSnack(
+          context,
+          Exception('Not enough stock for ${line.name}'),
+        );
+        return;
+      }
+    }
+
+    setState(() => _busy = true);
+    try {
+      await context.read<SaleService>().completeSale(
+            lines: cart.lines,
+            userId: uid,
+          );
+      cart.clear();
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        AppRoutes.dashboard,
+        (route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sale completed')),
+      );
+    } catch (e) {
+      if (mounted) ErrorHandler.showSnack(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Cart')),
+      body: cart.isEmpty
+          ? const Center(child: Text('Cart is empty'))
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: cart.lines.length,
+                    itemBuilder: (context, i) {
+                      final line = cart.lines[i];
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                line.name,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                '${BdtFormatter.format(line.unitPrice)} × ${line.quantity}',
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      context.read<CartProvider>().setQuantity(
+                                            line.productId,
+                                            line.quantity - 1,
+                                          );
+                                    },
+                                    icon: const Icon(Icons.remove_circle_outline),
+                                  ),
+                                  Text('${line.quantity}'),
+                                  IconButton(
+                                    onPressed: () {
+                                      final stock = context
+                                          .read<ProductsProvider>()
+                                          .byId(line.productId)
+                                          ?.quantity;
+                                      if (stock != null &&
+                                          line.quantity + 1 > stock) {
+                                        ErrorHandler.showSnack(
+                                          context,
+                                          Exception('Cannot exceed stock'),
+                                        );
+                                        return;
+                                      }
+                                      context.read<CartProvider>().setQuantity(
+                                            line.productId,
+                                            line.quantity + 1,
+                                          );
+                                    },
+                                    icon: const Icon(Icons.add_circle_outline),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    BdtFormatter.format(line.lineTotal),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'Total: ${BdtFormatter.format(cart.subtotal)}',
+                          style: Theme.of(context).textTheme.titleLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          onPressed: _busy ? null : _checkout,
+                          child: _busy
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text('Complete sale'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
