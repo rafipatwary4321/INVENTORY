@@ -9,7 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- _(Nothing yet.)_
+- Premium Material 3 UI kit (`lib/core/widgets/premium/`), app shell with bottom navigation, theme mode (system/light/dark) from Settings.
+- `ThemeModeController`, taller `PremiumAppBar` when a subtitle is shown, responsive `StatCard` grid behavior.
+- Expanded `.env.example` comments for optional AI keys.
+
+### Changed
+
+- README refreshed for shell routes, demo mode, AI env, web/Chrome run, and security notes.
+- `MissingRouteArgumentScreen` and remaining product/AI cards aligned with `ReportCard` where appropriate.
+
+### Documentation
+
+- Clarified demo-only credentials in `AuthService`.
 
 ---
 
