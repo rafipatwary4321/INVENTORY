@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'core/config/env_loader.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
@@ -34,7 +35,10 @@ class AppStartupState {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await dotenv.load(fileName: '.env', isOptional: true);
+    final envText = await loadOptionalEnvText();
+    if (envText != null) {
+      dotenv.testLoad(fileInput: envText);
+    }
   } catch (_) {
     // Keep startup resilient when .env is absent (demo/local mode).
   }
