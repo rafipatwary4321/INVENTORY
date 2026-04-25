@@ -108,6 +108,28 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 24),
           Text('Shortcuts', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ActionChip(
+                avatar: const Icon(Icons.auto_awesome, size: 18),
+                label: const Text('AI Assistant'),
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.aiAssistant),
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.insights_outlined, size: 18),
+                label: const Text('Smart Insights'),
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.aiInsights),
+              ),
+              ActionChip(
+                avatar: const Icon(Icons.inventory_outlined, size: 18),
+                label: const Text('Restock AI'),
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.aiRestock),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           _ShortcutTile(
             icon: Icons.inventory_2_outlined,
             label: 'Products',
@@ -151,7 +173,7 @@ class DashboardScreen extends StatelessWidget {
           ),
           _ShortcutTile(
             icon: Icons.photo_camera_outlined,
-            label: 'AI product (placeholder)',
+            label: 'AI product recognition',
             onTap: () =>
                 Navigator.pushNamed(context, AppRoutes.aiRecognition),
           ),
@@ -196,30 +218,44 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color),
-            const Spacer(),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.14),
+              cs.surface,
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color),
+              const Spacer(),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

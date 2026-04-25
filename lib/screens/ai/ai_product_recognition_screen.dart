@@ -168,7 +168,20 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
                   title: Text(_result!.productName),
                   subtitle: Text(
                     'Confidence ${(100 * _result!.confidence).toStringAsFixed(0)}% · '
-                    '${_result!.source}',
+                    '${_result!.source}\n'
+                    'Category: ${_result!.detectedCategory ?? 'Unknown'}',
+                  ),
+                  isThreeLine: true,
+                ),
+              ),
+            if (_result != null)
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.price_change_outlined),
+                  title: const Text('AI price hints'),
+                  subtitle: Text(
+                    'Buy: ${BdtFormatter.format(_result!.suggestedBuyingPrice ?? 0)} · '
+                    'Sell: ${BdtFormatter.format(_result!.suggestedSellingPrice ?? 0)}',
                   ),
                 ),
               ),
@@ -327,7 +340,8 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
                             AppRoutes.productAdd,
                             arguments: <String, String>{
                               'initialName': _result!.productName,
-                              'initialCategory': 'Vegetable',
+                              'initialCategory':
+                                  _result!.detectedCategory ?? 'General',
                             },
                           ),
                           icon: const Icon(Icons.add),

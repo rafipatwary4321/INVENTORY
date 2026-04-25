@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../models/qr_scan_args.dart';
 import 'route_errors.dart';
+import '../screens/ai/ai_assistant_screen.dart';
 import '../screens/ai/ai_product_recognition_screen.dart';
+import '../screens/ai/restock_prediction_screen.dart';
+import '../screens/ai/smart_insights_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/dashboard/modern_dashboard_screen.dart';
 import '../screens/products/add_edit_product_screen.dart';
+import '../screens/products/modern_product_list_screen.dart';
 import '../screens/products/product_details_screen.dart';
 import '../screens/products/product_list_screen.dart';
 import '../screens/qr/qr_generate_screen.dart';
@@ -39,6 +44,11 @@ class AppRoutes {
   static const reportStock = '/reports/stock';
   static const reportPnL = '/reports/pnl';
   static const aiRecognition = '/ai/recognition';
+  static const aiAssistant = '/ai/assistant';
+  static const aiInsights = '/ai/insights';
+  static const aiRestock = '/ai/restock';
+  static const modernDashboard = '/modern/dashboard';
+  static const modernProducts = '/modern/products';
   static const settings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
@@ -49,8 +59,12 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
+      case AppRoutes.modernDashboard:
+        return MaterialPageRoute(builder: (_) => const ModernDashboardScreen());
       case AppRoutes.products:
         return MaterialPageRoute(builder: (_) => const ProductListScreen());
+      case AppRoutes.modernProducts:
+        return MaterialPageRoute(builder: (_) => const ModernProductListScreen());
       case AppRoutes.productAdd:
         final args = routeSettings.arguments;
         String? initialName;
@@ -134,6 +148,12 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfitLossReportScreen());
       case AppRoutes.aiRecognition:
         return MaterialPageRoute(builder: (_) => const AIProductRecognitionScreen());
+      case AppRoutes.aiAssistant:
+        return MaterialPageRoute(builder: (_) => const AIAssistantScreen());
+      case AppRoutes.aiInsights:
+        return MaterialPageRoute(builder: (_) => const SmartInsightsScreen());
+      case AppRoutes.aiRestock:
+        return MaterialPageRoute(builder: (_) => const RestockPredictionScreen());
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       default:

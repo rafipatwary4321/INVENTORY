@@ -8,11 +8,17 @@ class ProductRecognitionResult {
     required this.productName,
     required this.confidence,
     required this.source,
+    this.detectedCategory,
+    this.suggestedBuyingPrice,
+    this.suggestedSellingPrice,
   });
 
   final String productName;
   final double confidence;
   final String source;
+  final String? detectedCategory;
+  final double? suggestedBuyingPrice;
+  final double? suggestedSellingPrice;
 }
 
 /// Future-facing interface for swapping mock AI with TFLite / ML Kit.
@@ -66,6 +72,9 @@ class MockProductRecognizer implements ProductRecognizer {
           productName: entry.value,
           confidence: 0.91,
           source: 'mock-keyword',
+          detectedCategory: _categoryFor(entry.value),
+          suggestedBuyingPrice: _suggestedBuy(entry.value),
+          suggestedSellingPrice: _suggestedSell(entry.value),
         );
       }
     }
@@ -77,6 +86,39 @@ class MockProductRecognizer implements ProductRecognizer {
       productName: detected,
       confidence: confidence,
       source: 'mock-random',
+      detectedCategory: _categoryFor(detected),
+      suggestedBuyingPrice: _suggestedBuy(detected),
+      suggestedSellingPrice: _suggestedSell(detected),
     );
   }
+
+  String _categoryFor(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('oil')) return 'Grocery';
+    if (n.contains('sugar') || n.contains('chal') || n.contains('dal')) {
+      return 'Staples';
+    }
+    return 'Vegetable';
+  }
+
+  double _suggestedBuy(String name) {
+    switch (name.toLowerCase()) {
+      case 'alu':
+        return 35;
+      case 'peyaj':
+        return 95;
+      case 'chal':
+        return 62;
+      case 'dal':
+        return 110;
+      case 'soybean oil':
+        return 170;
+      case 'sugar':
+        return 120;
+      default:
+        return 80;
+    }
+  }
+
+  double _suggestedSell(String name) => _suggestedBuy(name) * 1.15;
 }
