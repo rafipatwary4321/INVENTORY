@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../core/theme/theme_mode_controller.dart';
 import '../../core/widgets/premium/premium_ui.dart';
 import '../../main.dart';
 import '../../models/app_settings.dart';
@@ -122,6 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final settingsProvider = context.watch<SettingsProvider?>();
     final businessName =
         settingsProvider?.settings.businessName ?? 'My Business';
+    final themeCtrl = context.watch<ThemeModeController>();
     return Scaffold(
       appBar: const PremiumAppBar(
         title: 'Settings',
@@ -198,6 +200,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
               leading: const Icon(Icons.info_outline),
               title: const Text('App version'),
               subtitle: Text(_appVersion),
+            ),
+          ),
+          const SizedBox(height: 10),
+          ReportCard(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Appearance',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  SegmentedButton<ThemeMode>(
+                    segments: const [
+                      ButtonSegment(
+                        value: ThemeMode.system,
+                        label: Text('System'),
+                        icon: Icon(Icons.brightness_auto_outlined),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.light,
+                        label: Text('Light'),
+                        icon: Icon(Icons.light_mode_outlined),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.dark,
+                        label: Text('Dark'),
+                        icon: Icon(Icons.dark_mode_outlined),
+                      ),
+                    ],
+                    selected: {themeCtrl.themeMode},
+                    onSelectionChanged: (next) {
+                      if (next.isEmpty) return;
+                      context
+                          .read<ThemeModeController>()
+                          .setThemeMode(next.first);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 28),

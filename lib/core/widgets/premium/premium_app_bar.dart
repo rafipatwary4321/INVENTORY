@@ -21,9 +21,14 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool useGradient;
   final PreferredSizeWidget? bottom;
 
+  /// Two-line title + subtitle need more than [kToolbarHeight] to avoid overflow.
+  double get _toolbarBodyHeight =>
+      subtitle != null && subtitle!.trim().isNotEmpty ? 72.0 : kToolbarHeight;
+
   @override
-  Size get preferredSize =>
-      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+  Size get preferredSize => Size.fromHeight(
+        _toolbarBodyHeight + (bottom?.preferredSize.height ?? 0),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +60,7 @@ class PremiumAppBar extends StatelessWidget implements PreferredSizeWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(
-                height: kToolbarHeight,
+                height: _toolbarBodyHeight,
                 child: NavigationToolbar(
                   leading: leading ??
                       (Navigator.canPop(context)

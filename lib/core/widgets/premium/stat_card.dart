@@ -20,7 +20,6 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      constraints: const BoxConstraints(minHeight: 124),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
         color: cs.surface,
@@ -44,37 +43,53 @@ class StatCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(12),
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 118;
+                  final pad = compact ? 10.0 : 14.0;
+                  final iconSize = compact ? 18.0 : 22.0;
+                  return Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(compact ? 6 : 8),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(icon, color: accentColor, size: iconSize),
+                        ),
+                        SizedBox(height: compact ? 6 : 10),
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: compact ? 11 : null,
+                                  ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Spacer(),
+                        Text(
+                          value,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: compact ? 13 : null,
+                                  ),
+                        ),
+                      ],
                     ),
-                    child: Icon(icon, color: accentColor, size: 22),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ],

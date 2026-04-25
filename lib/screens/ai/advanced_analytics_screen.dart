@@ -57,10 +57,13 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
             title: 'Stock distribution',
             child: _TrendBarChart(points: analytics.stockDistribution),
           ),
-          _AlertsCard(
-            lowStock: analytics.lowStockAlerts,
-            deadStock: analytics.deadStockAlerts,
-            fastMoving: analytics.fastMovingAlerts,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: _AlertsCard(
+              lowStock: analytics.lowStockAlerts,
+              deadStock: analytics.deadStockAlerts,
+              fastMoving: analytics.fastMovingAlerts,
+            ),
           ),
         ],
       ),
@@ -79,26 +82,28 @@ class _MetricSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            if (metrics.isEmpty)
-              const Text('No data yet')
-            else
-              for (final m in metrics.take(4))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    '${m.productName}: sold ${m.unitsSold}, profit ${BdtFormatter.format(m.profit)}',
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ReportCard(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 8),
+              if (metrics.isEmpty)
+                const Text('No data yet')
+              else
+                for (final m in metrics.take(4))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      '${m.productName}: sold ${m.unitsSold}, profit ${BdtFormatter.format(m.profit)}',
+                    ),
                   ),
-                ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -112,17 +117,19 @@ class _ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 10),
-            SizedBox(height: 200, child: child),
-          ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ReportCard(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 10),
+              SizedBox(height: 200, child: child),
+            ],
+          ),
         ),
       ),
     );
@@ -233,7 +240,7 @@ class _AlertsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return ReportCard(
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

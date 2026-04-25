@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'core/config/env_loader.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/cart_provider.dart';
@@ -164,6 +165,7 @@ class InventoryProviders extends StatelessWidget {
             create: (c) => SettingsProvider(c.read<SettingsService>()),
           ),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeModeController()),
       ],
       child: const InventoryApp(),
     );
@@ -176,12 +178,13 @@ class InventoryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = context.watch<ThemeModeController>().themeMode;
     return MaterialApp(
       title: 'INVENTORY',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRoutes.onGenerateRoute,
     );

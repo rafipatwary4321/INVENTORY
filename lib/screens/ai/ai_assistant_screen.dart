@@ -154,25 +154,36 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: _busy ? null : _ask,
-                      decoration: const InputDecoration(
-                        hintText: 'Ask inventory intelligence...',
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final narrow = c.maxWidth < 400;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: _busy ? null : _ask,
+                          decoration: const InputDecoration(
+                            hintText: 'Ask inventory intelligence...',
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _ask,
-                    icon: const Icon(Icons.send),
-                    label: const Text('Ask'),
-                  ),
-                ],
+                      const SizedBox(width: 8),
+                      narrow
+                          ? IconButton.filled(
+                              onPressed: _busy ? null : () => _ask(),
+                              tooltip: 'Ask',
+                              icon: const Icon(Icons.send_rounded),
+                            )
+                          : FilledButton.icon(
+                              onPressed: _busy ? null : _ask,
+                              icon: const Icon(Icons.send_rounded),
+                              label: const Text('Ask'),
+                            ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

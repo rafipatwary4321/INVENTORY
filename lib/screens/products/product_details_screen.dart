@@ -81,6 +81,8 @@ class ProductDetailsScreen extends StatelessWidget {
         body: ErrorStateWidget(
           title: 'Product not found',
           subtitle: 'It may have been removed or you opened an invalid link.',
+          retryLabel: 'Go back',
+          retryIcon: Icons.arrow_back_rounded,
           onRetry: () => Navigator.pop(context),
         ),
       );

@@ -64,6 +64,8 @@ class _StockInScreenState extends State<StockInScreen> {
       body: product == null
           ? ErrorStateWidget(
               title: 'Product not found',
+              retryLabel: 'Go back',
+              retryIcon: Icons.arrow_back_rounded,
               onRetry: () => Navigator.pop(context),
             )
           : AbsorbPointer(

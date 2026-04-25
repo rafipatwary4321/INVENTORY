@@ -8,11 +8,15 @@ class ErrorStateWidget extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.onRetry,
+    this.retryLabel = 'Try again',
+    this.retryIcon = Icons.refresh_rounded,
   });
 
   final String title;
   final String? subtitle;
   final VoidCallback? onRetry;
+  final String retryLabel;
+  final IconData retryIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +49,8 @@ class ErrorStateWidget extends StatelessWidget {
             if (onRetry != null) ...[
               const SizedBox(height: 20),
               PremiumButton(
-                label: 'Try again',
-                icon: Icons.refresh_rounded,
+                label: retryLabel,
+                icon: retryIcon,
                 onPressed: onRetry,
               ),
             ],
