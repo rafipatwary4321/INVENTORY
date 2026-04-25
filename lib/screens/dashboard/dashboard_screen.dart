@@ -172,9 +172,29 @@ class DashboardScreen extends StatelessWidget {
           ),
           _ShortcutTile(
             icon: Icons.photo_camera_outlined,
-            label: 'AI product (placeholder)',
+            label: 'AI product recognition',
             onTap: () =>
                 Navigator.pushNamed(context, AppRoutes.aiRecognition),
+          ),
+          _ShortcutTile(
+            icon: Icons.chat_bubble_outline,
+            label: 'AI Assistant',
+            onTap: () => Navigator.pushNamed(context, AppRoutes.aiAssistant),
+          ),
+          _ShortcutTile(
+            icon: Icons.auto_graph_outlined,
+            label: 'Advanced AI Analytics',
+            onTap: () => Navigator.pushNamed(context, AppRoutes.aiAnalytics),
+          ),
+          _ShortcutTile(
+            icon: Icons.insights_outlined,
+            label: 'Smart Insights',
+            onTap: () => Navigator.pushNamed(context, AppRoutes.aiInsights),
+          ),
+          _ShortcutTile(
+            icon: Icons.inventory_outlined,
+            label: 'Predictive Restock',
+            onTap: () => Navigator.pushNamed(context, AppRoutes.aiRestock),
           ),
         ],
       ),
