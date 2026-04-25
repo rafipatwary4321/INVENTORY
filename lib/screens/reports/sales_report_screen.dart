@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../models/sale.dart';
 import '../../models/sale_item.dart';
 import '../../providers/sales_provider.dart';
@@ -22,6 +23,16 @@ class SalesReportScreen extends StatelessWidget {
     final todayTotal = sales
         .where((s) => s.createdAt != null && !s.createdAt!.isBefore(todayStart))
         .fold<double>(0, (sum, s) => sum + s.totalAmount);
+    if (sales.isEmpty && items.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Sales report')),
+        body: const EmptyState(
+          title: 'No sales yet',
+          subtitle: 'Complete a checkout to generate sales reports.',
+          icon: Icons.receipt_long_outlined,
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sales report')),

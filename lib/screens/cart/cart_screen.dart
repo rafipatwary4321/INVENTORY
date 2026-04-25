@@ -38,9 +38,33 @@ class _CartScreenState extends State<CartScreen> {
       }
     }
 
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm checkout'),
+        content: Text(
+          'Total ${BdtFormatter.format(cart.subtotal)}\n'
+          'Complete this sale?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    if (!mounted) return;
+    final saleService = context.read<SaleService>();
+
     setState(() => _busy = true);
     try {
-      await context.read<SaleService>().completeSale(
+      await saleService.completeSale(
             lines: cart.lines,
             userId: uid,
           );
