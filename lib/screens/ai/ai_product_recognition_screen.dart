@@ -266,7 +266,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             if (_result != null) ...[
               const SizedBox(height: 16),
               if (matched != null)
-                Card(
+                ReportCard(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(
@@ -318,7 +318,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
                   ),
                 )
               else
-                Card(
+                ReportCard(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(

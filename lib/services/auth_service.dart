@@ -8,6 +8,8 @@ class AuthService {
   })  : _auth = auth,
         _firebaseEnabled = firebaseEnabled;
 
+  /// Demo-only sign-in when Firebase is off (`AppStartupState.firebaseEnabled` is false).
+  /// Replace or gate behind `--dart-define` if you ship a public build without Firebase.
   static const demoEmail = 'admin@inventory.com';
   static const demoPassword = '123456';
   static const demoOwnerEmail = 'owner@inventory.com';

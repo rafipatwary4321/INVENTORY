@@ -192,20 +192,25 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                   onTap: canUploadImage ? _pickImage : null,
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: _pickedFile != null
-                          ? Image.file(_pickedFile!, fit: BoxFit.cover)
-                          : _existingImageUrl != null
-                              ? Image.network(
-                                  _existingImageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) =>
-                                      const Center(child: Icon(Icons.image)),
-                                )
-                              : const Center(
-                                  child: Text('Tap to pick image (optional)'),
-                                ),
+                    child: ReportCard(
+                      padding: EdgeInsets.zero,
+                      child: ClipRRect(
+                        borderRadius:
+                            BorderRadius.circular(PremiumTokens.radiusMd),
+                        child: _pickedFile != null
+                            ? Image.file(_pickedFile!, fit: BoxFit.cover)
+                            : _existingImageUrl != null
+                                ? Image.network(
+                                    _existingImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        const Center(child: Icon(Icons.image)),
+                                  )
+                                : const Center(
+                                    child:
+                                        Text('Tap to pick image (optional)'),
+                                  ),
+                      ),
                     ),
                   ),
                 ),
