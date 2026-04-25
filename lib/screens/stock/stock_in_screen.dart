@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../services/product_service.dart';
@@ -56,48 +57,66 @@ class _StockInScreenState extends State<StockInScreen> {
     final product = context.watch<ProductsProvider>().byId(widget.productId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Stock in')),
+      appBar: const PremiumAppBar(
+        title: 'Stock in',
+        subtitle: 'Receive inventory',
+      ),
       body: product == null
-          ? const Center(child: Text('Product not found'))
+          ? ErrorStateWidget(
+              title: 'Product not found',
+              onRetry: () => Navigator.pop(context),
+            )
           : AbsorbPointer(
               absorbing: _busy,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                padding: PremiumTokens.pagePadding(context),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        product.name,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      ReportCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Current qty: ${product.quantity} ${product.unit}',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text('Current qty: ${product.quantity} ${product.unit}'),
-                      const SizedBox(height: 24),
-                      TextFormField(
+                      const SizedBox(height: 20),
+                      PremiumTextField(
                         controller: _qty,
                         keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity to add',
-                        ),
-                        validator: (v) => Validators.positiveInt(v, field: 'Quantity'),
+                        label: 'Quantity to add',
+                        validator: (v) =>
+                            Validators.positiveInt(v, field: 'Quantity'),
                       ),
-                      TextFormField(
+                      const SizedBox(height: 12),
+                      PremiumTextField(
                         controller: _note,
-                        decoration: const InputDecoration(
-                          labelText: 'Note (optional)',
-                        ),
+                        label: 'Note (optional)',
                       ),
-                      const Spacer(),
-                      FilledButton(
+                      const SizedBox(height: 28),
+                      PremiumButton(
+                        label: _busy ? 'Saving…' : 'Confirm stock in',
+                        expand: true,
+                        icon: _busy ? null : Icons.inventory_2_rounded,
                         onPressed: _busy ? null : _submit,
-                        child: _busy
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Text('Confirm stock in'),
                       ),
                     ],
                   ),

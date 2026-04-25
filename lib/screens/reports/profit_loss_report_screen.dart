@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/utils/bdt_formatter.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../models/sale_item.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/sales_provider.dart';
 
 /// Approximate profit from recorded sale line items (revenue − cost at sale time).
@@ -12,6 +13,15 @@ class ProfitLossReportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final canView = context.watch<AuthProvider>().canViewProfitLoss;
+    if (!canView) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profit / Loss')),
+        body: const Center(
+          child: Text('Access restricted: only owner/admin can view profit reports.'),
+        ),
+      );
+    }
     final items = context.watch<SalesProvider>().saleItems;
     final Map<String, double> profitBySale = {};
     double revenue = 0;

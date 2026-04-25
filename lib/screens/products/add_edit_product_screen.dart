@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
@@ -164,19 +165,25 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
     if (!isAdmin) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Product')),
-        body: const Center(
-          child: Text('Only administrators can add or edit products.'),
+        appBar: const PremiumAppBar(title: 'Product'),
+        body: const EmptyStateWidget(
+          icon: Icons.lock_outline_rounded,
+          title: 'Admins only',
+          subtitle:
+              'Only administrators can add or edit products in this business.',
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Edit product' : 'Add product')),
+      appBar: PremiumAppBar(
+        title: isEdit ? 'Edit product' : 'Add product',
+        subtitle: 'Details & pricing',
+      ),
       body: AbsorbPointer(
         absorbing: _busy,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: PremiumTokens.pagePadding(context),
           child: Form(
             key: _formKey,
             child: Column(
@@ -213,56 +220,54 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     ),
                   ),
                 const SizedBox(height: 16),
-                TextFormField(
+                PremiumTextField(
                   controller: _name,
-                  decoration: const InputDecoration(labelText: 'Product name'),
+                  label: 'Product name',
                   validator: (v) => Validators.required(v, field: 'Name'),
                 ),
-                TextFormField(
+                const SizedBox(height: 12),
+                PremiumTextField(
                   controller: _category,
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  label: 'Category',
                   validator: (v) => Validators.required(v, field: 'Category'),
                 ),
-                TextFormField(
+                const SizedBox(height: 12),
+                PremiumTextField(
                   controller: _buying,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Buying price (BDT)',
-                  ),
-                  validator: (v) => Validators.nonNegativeNumber(v, field: 'Buying price'),
+                  label: 'Buying price (BDT)',
+                  validator: (v) =>
+                      Validators.nonNegativeNumber(v, field: 'Buying price'),
                 ),
-                TextFormField(
+                const SizedBox(height: 12),
+                PremiumTextField(
                   controller: _selling,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Selling price (BDT)',
-                  ),
-                  validator: (v) => Validators.nonNegativeNumber(v, field: 'Selling price'),
+                  label: 'Selling price (BDT)',
+                  validator: (v) =>
+                      Validators.nonNegativeNumber(v, field: 'Selling price'),
                 ),
-                TextFormField(
+                const SizedBox(height: 12),
+                PremiumTextField(
                   controller: _quantity,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Quantity'),
+                  label: 'Quantity',
                   validator: (v) => Validators.positiveInt(v, field: 'Quantity'),
                 ),
-                TextFormField(
+                const SizedBox(height: 12),
+                PremiumTextField(
                   controller: _unit,
-                  decoration: const InputDecoration(labelText: 'Unit (pcs, kg, box…)'),
+                  label: 'Unit (pcs, kg, box…)',
                   validator: (v) => Validators.required(v, field: 'Unit'),
                 ),
                 const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _busy ? null : _save,
-                    child: _busy
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(isEdit ? 'Update' : 'Create'),
-                  ),
+                PremiumButton(
+                  label: _busy
+                      ? 'Saving…'
+                      : (isEdit ? 'Update product' : 'Create product'),
+                  expand: true,
+                  icon: _busy ? null : Icons.check_rounded,
+                  onPressed: _busy ? null : _save,
                 ),
               ],
             ),

@@ -64,9 +64,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       return;
     }
-    final role = context.read<AuthProvider>().appUser?.isAdmin ?? false;
-    if (!role) {
-      ErrorHandler.showSnack(context, Exception('Only admins can change settings'));
+    final canManage = context.read<AuthProvider>().canManageBusinessSettings;
+    if (!canManage) {
+      ErrorHandler.showSnack(context, Exception('Only owners can change business settings'));
       return;
     }
     setState(() => _busy = true);
@@ -116,7 +116,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final startup = context.read<AppStartupState>();
-    final isAdmin = context.watch<AuthProvider>().appUser?.isAdmin ?? false;
+    final auth = context.watch<AuthProvider>();
+    final canManage = auth.canManageBusinessSettings;
     final settingsProvider = context.watch<SettingsProvider?>();
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -129,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 TextFormField(
                   controller: _businessName,
-                  enabled: isAdmin && !_busy,
+                  enabled: canManage && !_busy,
                   decoration: const InputDecoration(
                     labelText: 'Business name',
                   ),
@@ -141,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text('BDT (৳) — fixed in this version'),
                 ),
                 const SizedBox(height: 16),
-                if (isAdmin)
+                if (canManage)
                   FilledButton(
                     onPressed:
                         _busy || settingsProvider == null ? null : _save,
@@ -164,6 +165,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               subtitle: Text(
                 startup.firebaseEnabled ? 'Firebase mode' : 'Demo/local mode',
               ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.business_center_outlined),
+              title: const Text('Business ID'),
+              subtitle: Text(auth.businessId),
             ),
           ),
           Card(

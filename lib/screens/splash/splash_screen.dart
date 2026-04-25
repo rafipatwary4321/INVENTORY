@@ -66,7 +66,6 @@ class _SplashScreenState extends State<SplashScreen> {
     final auth = context.read<AuthProvider>();
     var startupWarning = startupState.startupWarning ?? '';
 
-    // When Firebase options are still placeholders, never block startup.
     if (startupState.firebaseEnabled && _isFirebaseConfigured()) {
       try {
         await context
@@ -90,27 +89,79 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.inventory_2_rounded,
-              size: 88,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'INVENTORY',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              cs.primary,
+              Color.lerp(cs.primary, cs.tertiary, 0.4)!,
+              cs.tertiary.withValues(alpha: 0.95),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 32,
+                        offset: const Offset(0, 12),
+                      ),
+                    ],
                   ),
+                  child: Icon(
+                    Icons.inventory_2_rounded,
+                    size: 72,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  'INVENTORY',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 3,
+                        color: Colors.white,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Stock · Sales · Insights',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                ),
+                const SizedBox(height: 36),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Preparing your workspace…',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.88),
+                      ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            const CircularProgressIndicator(),
-          ],
+          ),
         ),
       ),
     );

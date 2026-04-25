@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../core/widgets/product_qr_card.dart';
 import '../../providers/products_provider.dart';
 

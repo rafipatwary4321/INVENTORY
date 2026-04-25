@@ -10,6 +10,7 @@ import '../screens/ai/smart_insights_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/cart/cart_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/shell/app_shell_screen.dart';
 import '../screens/products/add_edit_product_screen.dart';
 import '../screens/products/product_details_screen.dart';
 import '../screens/products/product_list_screen.dart';
@@ -22,6 +23,7 @@ import '../screens/sell/sell_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/splash/splash_screen.dart';
 import '../screens/stock/stock_in_screen.dart';
+import '../screens/users/user_management_screen.dart';
 
 /// Central route names and [onGenerateRoute] for simple navigation.
 class AppRoutes {
@@ -47,6 +49,7 @@ class AppRoutes {
   static const aiInsights = '/ai/insights';
   static const aiRestock = '/ai/restock';
   static const aiAnalytics = '/ai/analytics';
+  static const team = '/team';
   static const settings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings routeSettings) {
@@ -56,7 +59,7 @@ class AppRoutes {
       case AppRoutes.login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case AppRoutes.dashboard:
-        return MaterialPageRoute(builder: (_) => const DashboardScreen());
+        return MaterialPageRoute(builder: (_) => const AppShellScreen());
       case AppRoutes.products:
         return MaterialPageRoute(builder: (_) => const ProductListScreen());
       case AppRoutes.productAdd:
@@ -150,6 +153,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const RestockPredictionScreen());
       case AppRoutes.aiAnalytics:
         return MaterialPageRoute(builder: (_) => const AdvancedAnalyticsScreen());
+      case AppRoutes.team:
+        return MaterialPageRoute(builder: (_) => const UserManagementScreen());
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       default:

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/empty_state.dart';
-import '../../core/utils/bdt_formatter.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
@@ -17,39 +16,43 @@ class ProductListScreen extends StatelessWidget {
     final isAdmin = context.watch<AuthProvider>().isAdmin;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Products')),
+      appBar: const PremiumAppBar(
+        title: 'Products',
+        subtitle: 'Inventory',
+      ),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
               onPressed: () =>
                   Navigator.pushNamed(context, AppRoutes.productAdd),
-              icon: const Icon(Icons.add),
-              label: const Text('Add'),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add product'),
             )
           : null,
       body: products.isEmpty
-          ? const EmptyState(
-              title: 'No products yet',
-              subtitle: 'Add your first product to start tracking stock.',
+          ? Center(
+              child: Padding(
+                padding: PremiumTokens.pagePadding(context),
+                child: EmptyStateWidget(
+                  icon: Icons.inventory_2_outlined,
+                  title: 'No products yet',
+                  subtitle:
+                      'Add your first product to start tracking stock and generating QR labels.',
+                  actionLabel: isAdmin ? 'Add product' : null,
+                  onAction: isAdmin
+                      ? () => Navigator.pushNamed(context, AppRoutes.productAdd)
+                      : null,
+                ),
+              ),
             )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
+          : ListView.builder(
+              padding: PremiumTokens.pagePadding(context),
               itemCount: products.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final p = products[i];
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(p.name.isNotEmpty ? p.name[0].toUpperCase() : '?'),
-                    ),
-                    title: Text(p.name),
-                    subtitle: Text(
-                      '${p.category} · Qty ${p.quantity} ${p.unit}\n'
-                      'Buy ${BdtFormatter.format(p.buyingPrice)} · '
-                      'Sell ${BdtFormatter.format(p.sellingPrice)}',
-                    ),
-                    isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_right),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ProductCard(
+                    product: p,
                     onTap: () => Navigator.pushNamed(
                       context,
                       AppRoutes.productDetails,
