@@ -52,7 +52,19 @@ class AppRoutes {
       case AppRoutes.products:
         return MaterialPageRoute(builder: (_) => const ProductListScreen());
       case AppRoutes.productAdd:
-        return MaterialPageRoute(builder: (_) => const AddEditProductScreen());
+        final args = routeSettings.arguments;
+        String? initialName;
+        String? initialCategory;
+        if (args is Map) {
+          initialName = args['initialName'] as String?;
+          initialCategory = args['initialCategory'] as String?;
+        }
+        return MaterialPageRoute(
+          builder: (_) => AddEditProductScreen(
+            initialName: initialName,
+            initialCategory: initialCategory,
+          ),
+        );
       case AppRoutes.productEdit:
         final id = routeSettings.arguments as String?;
         if (routeIdMissing(id)) {
