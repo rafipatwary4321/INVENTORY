@@ -95,6 +95,23 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       ),
       body: Column(
         children: [
+          if (!_api.isConfigured)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .secondaryContainer
+                    .withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Real AI key not configured. Using local assistant fallback.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
           SizedBox(
             height: 52,
             child: ListView(

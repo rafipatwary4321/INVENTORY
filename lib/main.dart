@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
+import 'core/config/env_loader.dart';
 import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
@@ -32,6 +34,14 @@ class AppStartupState {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    final envText = await loadOptionalEnvText();
+    if (envText != null) {
+      dotenv.testLoad(fileInput: envText);
+    }
+  } catch (_) {
+    // Keep startup resilient when .env is absent (demo/local mode).
+  }
   var firebaseEnabled = false;
   String? startupWarning;
 
@@ -58,8 +68,8 @@ Future<void> main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       firebaseEnabled = true;
-    } catch (e, stack) {
-      debugPrint('Firebase.initializeApp failed: $e\n$stack');
+    } catch (e) {
+      debugPrint('Firebase.initializeApp failed: $e');
       startupWarning = 'Firebase unavailable. Running in demo mode.';
     }
   } else {
