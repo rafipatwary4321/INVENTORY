@@ -55,7 +55,7 @@ class AppRoutes {
         final args = routeSettings.arguments;
         String? initialName;
         String? initialCategory;
-        if (args is Map) {
+        if (args is Map<String, dynamic>) {
           initialName = args['initialName'] as String?;
           initialCategory = args['initialCategory'] as String?;
         }

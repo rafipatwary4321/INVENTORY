@@ -34,17 +34,21 @@ class MockProductRecognizer implements ProductRecognizer {
     'alu': 'Alu',
     'onion': 'Peyaj',
     'peyaj': 'Peyaj',
+    'chal': 'Chal',
     'tomato': 'Tomato',
     'rice': 'Chal',
+    'dal': 'Dal',
     'oil': 'Soybean Oil',
+    'sugar': 'Sugar',
   };
 
   static const List<String> _fallbackNames = [
     'Alu',
     'Peyaj',
-    'Tomato',
     'Chal',
+    'Dal',
     'Soybean Oil',
+    'Sugar',
   ];
 
   @override

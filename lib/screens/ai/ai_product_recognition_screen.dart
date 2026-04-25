@@ -186,8 +186,33 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
               decoration: const InputDecoration(
                 prefixIcon: Icon(Icons.psychology_alt_outlined),
                 labelText: 'Mock AI hint (optional)',
-                hintText: 'Try: potato / onion',
+                hintText: 'alu / peyaj / chal / dal / oil / sugar',
               ),
+              onSubmitted: (_) {
+                if (_image != null) _analyze(_image!);
+              },
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final hint in const [
+                  'alu',
+                  'peyaj',
+                  'chal',
+                  'dal',
+                  'oil',
+                  'sugar',
+                ])
+                  ActionChip(
+                    label: Text(hint),
+                    onPressed: () {
+                      _mockHint.text = hint;
+                      if (_image != null) _analyze(_image!);
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
             Row(
@@ -211,11 +236,22 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Tip: add "potato" to detect Alu, or "onion" to detect Peyaj.',
+              'Tip: set a mock hint, then capture/select image.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
+            if (_image != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: _busy ? null : () => _analyze(_image!),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Re-analyze'),
+                ),
+              ),
+            ],
             if (_busy) ...[
               const SizedBox(height: 12),
               const LinearProgressIndicator(),
