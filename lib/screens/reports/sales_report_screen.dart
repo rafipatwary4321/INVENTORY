@@ -18,6 +18,7 @@ class SalesReportScreen extends StatelessWidget {
     final df = DateFormat.yMMMd();
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
+    final totalSales = sales.fold<double>(0, (sum, s) => sum + s.totalAmount);
     final todayTotal = sales
         .where((s) => s.createdAt != null && !s.createdAt!.isBefore(todayStart))
         .fold<double>(0, (sum, s) => sum + s.totalAmount);
@@ -27,6 +28,19 @@ class SalesReportScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.summarize_outlined),
+              title: const Text('Total sales amount'),
+              trailing: Text(
+                BdtFormatter.format(totalSales),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           Card(
             child: ListTile(
               leading: const Icon(Icons.today_outlined),

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bdt_formatter.dart';
-import '../../main.dart';
 import '../../models/app_user.dart';
 import '../../models/qr_scan_args.dart';
 import '../../models/sale.dart';
@@ -21,13 +20,8 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final products = context.watch<ProductsProvider>().products;
-    final startupState = context.read<AppStartupState>();
-    final List<Sale> sales = startupState.firebaseEnabled
-        ? context.watch<SalesProvider>().sales
-        : const <Sale>[];
-    final settings = startupState.firebaseEnabled
-        ? context.watch<SettingsProvider>().settings
-        : null;
+    final List<Sale> sales = context.watch<SalesProvider>().sales;
+    final settings = context.watch<SettingsProvider?>()?.settings;
     final user = auth.appUser;
 
     final now = DateTime.now();
@@ -42,8 +36,12 @@ class DashboardScreen extends StatelessWidget {
       0,
       (a, p) => a + p.stockValue,
     );
+    final totalStockQty = products.fold<int>(
+      0,
+      (a, p) => a + p.quantity,
+    );
     final lowStock = products
-        .where((p) => p.quantity <= AppConstants.lowStockThreshold)
+        .where((p) => p.quantity < AppConstants.lowStockThreshold)
         .length;
 
     return Scaffold(
@@ -82,6 +80,12 @@ class DashboardScreen extends StatelessWidget {
                 color: Colors.blue,
               ),
               _StatCard(
+                title: 'Stock qty',
+                value: '$totalStockQty',
+                icon: Icons.format_list_numbered_rounded,
+                color: Colors.indigo,
+              ),
+              _StatCard(
                 title: 'Stock value',
                 value: BdtFormatter.format(totalStockValue),
                 icon: Icons.account_balance_wallet_outlined,
@@ -97,7 +101,7 @@ class DashboardScreen extends StatelessWidget {
                 title: 'Low stock',
                 value: '$lowStock',
                 icon: Icons.warning_amber_rounded,
-                color: Colors.orange,
+                color: lowStock > 0 ? Colors.deepOrange : Colors.green,
               ),
             ],
           ),

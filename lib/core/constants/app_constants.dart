@@ -15,8 +15,8 @@ class AppConstants {
 
   static const String defaultCurrency = 'BDT';
 
-  /// Quantity at or below this value counts as "low stock" on the dashboard.
-  static const int lowStockThreshold = 10;
+  /// Quantity strictly below this value counts as "low stock".
+  static const int lowStockThreshold = 5;
 
   /// QR payload prefix so scans are clearly ours (optional safety).
   static const String qrPrefix = 'inv:product:';
