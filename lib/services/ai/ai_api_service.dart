@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 import '../../models/product.dart';
@@ -13,30 +14,55 @@ enum AIProvider {
 
 /// Real AI gateway.
 ///
-/// Configuration is read from compile-time env values (no hardcoded secrets):
-/// - AI_PROVIDER=openai|gemini
-/// - AI_API_KEY=...
-/// - AI_MODEL=optional model name
+/// Configuration resolution order:
+/// 1) `.env` values loaded by `flutter_dotenv`
+/// 2) `--dart-define` values
 ///
 /// Example:
-/// flutter run -d chrome --dart-define=AI_PROVIDER=openai --dart-define=AI_API_KEY=sk-... --dart-define=AI_MODEL=gpt-4o-mini
+/// flutter run -d chrome --dart-define=AI_PROVIDER=openai --dart-define=AI_API_KEY=YOUR_KEY --dart-define=AI_MODEL=gpt-4o-mini
 class AIApiService {
   AIApiService({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
 
-  static const String _providerRaw = String.fromEnvironment(
+  static const String _providerRawDefine = String.fromEnvironment(
     'AI_PROVIDER',
     defaultValue: '',
   );
-  static const String _apiKey = String.fromEnvironment(
+  static const String _apiKeyDefine = String.fromEnvironment(
     'AI_API_KEY',
     defaultValue: '',
   );
-  static const String _model = String.fromEnvironment(
+  static const String _modelDefine = String.fromEnvironment(
     'AI_MODEL',
     defaultValue: '',
   );
+
+  String _readEnv(String key) {
+    try {
+      return dotenv.env[key]?.trim() ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String get _providerRaw {
+    final envValue = _readEnv('AI_PROVIDER');
+    if (envValue.isNotEmpty) return envValue;
+    return _providerRawDefine.trim();
+  }
+
+  String get _apiKey {
+    final envValue = _readEnv('AI_API_KEY');
+    if (envValue.isNotEmpty) return envValue;
+    return _apiKeyDefine.trim();
+  }
+
+  String get _model {
+    final envValue = _readEnv('AI_MODEL');
+    if (envValue.isNotEmpty) return envValue;
+    return _modelDefine.trim();
+  }
 
   AIProvider get provider {
     switch (_providerRaw.trim().toLowerCase()) {
@@ -49,7 +75,7 @@ class AIApiService {
     }
   }
 
-  bool get isConfigured => provider != AIProvider.none && _apiKey.trim().isNotEmpty;
+  bool get isConfigured => provider != AIProvider.none && _apiKey.isNotEmpty;
 
   Future<String> askAssistant({
     required String query,
@@ -116,7 +142,7 @@ ${salesLines.isEmpty ? '(no sales)' : salesLines}
   }
 
   Future<String> _askOpenAI(String prompt) async {
-    final model = _model.trim().isEmpty ? 'gpt-4o-mini' : _model.trim();
+    final model = _model.isEmpty ? 'gpt-4o-mini' : _model;
     final res = await _client.post(
       Uri.parse('https://api.openai.com/v1/chat/completions'),
       headers: {
@@ -153,7 +179,7 @@ ${salesLines.isEmpty ? '(no sales)' : salesLines}
   }
 
   Future<String> _askGemini(String prompt) async {
-    final model = _model.trim().isEmpty ? 'gemini-1.5-flash' : _model.trim();
+    final model = _model.isEmpty ? 'gemini-1.5-flash' : _model;
     final uri = Uri.parse(
       'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$_apiKey',
     );
