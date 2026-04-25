@@ -7,17 +7,27 @@ class AppTheme {
 
   static const Color _seed = Color(0xFF1565C0);
 
-  static ThemeData light() {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: _seed,
-      brightness: Brightness.light,
+  static PageTransitionsTheme _pageTransitions() {
+    return const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+      },
     );
+  }
+
+  static ThemeData _base(ColorScheme colorScheme, Color scaffoldBg) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+      scaffoldBackgroundColor: scaffoldBg,
+      pageTransitionsTheme: _pageTransitions(),
       appBarTheme: AppBarTheme(
-        centerTitle: true,
+        centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 1,
         backgroundColor: colorScheme.surface,
@@ -34,8 +44,31 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 2,
+        highlightElevation: 4,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 68,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        indicatorColor: colorScheme.primaryContainer,
       ),
       textTheme: GoogleFonts.interTextTheme(),
     );
+  }
+
+  static ThemeData light() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: _seed,
+      brightness: Brightness.light,
+    );
+    return _base(colorScheme, const Color(0xFFF5F7FA));
+  }
+
+  static ThemeData dark() {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: _seed,
+      brightness: Brightness.dark,
+    );
+    return _base(colorScheme, const Color(0xFF121418));
   }
 }

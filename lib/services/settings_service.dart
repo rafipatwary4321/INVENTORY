@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/context/business_scope.dart';
 import '../models/app_settings.dart';
 
 /// Reads/writes `settings/business`.
@@ -9,12 +12,26 @@ class SettingsService {
 
   final FirebaseFirestore _db;
 
-  DocumentReference<Map<String, dynamic>> get _ref =>
-      _db.collection(AppConstants.settingsCollection).doc(AppConstants.settingsDocId);
+  DocumentReference<Map<String, dynamic>> get _ref => _db
+      .collection(AppConstants.businessesCollection)
+      .doc(BusinessScope.businessId)
+      .collection(AppConstants.settingsCollection)
+      .doc(AppConstants.settingsDocId);
 
   Stream<AppSettings> settingsStream() {
-    return _ref.snapshots().map((snap) {
-      return AppSettings.fromMap(snap.data());
+    return Stream<AppSettings>.multi((multi) {
+      StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? settingsSub;
+      final businessSub = BusinessScope.changes.listen((_) {
+        settingsSub?.cancel();
+        settingsSub = _ref.snapshots().listen(
+          (snap) => multi.add(AppSettings.fromMap(snap.data())),
+          onError: multi.addError,
+        );
+      });
+      multi.onCancel = () async {
+        await settingsSub?.cancel();
+        await businessSub.cancel();
+      };
     });
   }
 

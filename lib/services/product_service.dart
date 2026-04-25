@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/context/business_scope.dart';
 import '../models/product.dart';
 import '../models/stock_transaction.dart';
 
@@ -26,8 +27,17 @@ class ProductService {
   static final Map<String, Product> _localProducts = {};
   static final List<Map<String, dynamic>> _localStockTransactions = [];
 
-  CollectionReference<Map<String, dynamic>> get _col =>
-      _db!.collection(AppConstants.productsCollection);
+  String get _businessId => BusinessScope.businessId;
+
+  CollectionReference<Map<String, dynamic>> get _businessCol => _db!
+      .collection(AppConstants.businessesCollection)
+      .doc(_businessId)
+      .collection(AppConstants.productsCollection);
+
+  CollectionReference<Map<String, dynamic>> get _stockTxCol => _db!
+      .collection(AppConstants.businessesCollection)
+      .doc(_businessId)
+      .collection(AppConstants.stockTransactionsCollection);
 
   void _emitLocal() {
     final list = _localProducts.values.toList()
@@ -39,16 +49,27 @@ class ProductService {
     if (!_firebaseEnabled) {
       return _localStream.stream;
     }
-    return _col.orderBy('name').snapshots().map(
-          (s) => s.docs.map(Product.fromFirestore).toList(),
+    return Stream<List<Product>>.multi((multi) {
+      StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? productsSub;
+      final businessSub = BusinessScope.changes.listen((_) {
+        productsSub?.cancel();
+        productsSub = _businessCol.orderBy('name').snapshots().listen(
+          (s) => multi.add(s.docs.map(Product.fromFirestore).toList()),
+          onError: multi.addError,
         );
+      });
+      multi.onCancel = () async {
+        await productsSub?.cancel();
+        await businessSub.cancel();
+      };
+    });
   }
 
   Future<Product?> fetchProduct(String id) async {
     if (!_firebaseEnabled) {
       return _localProducts[id];
     }
-    final d = await _col.doc(id).get();
+    final d = await _businessCol.doc(id).get();
     if (!d.exists) return null;
     return Product.fromFirestore(d);
   }
@@ -75,7 +96,7 @@ class ProductService {
       _emitLocal();
       return id;
     }
-    await _col.doc(id).set({
+    await _businessCol.doc(id).set({
       ...data,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -108,7 +129,7 @@ class ProductService {
       _emitLocal();
       return;
     }
-    return _col.doc(id).update({
+    return _businessCol.doc(id).update({
       ...data,
       'updatedAt': FieldValue.serverTimestamp(),
     });
@@ -120,7 +141,7 @@ class ProductService {
       _emitLocal();
       return;
     }
-    return _col.doc(id).delete();
+    return _businessCol.doc(id).delete();
   }
 
   /// Adds stock and writes a stock transaction (atomic batch).
@@ -159,11 +180,10 @@ class ProductService {
       _emitLocal();
       return;
     }
-    final productRef = _col.doc(productId);
-    final txRef =
-        _db!.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
+    final productRef = _businessCol.doc(productId);
+    final txRef = _stockTxCol.doc(_uuid.v4());
 
-    await _db.runTransaction((transaction) async {
+    await _db!.runTransaction((transaction) async {
       final snap = await transaction.get(productRef);
       if (!snap.exists) throw StateError('Product not found');
       final current = (snap.data()?['quantity'] as num?)?.toInt() ?? 0;
@@ -221,11 +241,10 @@ class ProductService {
       _emitLocal();
       return;
     }
-    final productRef = _col.doc(productId);
-    final txRef =
-        _db!.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
+    final productRef = _businessCol.doc(productId);
+    final txRef = _stockTxCol.doc(_uuid.v4());
 
-    await _db.runTransaction((transaction) async {
+    await _db!.runTransaction((transaction) async {
       final snap = await transaction.get(productRef);
       if (!snap.exists) throw StateError('Product not found');
       final current = (snap.data()?['quantity'] as num?)?.toInt() ?? 0;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/bdt_formatter.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
@@ -75,11 +75,12 @@ class _SellScreenState extends State<SellScreen> {
             .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sell / POS'),
+      appBar: PremiumAppBar(
+        title: 'Sell / POS',
+        subtitle: 'Tap a product to add to cart',
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
+            icon: const Icon(Icons.qr_code_scanner_rounded),
             onPressed: _scanForCart,
           ),
           IconButton(
@@ -91,13 +92,13 @@ class _SellScreenState extends State<SellScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
             child: Column(
               children: [
                 TextField(
                   controller: _search,
                   decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: Icon(Icons.search_rounded),
                     hintText: 'Search products…',
                   ),
                   onChanged: (_) => setState(() {}),
@@ -134,27 +135,33 @@ class _SellScreenState extends State<SellScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: filtered.length,
-              itemBuilder: (context, i) {
-                final p = filtered[i];
-                return Card(
-                  child: ListTile(
-                    title: Text(p.name),
-                    subtitle: Text(
-                      '${BdtFormatter.format(p.sellingPrice)} · Stock ${p.quantity} ${p.unit}',
-                    ),
-                    trailing: FilledButton(
-                      onPressed: p.quantity < 1
-                          ? null
-                          : () => _addById(p.id),
-                      child: const Text('Add'),
-                    ),
+            child: filtered.isEmpty
+                ? EmptyStateWidget(
+                    icon: Icons.search_off_rounded,
+                    title: products.isEmpty ? 'No products' : 'No matches',
+                    subtitle: products.isEmpty
+                        ? 'Add products before you can sell from this screen.'
+                        : 'Try a different search or clear the filter.',
+                  )
+                : ListView.builder(
+                    padding: PremiumTokens.pagePadding(context),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) {
+                      final p = filtered[i];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Opacity(
+                          opacity: p.quantity < 1 ? 0.55 : 1,
+                          child: ProductCard(
+                            product: p,
+                            onTap: p.quantity < 1
+                                ? () {}
+                                : () => _addById(p.id),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
           SafeArea(
             child: Padding(

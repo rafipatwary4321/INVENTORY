@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
 import '../../providers/cart_provider.dart';
@@ -89,23 +90,32 @@ class _CartScreenState extends State<CartScreen> {
     final cart = context.watch<CartProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cart')),
+      appBar: const PremiumAppBar(
+        title: 'Cart',
+        subtitle: 'Review & checkout',
+      ),
       body: cart.isEmpty
-          ? const Center(child: Text('Cart is empty'))
+          ? const EmptyStateWidget(
+              icon: Icons.shopping_cart_outlined,
+              title: 'Cart is empty',
+              subtitle: 'Add products from Sell / POS to build a sale.',
+            )
           : Column(
               children: [
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: PremiumTokens.pagePadding(context),
                     itemCount: cart.lines.length,
                     itemBuilder: (context, i) {
                       final line = cart.lines[i];
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: ReportCard(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                               Text(
                                 line.name,
                                 style: Theme.of(context).textTheme.titleMedium,
@@ -167,31 +177,30 @@ class _CartScreenState extends State<CartScreen> {
                             ],
                           ),
                         ),
+                        ),
                       );
                     },
                   ),
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: PremiumTokens.pagePadding(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
                           'Total: ${BdtFormatter.format(cart.subtotal)}',
-                          style: Theme.of(context).textTheme.titleLarge,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
-                        FilledButton(
+                        PremiumButton(
+                          label: _busy ? 'Processing…' : 'Complete sale',
+                          expand: true,
+                          icon: _busy ? null : Icons.check_rounded,
                           onPressed: _busy ? null : _checkout,
-                          child: _busy
-                              ? const SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Complete sale'),
                         ),
                       ],
                     ),

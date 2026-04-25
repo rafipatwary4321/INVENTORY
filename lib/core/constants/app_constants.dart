@@ -3,6 +3,7 @@ class AppConstants {
   AppConstants._();
 
   // Firestore collection names
+  static const String businessesCollection = 'businesses';
   static const String usersCollection = 'users';
   static const String productsCollection = 'products';
   static const String stockTransactionsCollection = 'stock_transactions';
@@ -11,7 +12,9 @@ class AppConstants {
   static const String settingsCollection = 'settings';
 
   /// Single document id for business settings (one shop per app instance).
-  static const String settingsDocId = 'business';
+  static const String settingsDocId = 'main';
+
+  static const String demoBusinessId = 'demo-business';
 
   static const String defaultCurrency = 'BDT';
 

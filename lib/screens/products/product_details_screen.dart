@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bdt_formatter.dart';
 import '../../core/utils/error_handler.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../core/widgets/product_qr_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
@@ -76,18 +77,25 @@ class ProductDetailsScreen extends StatelessWidget {
 
     if (product == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Product')),
-        body: const Center(child: Text('Product not found')),
+        appBar: const PremiumAppBar(title: 'Product'),
+        body: ErrorStateWidget(
+          title: 'Product not found',
+          subtitle: 'It may have been removed or you opened an invalid link.',
+          retryLabel: 'Go back',
+          retryIcon: Icons.arrow_back_rounded,
+          onRetry: () => Navigator.pop(context),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(product.name),
+      appBar: PremiumAppBar(
+        title: product.name,
+        subtitle: 'Details & QR',
         actions: [
           IconButton(
             tooltip: 'Scan QR',
-            icon: const Icon(Icons.qr_code_scanner),
+            icon: const Icon(Icons.qr_code_scanner_rounded),
             onPressed: () => _showScanOptions(context),
           ),
           if (isAdmin)
@@ -113,7 +121,7 @@ class ProductDetailsScreen extends StatelessWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PremiumTokens.pagePadding(context),
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -137,13 +145,15 @@ class ProductDetailsScreen extends StatelessWidget {
             ),
           ),
           if (product.isLowStock)
-            Card(
-              color: Colors.orange.shade50,
-              child: ListTile(
-                leading: const Icon(Icons.warning_amber_rounded),
-                title: Text(
-                  'Low stock (< ${AppConstants.lowStockThreshold} ${product.unit})',
-                ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: ActionCard(
+                icon: Icons.warning_amber_rounded,
+                label: 'Low stock',
+                subtitle:
+                    'Below ${AppConstants.lowStockThreshold} ${product.unit}',
+                iconColor: Colors.deepOrange,
+                onTap: null,
               ),
             ),
           const SizedBox(height: 16),

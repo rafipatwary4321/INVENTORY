@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
@@ -51,111 +52,158 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final startupState = context.read<AppStartupState>();
     final isDemoMode = !startupState.firebaseEnabled;
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 48),
-                Icon(
-                  Icons.lock_outline_rounded,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.primary,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    cs.primary,
+                    Color.lerp(cs.primary, cs.secondary, 0.35)!,
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Sign in',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                  textAlign: TextAlign.center,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(PremiumTokens.radiusXl),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Admin and staff use the same screen. '
-                  'Access level is controlled in Firestore (`users.role`).',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                  textAlign: TextAlign.center,
-                ),
-                if (isDemoMode) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondaryContainer
-                          .withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      startupState.startupWarning ??
-                          'Demo mode active. Use demo credentials to continue.',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                boxShadow: PremiumTokens.cardShadow(context),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.layers_rounded,
+                    size: 40,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Sign in',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Owner, admin, and staff use the same screen. '
+                    'Access is scoped by your business role.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          height: 1.4,
+                        ),
                   ),
                 ],
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: Validators.email,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _password,
-                  obscureText: _obscure,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.password_outlined),
-                    suffixIcon: IconButton(
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                      icon: Icon(
-                        _obscure ? Icons.visibility : Icons.visibility_off,
-                      ),
-                    ),
-                  ),
-                  validator: Validators.password,
-                ),
-                const SizedBox(height: 28),
-                FilledButton(
-                  onPressed: _busy ? null : _submit,
-                  child: _busy
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Login'),
-                ),
-                if (isDemoMode) ...[
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    onPressed: _busy
-                        ? null
-                        : () {
-                            _email.text = AuthService.demoEmail;
-                            _password.text = AuthService.demoPassword;
-                          },
-                    icon: const Icon(Icons.science_outlined),
-                    label: const Text('Use Demo Login'),
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
-        ),
+          SliverPadding(
+            padding: PremiumTokens.pagePadding(context),
+            sliver: SliverToBoxAdapter(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (isDemoMode) ...[
+                      ReportCard(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.info_outline_rounded, color: cs.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                startupState.startupWarning ??
+                                    'Demo mode active. Use demo credentials to continue.',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    PremiumTextField(
+                      controller: _email,
+                      label: 'Email',
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: Validators.email,
+                      enabled: !_busy,
+                    ),
+                    const SizedBox(height: 16),
+                    PremiumTextField(
+                      controller: _password,
+                      label: 'Password',
+                      obscureText: _obscure,
+                      prefixIcon: const Icon(Icons.password_outlined),
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                        icon: Icon(
+                          _obscure ? Icons.visibility : Icons.visibility_off,
+                        ),
+                      ),
+                      validator: Validators.password,
+                      enabled: !_busy,
+                    ),
+                    const SizedBox(height: 28),
+                    PremiumButton(
+                      label: _busy ? 'Signing in…' : 'Login',
+                      expand: true,
+                      onPressed: _busy ? null : _submit,
+                      icon: _busy ? null : Icons.login_rounded,
+                    ),
+                    if (isDemoMode) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: PremiumButton(
+                              label: 'Demo owner',
+                              outlined: true,
+                              expand: true,
+                              icon: Icons.workspace_premium_outlined,
+                              onPressed: _busy
+                                  ? null
+                                  : () {
+                                      _email.text = AuthService.demoOwnerEmail;
+                                      _password.text = AuthService.demoPassword;
+                                    },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: PremiumButton(
+                              label: 'Demo staff',
+                              outlined: true,
+                              expand: true,
+                              icon: Icons.badge_outlined,
+                              onPressed: _busy
+                                  ? null
+                                  : () {
+                                      _email.text = AuthService.demoStaffEmail;
+                                      _password.text = AuthService.demoPassword;
+                                    },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

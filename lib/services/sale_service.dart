@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/context/business_scope.dart';
 import '../models/sale.dart';
 import '../models/sale_item.dart';
 import 'product_service.dart';
@@ -52,11 +53,17 @@ class SaleService {
   static final List<Sale> _localSales = [];
   static final List<SaleItem> _localSaleItems = [];
 
-  CollectionReference<Map<String, dynamic>> get _sales =>
-      _db!.collection(AppConstants.salesCollection);
+  String get _businessId => BusinessScope.businessId;
 
-  CollectionReference<Map<String, dynamic>> get _items =>
-      _db!.collection(AppConstants.saleItemsCollection);
+  CollectionReference<Map<String, dynamic>> get _sales => _db!
+      .collection(AppConstants.businessesCollection)
+      .doc(_businessId)
+      .collection(AppConstants.salesCollection);
+
+  CollectionReference<Map<String, dynamic>> get _items => _db!
+      .collection(AppConstants.businessesCollection)
+      .doc(_businessId)
+      .collection(AppConstants.saleItemsCollection);
 
   void _emitLocalSales() {
     final list = List<Sale>.from(_localSales)
@@ -83,11 +90,24 @@ class SaleService {
     if (!_firebaseEnabled) {
       return _localSalesStream.stream;
     }
-    return _sales
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .snapshots()
-        .map((s) => s.docs.map(Sale.fromFirestore).toList());
+    return Stream<List<Sale>>.multi((multi) {
+      StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? salesSub;
+      final businessSub = BusinessScope.changes.listen((_) {
+        salesSub?.cancel();
+        salesSub = _sales
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .snapshots()
+            .listen(
+          (s) => multi.add(s.docs.map(Sale.fromFirestore).toList()),
+          onError: multi.addError,
+        );
+      });
+      multi.onCancel = () async {
+        await salesSub?.cancel();
+        await businessSub.cancel();
+      };
+    });
   }
 
   Stream<List<SaleItem>> saleItemsForSale(String saleId) {
@@ -108,14 +128,24 @@ class SaleService {
     if (!_firebaseEnabled) {
       return _localItemsStream.stream;
     }
-    return _items.limit(limit).snapshots().map((s) {
-      final list = s.docs.map(SaleItem.fromFirestore).toList();
-      list.sort((a, b) {
-        final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-        return bd.compareTo(ad);
+    return Stream<List<SaleItem>>.multi((multi) {
+      StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? itemsSub;
+      final businessSub = BusinessScope.changes.listen((_) {
+        itemsSub?.cancel();
+        itemsSub = _items.limit(limit).snapshots().listen((s) {
+          final list = s.docs.map(SaleItem.fromFirestore).toList();
+          list.sort((a, b) {
+            final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bd.compareTo(ad);
+          });
+          multi.add(list);
+        }, onError: multi.addError);
       });
-      return list;
+      multi.onCancel = () async {
+        await itemsSub?.cancel();
+        await businessSub.cancel();
+      };
     });
   }
 

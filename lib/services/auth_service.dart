@@ -10,13 +10,17 @@ class AuthService {
 
   static const demoEmail = 'admin@inventory.com';
   static const demoPassword = '123456';
+  static const demoOwnerEmail = 'owner@inventory.com';
+  static const demoStaffEmail = 'staff@inventory.com';
 
   final FirebaseAuth? _auth;
   final bool _firebaseEnabled;
   bool _demoLoggedIn = false;
+  String? _demoEmail;
 
   bool get isFirebaseEnabled => _firebaseEnabled;
   bool get isDemoLoggedIn => _demoLoggedIn;
+  String? get activeDemoEmail => _demoEmail;
 
   Stream<User?> authStateChanges() {
     if (!_firebaseEnabled || _auth == null) {
@@ -32,8 +36,14 @@ class AuthService {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return;
     }
-    if (email.trim().toLowerCase() == demoEmail && password == demoPassword) {
+    final normalized = email.trim().toLowerCase();
+    final isDemoMatch = password == demoPassword &&
+        (normalized == demoEmail ||
+            normalized == demoOwnerEmail ||
+            normalized == demoStaffEmail);
+    if (isDemoMatch) {
       _demoLoggedIn = true;
+      _demoEmail = normalized;
       return;
     }
     throw FirebaseAuthException(
@@ -48,5 +58,6 @@ class AuthService {
       return;
     }
     _demoLoggedIn = false;
+    _demoEmail = null;
   }
 }

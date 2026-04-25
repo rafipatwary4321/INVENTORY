@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../models/product.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
@@ -154,15 +155,18 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
         : _findExistingProduct(products, detectedName);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('AI product recognition')),
+      appBar: const PremiumAppBar(
+        title: 'AI product recognition',
+        subtitle: 'Image → product draft',
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: PremiumTokens.pagePadding(context),
         child: ListView(
           children: [
             Text(_status, style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 12),
             if (_result != null)
-              Card(
+              ReportCard(
                 child: ListTile(
                   leading: const Icon(Icons.auto_awesome_outlined),
                   title: Text(_result!.productName),
@@ -175,9 +179,12 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
-              child: Card(
-                clipBehavior: Clip.antiAlias,
-                child: _imagePreview(),
+              child: ReportCard(
+                padding: EdgeInsets.zero,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
+                  child: _imagePreview(),
+                ),
               ),
             ),
             const SizedBox(height: 12),

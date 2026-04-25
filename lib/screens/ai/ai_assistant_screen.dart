@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
 import '../../services/ai/ai_api_service.dart';
@@ -78,20 +79,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Assistant'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(26),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Text(
-              _api.isConfigured ? 'Provider: Real AI API' : 'Provider: Local fallback AI',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ),
-        ),
+      appBar: PremiumAppBar(
+        title: 'AI Assistant',
+        subtitle: _api.isConfigured
+            ? 'Provider: Real AI API'
+            : 'Provider: Local fallback AI',
       ),
       body: Column(
         children: [
@@ -162,25 +154,36 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: _busy ? null : _ask,
-                      decoration: const InputDecoration(
-                        hintText: 'Ask inventory intelligence...',
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final narrow = c.maxWidth < 400;
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: _busy ? null : _ask,
+                          decoration: const InputDecoration(
+                            hintText: 'Ask inventory intelligence...',
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: _busy ? null : _ask,
-                    icon: const Icon(Icons.send),
-                    label: const Text('Ask'),
-                  ),
-                ],
+                      const SizedBox(width: 8),
+                      narrow
+                          ? IconButton.filled(
+                              onPressed: _busy ? null : () => _ask(),
+                              tooltip: 'Ask',
+                              icon: const Icon(Icons.send_rounded),
+                            )
+                          : FilledButton.icon(
+                              onPressed: _busy ? null : _ask,
+                              icon: const Icon(Icons.send_rounded),
+                              label: const Text('Ask'),
+                            ),
+                    ],
+                  );
+                },
               ),
             ),
           ),

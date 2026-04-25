@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/widgets/premium/premium_ui.dart';
+
 /// Shown when a named route is opened without a required argument (e.g. product id).
 class MissingRouteArgumentScreen extends StatelessWidget {
   const MissingRouteArgumentScreen({
@@ -14,46 +16,29 @@ class MissingRouteArgumentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Missing information')),
+      appBar: const PremiumAppBar(
+        title: 'Missing information',
+        subtitle: 'Navigation',
+      ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.link_off_rounded,
-                size: 64,
-                color: Theme.of(context).colorScheme.outline,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'This page needs an id or argument.',
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Route: $routeName\n$hint',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  } else {
-                    // Must match [AppRoutes.dashboard] in app_router.dart.
-                    Navigator.of(context)
-                        .pushReplacementNamed('/dashboard');
-                  }
-                },
-                child: const Text('Go back'),
-              ),
-            ],
+        child: SingleChildScrollView(
+          padding: PremiumTokens.pagePadding(context),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: ErrorStateWidget(
+              title: 'This page needs an id or argument.',
+              subtitle: 'Route: $routeName\n$hint',
+              retryLabel: 'Go back',
+              retryIcon: Icons.arrow_back_rounded,
+              onRetry: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  // Keep in sync with [AppRoutes.dashboard] in app_router.dart.
+                  Navigator.of(context).pushReplacementNamed('/dashboard');
+                }
+              },
+            ),
           ),
         ),
       ),
