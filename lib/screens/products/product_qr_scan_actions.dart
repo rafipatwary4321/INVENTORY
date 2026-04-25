@@ -13,11 +13,12 @@ class ProductQrScanActions {
 
   /// Scan → navigate to [StockInScreen] for the scanned product.
   static Future<void> scanThenStockIn(BuildContext context) async {
-    final id = await Navigator.pushNamed<String?>(
+    final result = await Navigator.pushNamed(
       context,
       AppRoutes.qrScan,
       arguments: QRScanArgs(mode: QRScanMode.stockIn),
     );
+    final id = result as String?;
     if (!context.mounted || id == null) return;
     await Navigator.pushNamed(
       context,
@@ -28,11 +29,12 @@ class ProductQrScanActions {
 
   /// Scan → add scanned product line to the POS cart.
   static Future<void> scanThenAddToCart(BuildContext context) async {
-    final id = await Navigator.pushNamed<String?>(
+    final result = await Navigator.pushNamed(
       context,
       AppRoutes.qrScan,
       arguments: QRScanArgs(mode: QRScanMode.sell),
     );
+    final id = result as String?;
     if (!context.mounted || id == null) return;
 
     final products = context.read<ProductsProvider>();
