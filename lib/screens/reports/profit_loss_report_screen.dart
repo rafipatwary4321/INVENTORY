@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../models/sale_item.dart';
 import '../../providers/sales_provider.dart';
 
@@ -19,6 +20,16 @@ class ProfitLossReportScreen extends StatelessWidget {
       revenue += i.lineTotal;
       cost += i.buyingPriceAtSale * i.quantity;
       profitBySale[i.saleId] = (profitBySale[i.saleId] ?? 0) + i.lineProfit;
+    }
+    if (items.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profit / Loss')),
+        body: const EmptyState(
+          title: 'No profit data yet',
+          subtitle: 'Sell products first to see profit and loss analytics.',
+          icon: Icons.trending_up,
+        ),
+      );
     }
     final profit = revenue - cost;
     final perSaleEntries = profitBySale.entries.toList()

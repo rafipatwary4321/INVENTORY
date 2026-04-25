@@ -43,6 +43,13 @@ class DashboardScreen extends StatelessWidget {
     final lowStock = products
         .where((p) => p.quantity < AppConstants.lowStockThreshold)
         .length;
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width >= 1100
+        ? 4
+        : width >= 820
+            ? 3
+            : 2;
+    final cardRatio = width < 380 ? 1.0 : 1.12;
 
     return Scaffold(
       appBar: AppBar(
@@ -66,12 +73,12 @@ class DashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           GridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: crossAxisCount,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.15,
+            childAspectRatio: cardRatio,
             children: [
               _StatCard(
                 title: 'Products',
@@ -105,6 +112,20 @@ class DashboardScreen extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          if (lowStock > 0)
+            Card(
+              color: Colors.orange.shade50,
+              child: ListTile(
+                leading: const Icon(Icons.warning_amber_rounded),
+                title: Text(
+                  '$lowStock product(s) are below '
+                  '${AppConstants.lowStockThreshold} units',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
+              ),
+            ),
           const SizedBox(height: 24),
           Text('Shortcuts', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
