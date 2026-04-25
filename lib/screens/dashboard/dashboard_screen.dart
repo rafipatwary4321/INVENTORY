@@ -117,11 +117,12 @@ class DashboardScreen extends StatelessWidget {
             icon: Icons.qr_code_scanner,
             label: 'Scan QR — Stock in',
             onTap: () async {
-              final id = await Navigator.pushNamed<String?>(
+              final result = await Navigator.pushNamed(
                 context,
                 AppRoutes.qrScan,
                 arguments: QRScanArgs(mode: QRScanMode.stockIn),
               );
+              final id = result as String?;
               if (!context.mounted || id == null) return;
               Navigator.pushNamed(context, AppRoutes.stockIn, arguments: id);
             },
