@@ -2,17 +2,51 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 /// Thin wrapper around [FirebaseAuth] for tests and single place for auth calls.
 class AuthService {
-  AuthService(this._auth);
+  AuthService({
+    required FirebaseAuth? auth,
+    required bool firebaseEnabled,
+  })  : _auth = auth,
+        _firebaseEnabled = firebaseEnabled;
 
-  final FirebaseAuth _auth;
+  static const demoEmail = 'admin@inventory.com';
+  static const demoPassword = '123456';
 
-  Stream<User?> authStateChanges() => _auth.authStateChanges();
+  final FirebaseAuth? _auth;
+  final bool _firebaseEnabled;
+  bool _demoLoggedIn = false;
 
-  User? get currentUser => _auth.currentUser;
+  bool get isFirebaseEnabled => _firebaseEnabled;
+  bool get isDemoLoggedIn => _demoLoggedIn;
 
-  Future<UserCredential> signIn(String email, String password) {
-    return _auth.signInWithEmailAndPassword(email: email, password: password);
+  Stream<User?> authStateChanges() {
+    if (!_firebaseEnabled || _auth == null) {
+      return const Stream<User?>.empty();
+    }
+    return _auth.authStateChanges();
   }
 
-  Future<void> signOut() => _auth.signOut();
+  User? get currentUser => _auth?.currentUser;
+
+  Future<void> signIn(String email, String password) async {
+    if (_firebaseEnabled && _auth != null) {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return;
+    }
+    if (email.trim().toLowerCase() == demoEmail && password == demoPassword) {
+      _demoLoggedIn = true;
+      return;
+    }
+    throw FirebaseAuthException(
+      code: 'invalid-credential',
+      message: 'Invalid demo credentials.',
+    );
+  }
+
+  Future<void> signOut() async {
+    if (_firebaseEnabled && _auth != null) {
+      await _auth.signOut();
+      return;
+    }
+    _demoLoggedIn = false;
+  }
 }

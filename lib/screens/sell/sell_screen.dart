@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
 import '../../core/utils/error_handler.dart';
-import '../../models/qr_scan_args.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
+import '../products/product_qr_scan_actions.dart';
 
 /// POS-style product picker + QR scan to add items to the cart.
 class SellScreen extends StatefulWidget {
@@ -20,6 +20,7 @@ class SellScreen extends StatefulWidget {
 
 class _SellScreenState extends State<SellScreen> {
   final _search = TextEditingController();
+  final _manualId = TextEditingController();
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _SellScreenState extends State<SellScreen> {
   @override
   void dispose() {
     _search.dispose();
+    _manualId.dispose();
     super.dispose();
   }
 
@@ -57,15 +59,8 @@ class _SellScreenState extends State<SellScreen> {
     );
   }
 
-  Future<void> _scanForCart() async {
-    final id = await Navigator.pushNamed<String?>(
-      context,
-      AppRoutes.qrScan,
-      arguments: QRScanArgs(mode: QRScanMode.posAdd),
-    );
-    if (!mounted || id == null) return;
-    _addById(id);
-  }
+  Future<void> _scanForCart() =>
+      ProductQrScanActions.scanThenAddToCart(context);
 
   @override
   Widget build(BuildContext context) {
@@ -97,13 +92,45 @@ class _SellScreenState extends State<SellScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: TextField(
-              controller: _search,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Search products…',
-              ),
-              onChanged: (_) => setState(() {}),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _search,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    hintText: 'Search products…',
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _manualId,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.pin_outlined),
+                          hintText: 'Enter product ID manually',
+                        ),
+                        onSubmitted: (v) {
+                          final id = v.trim();
+                          if (id.isEmpty) return;
+                          _addById(id);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.tonal(
+                      onPressed: () {
+                        final id = _manualId.text.trim();
+                        if (id.isEmpty) return;
+                        _addById(id);
+                      },
+                      child: const Text('Add ID'),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           Expanded(

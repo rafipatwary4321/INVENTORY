@@ -32,7 +32,7 @@ class _StockInScreenState extends State<StockInScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final uid = context.read<AuthProvider>().firebaseUser?.uid;
+    final uid = context.read<AuthProvider>().activeUid;
     if (uid == null) return;
     setState(() => _busy = true);
     try {

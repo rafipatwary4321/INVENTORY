@@ -45,12 +45,13 @@ class DefaultFirebaseOptions {
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
   );
 
+  /// iOS [iosBundleId] must match Xcode `PRODUCT_BUNDLE_IDENTIFIER`.
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'YOUR_IOS_API_KEY',
     appId: 'YOUR_IOS_APP_ID',
     messagingSenderId: 'YOUR_SENDER_ID',
     projectId: 'YOUR_PROJECT_ID',
     storageBucket: 'YOUR_PROJECT_ID.appspot.com',
-    iosBundleId: 'com.inventory.app',
+    iosBundleId: 'com.inventory.app.inventory',
   );
 }

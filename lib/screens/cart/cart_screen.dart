@@ -21,7 +21,7 @@ class _CartScreenState extends State<CartScreen> {
   bool _busy = false;
 
   Future<void> _checkout() async {
-    final uid = context.read<AuthProvider>().firebaseUser?.uid;
+    final uid = context.read<AuthProvider>().activeUid;
     if (uid == null) return;
     final cart = context.read<CartProvider>();
     final products = context.read<ProductsProvider>();
@@ -122,6 +122,13 @@ class _CartScreenState extends State<CartScreen> {
                                           );
                                     },
                                     icon: const Icon(Icons.add_circle_outline),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Remove',
+                                    onPressed: () => context
+                                        .read<CartProvider>()
+                                        .removeLine(line.productId),
+                                    icon: const Icon(Icons.delete_outline),
                                   ),
                                   const Spacer(),
                                   Text(

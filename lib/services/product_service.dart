@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
@@ -6,21 +8,46 @@ import '../models/product.dart';
 import '../models/stock_transaction.dart';
 
 class ProductService {
-  ProductService(this._db);
+  ProductService({
+    required FirebaseFirestore? firestore,
+    required bool firebaseEnabled,
+  })  : _db = firestore,
+        _firebaseEnabled = firebaseEnabled {
+    if (!_firebaseEnabled) {
+      _emitLocal();
+    }
+  }
 
-  final FirebaseFirestore _db;
+  final FirebaseFirestore? _db;
+  final bool _firebaseEnabled;
   final _uuid = const Uuid();
+  final _localStream = StreamController<List<Product>>.broadcast();
+
+  static final Map<String, Product> _localProducts = {};
+  static final List<Map<String, dynamic>> _localStockTransactions = [];
 
   CollectionReference<Map<String, dynamic>> get _col =>
-      _db.collection(AppConstants.productsCollection);
+      _db!.collection(AppConstants.productsCollection);
+
+  void _emitLocal() {
+    final list = _localProducts.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    _localStream.add(list);
+  }
 
   Stream<List<Product>> productsStream() {
+    if (!_firebaseEnabled) {
+      return _localStream.stream;
+    }
     return _col.orderBy('name').snapshots().map(
           (s) => s.docs.map(Product.fromFirestore).toList(),
         );
   }
 
   Future<Product?> fetchProduct(String id) async {
+    if (!_firebaseEnabled) {
+      return _localProducts[id];
+    }
     final d = await _col.doc(id).get();
     if (!d.exists) return null;
     return Product.fromFirestore(d);
@@ -31,6 +58,23 @@ class ProductService {
     required String uid,
   }) async {
     final id = _uuid.v4();
+    if (!_firebaseEnabled) {
+      _localProducts[id] = Product(
+        id: id,
+        name: (data['name'] as String? ?? '').trim(),
+        category: (data['category'] as String? ?? '').trim(),
+        buyingPrice: (data['buyingPrice'] as num?)?.toDouble() ?? 0,
+        sellingPrice: (data['sellingPrice'] as num?)?.toDouble() ?? 0,
+        quantity: (data['quantity'] as num?)?.toInt() ?? 0,
+        unit: (data['unit'] as String? ?? 'pcs').trim(),
+        imageUrl: data['imageUrl'] as String?,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        createdBy: uid,
+      );
+      _emitLocal();
+      return id;
+    }
     await _col.doc(id).set({
       ...data,
       'createdAt': FieldValue.serverTimestamp(),
@@ -40,14 +84,44 @@ class ProductService {
     return id;
   }
 
-  Future<void> updateProduct(String id, Map<String, dynamic> data) {
+  Future<void> updateProduct(String id, Map<String, dynamic> data) async {
+    if (!_firebaseEnabled) {
+      final current = _localProducts[id];
+      if (current == null) throw StateError('Product not found');
+      _localProducts[id] = Product(
+        id: id,
+        name: (data['name'] as String? ?? current.name).trim(),
+        category: (data['category'] as String? ?? current.category).trim(),
+        buyingPrice:
+            (data['buyingPrice'] as num?)?.toDouble() ?? current.buyingPrice,
+        sellingPrice:
+            (data['sellingPrice'] as num?)?.toDouble() ?? current.sellingPrice,
+        quantity: (data['quantity'] as num?)?.toInt() ?? current.quantity,
+        unit: (data['unit'] as String? ?? current.unit).trim(),
+        imageUrl: data.containsKey('imageUrl')
+            ? data['imageUrl'] as String?
+            : current.imageUrl,
+        createdAt: current.createdAt,
+        updatedAt: DateTime.now(),
+        createdBy: current.createdBy,
+      );
+      _emitLocal();
+      return;
+    }
     return _col.doc(id).update({
       ...data,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
-  Future<void> deleteProduct(String id) => _col.doc(id).delete();
+  Future<void> deleteProduct(String id) async {
+    if (!_firebaseEnabled) {
+      _localProducts.remove(id);
+      _emitLocal();
+      return;
+    }
+    return _col.doc(id).delete();
+  }
 
   /// Adds stock and writes a stock transaction (atomic batch).
   Future<void> stockIn({
@@ -57,9 +131,37 @@ class ProductService {
     String? note,
   }) async {
     if (qty <= 0) throw ArgumentError('Quantity must be positive');
+    if (!_firebaseEnabled) {
+      final p = _localProducts[productId];
+      if (p == null) throw StateError('Product not found');
+      _localProducts[productId] = Product(
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        buyingPrice: p.buyingPrice,
+        sellingPrice: p.sellingPrice,
+        quantity: p.quantity + qty,
+        unit: p.unit,
+        imageUrl: p.imageUrl,
+        createdAt: p.createdAt,
+        updatedAt: DateTime.now(),
+        createdBy: p.createdBy,
+      );
+      _localStockTransactions.add(
+        StockTransaction.createMap(
+          productId: productId,
+          type: StockTxType.in_,
+          quantity: qty,
+          userId: userId,
+          note: note,
+        ),
+      );
+      _emitLocal();
+      return;
+    }
     final productRef = _col.doc(productId);
     final txRef =
-        _db.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
+        _db!.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
 
     await _db.runTransaction((transaction) async {
       final snap = await transaction.get(productRef);
@@ -87,9 +189,41 @@ class ProductService {
     String? saleId,
   }) async {
     if (qty <= 0) return;
+    if (!_firebaseEnabled) {
+      final p = _localProducts[productId];
+      if (p == null) throw StateError('Product not found');
+      if (p.quantity < qty) {
+        throw StateError('Insufficient stock');
+      }
+      _localProducts[productId] = Product(
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        buyingPrice: p.buyingPrice,
+        sellingPrice: p.sellingPrice,
+        quantity: p.quantity - qty,
+        unit: p.unit,
+        imageUrl: p.imageUrl,
+        createdAt: p.createdAt,
+        updatedAt: DateTime.now(),
+        createdBy: p.createdBy,
+      );
+      _localStockTransactions.add(
+        StockTransaction.createMap(
+          productId: productId,
+          type: StockTxType.out,
+          quantity: qty,
+          userId: userId,
+          note: 'Sale',
+          relatedSaleId: saleId,
+        ),
+      );
+      _emitLocal();
+      return;
+    }
     final productRef = _col.doc(productId);
     final txRef =
-        _db.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
+        _db!.collection(AppConstants.stockTransactionsCollection).doc(_uuid.v4());
 
     await _db.runTransaction((transaction) async {
       final snap = await transaction.get(productRef);

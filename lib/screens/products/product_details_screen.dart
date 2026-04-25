@@ -1,27 +1,78 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bdt_formatter.dart';
 import '../../core/utils/error_handler.dart';
-import '../../models/app_user.dart';
+import '../../core/widgets/product_qr_card.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
 import '../../services/product_service.dart';
+import 'product_qr_scan_actions.dart';
 
-/// Product detail with actions: QR, stock in, sell, edit/delete (admin).
+/// Product detail with embedded QR, scan actions, stock in, sell, edit/delete (admin).
 class ProductDetailsScreen extends StatelessWidget {
   const ProductDetailsScreen({super.key, required this.productId});
 
   final String productId;
 
+  void _showScanOptions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Scan QR code',
+                style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Use the camera to read a product label, then choose what to do.',
+                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(ctx).colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.add_box_outlined),
+                title: const Text('Stock in'),
+                subtitle: const Text('Open receive quantity for scanned product'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ProductQrScanActions.scanThenStockIn(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart_outlined),
+                title: const Text('Add to cart'),
+                subtitle: const Text('Add scanned product to POS cart'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ProductQrScanActions.scanThenAddToCart(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final product = context.watch<ProductsProvider>().byId(productId);
-    final isAdmin =
-        context.watch<AuthProvider>().appUser?.role == UserRole.admin;
+    final isAdmin = context.watch<AuthProvider>().isAdmin;
 
     if (product == null) {
       return Scaffold(
@@ -34,6 +85,11 @@ class ProductDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(product.name),
         actions: [
+          IconButton(
+            tooltip: 'Scan QR',
+            icon: const Icon(Icons.qr_code_scanner),
+            onPressed: () => _showScanOptions(context),
+          ),
           if (isAdmin)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
@@ -43,6 +99,17 @@ class ProductDetailsScreen extends StatelessWidget {
                 arguments: product.id,
               ),
             ),
+          IconButton(
+            tooltip: 'Copy product ID',
+            icon: const Icon(Icons.copy_all_outlined),
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: product.id));
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product ID copied')),
+              );
+            },
+          ),
         ],
       ),
       body: ListView(
@@ -85,15 +152,52 @@ class ProductDetailsScreen extends StatelessWidget {
           _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
           _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
           _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: () => Navigator.pushNamed(
+          const SizedBox(height: 20),
+          ProductQrCard(
+            productId: product.id,
+            productName: product.name,
+            embeddedSize: 148,
+            onViewFullscreen: () => Navigator.pushNamed(
               context,
               AppRoutes.qrGenerate,
               arguments: product.id,
             ),
-            icon: const Icon(Icons.qr_code_2),
-            label: const Text('Show QR code'),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Scan',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.tonalIcon(
+                  onPressed: () =>
+                      ProductQrScanActions.scanThenStockIn(context),
+                  icon: const Icon(Icons.add_box_outlined),
+                  label: const Text('Stock in'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () =>
+                      ProductQrScanActions.scanThenAddToCart(context),
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  label: const Text('To cart'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Quick actions',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -102,8 +206,8 @@ class ProductDetailsScreen extends StatelessWidget {
               AppRoutes.stockIn,
               arguments: product.id,
             ),
-            icon: const Icon(Icons.add_box_outlined),
-            label: const Text('Stock in'),
+            icon: const Icon(Icons.edit_note_outlined),
+            label: const Text('Stock in (this product)'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(

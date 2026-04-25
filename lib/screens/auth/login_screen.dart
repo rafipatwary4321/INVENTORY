@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
+import '../../services/auth_service.dart';
 
 /// Email / password login (Firebase Auth). Role comes from `users/{uid}`.
 class LoginScreen extends StatefulWidget {
@@ -47,6 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final startupState = context.read<AppStartupState>();
+    final isDemoMode = !startupState.firebaseEnabled;
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -79,6 +84,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                   textAlign: TextAlign.center,
                 ),
+                if (isDemoMode) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer
+                          .withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      startupState.startupWarning ??
+                          'Demo mode active. Use demo credentials to continue.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 32),
                 TextFormField(
                   controller: _email,
@@ -116,6 +139,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         )
                       : const Text('Login'),
                 ),
+                if (isDemoMode) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _busy
+                        ? null
+                        : () {
+                            _email.text = AuthService.demoEmail;
+                            _password.text = AuthService.demoPassword;
+                          },
+                    icon: const Icon(Icons.science_outlined),
+                    label: const Text('Use Demo Login'),
+                  ),
+                ],
               ],
             ),
           ),

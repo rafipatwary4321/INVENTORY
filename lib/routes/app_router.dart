@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/qr_scan_args.dart';
+import 'route_errors.dart';
 import '../screens/ai/ai_product_recognition_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/cart/cart_screen.dart';
@@ -54,18 +55,40 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const AddEditProductScreen());
       case AppRoutes.productEdit:
         final id = routeSettings.arguments as String?;
+        if (routeIdMissing(id)) {
+          return MaterialPageRoute(
+            builder: (_) => const MissingRouteArgumentScreen(
+              routeName: 'productEdit',
+              hint: 'Pass the product document id as the route argument.',
+            ),
+          );
+        }
         return MaterialPageRoute(
           builder: (_) => AddEditProductScreen(productId: id),
         );
       case AppRoutes.productDetails:
         final id = routeSettings.arguments as String?;
+        if (routeIdMissing(id)) {
+          return MaterialPageRoute(
+            builder: (_) => const MissingRouteArgumentScreen(
+              routeName: 'productDetails',
+            ),
+          );
+        }
         return MaterialPageRoute(
-          builder: (_) => ProductDetailsScreen(productId: id ?? ''),
+          builder: (_) => ProductDetailsScreen(productId: id!),
         );
       case AppRoutes.qrGenerate:
         final id = routeSettings.arguments as String?;
+        if (routeIdMissing(id)) {
+          return MaterialPageRoute(
+            builder: (_) => const MissingRouteArgumentScreen(
+              routeName: 'qrGenerate',
+            ),
+          );
+        }
         return MaterialPageRoute(
-          builder: (_) => QRGenerateScreen(productId: id ?? ''),
+          builder: (_) => QRGenerateScreen(productId: id!),
         );
       case AppRoutes.qrScan:
         final args = routeSettings.arguments as QRScanArgs?;
@@ -74,8 +97,15 @@ class AppRoutes {
         );
       case AppRoutes.stockIn:
         final id = routeSettings.arguments as String?;
+        if (routeIdMissing(id)) {
+          return MaterialPageRoute(
+            builder: (_) => const MissingRouteArgumentScreen(
+              routeName: 'stockIn',
+            ),
+          );
+        }
         return MaterialPageRoute(
-          builder: (_) => StockInScreen(productId: id ?? ''),
+          builder: (_) => StockInScreen(productId: id!),
         );
       case AppRoutes.sell:
         final id = routeSettings.arguments as String?;

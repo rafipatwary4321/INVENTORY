@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/utils/qr_payload.dart';
 import '../../models/qr_scan_args.dart';
 
-/// Opens the device camera and returns a product id via [Navigator.pop].
+/// Camera QR scanner: requests **camera** permission, then decodes product ids.
 class QRScannerScreen extends StatefulWidget {
   const QRScannerScreen({super.key, required this.mode});
 
@@ -14,9 +16,78 @@ class QRScannerScreen extends StatefulWidget {
   State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
-class _QRScannerScreenState extends State<QRScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController();
+class _QRScannerScreenState extends State<QRScannerScreen>
+    with WidgetsBindingObserver {
+  MobileScannerController? _controller;
+  final _manualController = TextEditingController();
+  bool _checkingPermission = true;
+  bool _hasPermission = false;
+  bool _permanentlyDenied = false;
   bool _handled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _resolvePermission());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _resolvePermission();
+    }
+  }
+
+  Future<void> _resolvePermission() async {
+    if (kIsWeb) {
+      if (!mounted) return;
+      setState(() {
+        _checkingPermission = false;
+        _hasPermission = true;
+        _permanentlyDenied = false;
+        _controller ??= MobileScannerController(
+          formats: const [BarcodeFormat.qrCode],
+        );
+      });
+      return;
+    }
+
+    var status = await Permission.camera.status;
+
+    if (status.isDenied) {
+      status = await Permission.camera.request();
+    }
+
+    if (!mounted) return;
+
+    if (status.isGranted) {
+      setState(() {
+        _checkingPermission = false;
+        _hasPermission = true;
+        _permanentlyDenied = false;
+        _controller ??= MobileScannerController(
+          formats: const [BarcodeFormat.qrCode],
+        );
+      });
+      return;
+    }
+
+    if (status.isPermanentlyDenied) {
+      setState(() {
+        _checkingPermission = false;
+        _hasPermission = false;
+        _permanentlyDenied = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _checkingPermission = false;
+      _hasPermission = false;
+      _permanentlyDenied = false;
+    });
+  }
 
   void _onDetect(BarcodeCapture cap) {
     if (_handled) return;
@@ -26,8 +97,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     if (raw == null || raw.isEmpty) return;
     final id = QrPayload.decodeToProductId(raw);
     if (id == null) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unrecognized QR format')),
+        const SnackBar(
+          content: Text('Not an INVENTORY product QR. Try another code.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
@@ -35,50 +110,276 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     Navigator.pop(context, id);
   }
 
+  void _submitManual() {
+    final raw = _manualController.text.trim();
+    final id = QrPayload.decodeToProductId(raw) ?? raw;
+    if (id.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter a product ID or QR payload.')),
+      );
+      return;
+    }
+    Navigator.pop(context, id);
+  }
+
   @override
   void dispose() {
-    _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _manualController.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final title = switch (widget.mode) {
       QRScanMode.stockIn => 'Scan — Stock in',
       QRScanMode.sell => 'Scan — Sell',
-      QRScanMode.posAdd => 'Scan — Add to cart',
     };
 
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.flash_on),
-            onPressed: () => _controller.toggleTorch(),
-          ),
+          if (_hasPermission && _controller != null)
+            IconButton(
+              icon: const Icon(Icons.flash_on),
+              tooltip: 'Torch',
+              onPressed: () => _controller!.toggleTorch(),
+            ),
         ],
       ),
-      body: Stack(
-        children: [
-          MobileScanner(controller: _controller, onDetect: _onDetect),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Align the product QR inside the frame.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.white,
-                      shadows: const [
-                        Shadow(blurRadius: 8, color: Colors.black54),
-                      ],
-                    ),
+      body: _buildBody(scheme),
+    );
+  }
+
+  Widget _buildBody(ColorScheme scheme) {
+    if (_checkingPermission) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Checking camera permission…'),
+          ],
+        ),
+      );
+    }
+
+    if (!_hasPermission) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.camera_alt_outlined,
+                size: 72,
+                color: scheme.outline,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _permanentlyDenied
+                    ? 'Camera is blocked for this app.'
+                    : 'Camera permission is required to scan QR codes.',
                 textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _permanentlyDenied
+                    ? 'Open Settings → Permissions and allow Camera, then return here.'
+                    : 'Tap below to allow access when the system dialog appears.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 28),
+              FilledButton.icon(
+                onPressed: () async {
+                  if (_permanentlyDenied) {
+                    await openAppSettings();
+                  } else {
+                    await _resolvePermission();
+                  }
+                },
+                icon: Icon(_permanentlyDenied ? Icons.settings : Icons.camera_alt),
+                label: Text(_permanentlyDenied ? 'Open settings' : 'Try again'),
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(height: 8),
+              _manualFallbackCard(),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final c = _controller!;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        MobileScanner(
+          controller: c,
+          onDetect: _onDetect,
+          errorBuilder: (context, error, child) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Camera error',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.errorDetails?.message ?? error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'If camera is unavailable, enter product ID manually.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 12),
+                    _manualFallbackCard(compact: true),
+                  ],
+                ),
+              ),
+            );
+          },
+          overlayBuilder: (context, constraints) {
+            final side = constraints.maxWidth * 0.72;
+            return IgnorePointer(
+              child: Align(
+                child: Container(
+                  width: side,
+                  height: side,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 3),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 24,
+                        spreadRadius: 2,
+                        color: Colors.black.withValues(alpha: 0.35),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.black.withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Text(
+                'Point at the product QR code',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
           ),
-        ],
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.65),
+                  Colors.black.withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Text(
+                'Codes must start with “inv:product:” or be a product UUID.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _manualFallbackCard({bool compact = false}) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: EdgeInsets.all(compact ? 12 : 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Manual product ID',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _manualController,
+              decoration: const InputDecoration(
+                hintText: 'Paste product ID or inv:product:... payload',
+                prefixIcon: Icon(Icons.edit_note_outlined),
+              ),
+              onSubmitted: (_) => _submitManual(),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.tonal(
+                onPressed: _submitManual,
+                child: const Text('Use ID'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

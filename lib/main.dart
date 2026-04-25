@@ -20,47 +20,128 @@ import 'services/settings_service.dart';
 import 'services/storage_service.dart';
 import 'services/user_service.dart';
 
+class AppStartupState {
+  const AppStartupState({
+    required this.firebaseEnabled,
+    this.startupWarning,
+  });
+
+  final bool firebaseEnabled;
+  final String? startupWarning;
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  var firebaseEnabled = false;
+  String? startupWarning;
 
-  final firestore = FirebaseFirestore.instance;
-  final productService = ProductService(firestore);
-  final saleService = SaleService(firestore, productService);
+  bool isFirebaseConfigured() {
+    try {
+      final options = DefaultFirebaseOptions.currentPlatform;
+      final keys = [
+        options.apiKey,
+        options.appId,
+        options.messagingSenderId,
+        options.projectId,
+      ];
+      return keys.every(
+        (value) => value.isNotEmpty && !value.startsWith('YOUR_'),
+      );
+    } catch (_) {
+      return false;
+    }
+  }
 
-  runApp(InventoryApp(
+  if (isFirebaseConfigured()) {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      firebaseEnabled = true;
+    } catch (e, stack) {
+      debugPrint('Firebase.initializeApp failed: $e\n$stack');
+      startupWarning = 'Firebase unavailable. Running in demo mode.';
+    }
+  } else {
+    startupWarning =
+        'Firebase not configured. Running in demo mode. Configure with flutterfire configure.';
+  }
+
+  final firestore = firebaseEnabled ? FirebaseFirestore.instance : null;
+  final auth = firebaseEnabled ? FirebaseAuth.instance : null;
+  final storage = firebaseEnabled ? FirebaseStorage.instance : null;
+  final productService = ProductService(
+    firestore: firestore,
+    firebaseEnabled: firebaseEnabled,
+  );
+  final saleService = SaleService(
+    firestore: firestore,
+    products: productService,
+    firebaseEnabled: firebaseEnabled,
+  );
+  final settingsService =
+      firestore != null ? SettingsService(firestore) : null;
+  final storageService = StorageService(
+    storage: storage,
+    firebaseEnabled: firebaseEnabled,
+  );
+  final userService = firestore != null ? UserService(firestore) : null;
+
+  runApp(InventoryProviders(
+    startupState: AppStartupState(
+      firebaseEnabled: firebaseEnabled,
+      startupWarning: startupWarning,
+    ),
+    auth: auth,
     productService: productService,
     saleService: saleService,
+    settingsService: settingsService,
+    storageService: storageService,
+    userService: userService,
   ));
 }
 
-/// Root widget: services + [Provider] notifiers + MaterialApp.
-class InventoryApp extends StatelessWidget {
-  const InventoryApp({
+/// Top-level provider scope for the whole app tree.
+class InventoryProviders extends StatelessWidget {
+  const InventoryProviders({
     super.key,
+    required this.startupState,
+    required this.auth,
     required this.productService,
     required this.saleService,
+    required this.settingsService,
+    required this.storageService,
+    required this.userService,
   });
 
+  final AppStartupState startupState;
+  final FirebaseAuth? auth;
   final ProductService productService;
   final SaleService saleService;
+  final SettingsService? settingsService;
+  final StorageService storageService;
+  final UserService? userService;
 
   @override
   Widget build(BuildContext context) {
-    final firestore = FirebaseFirestore.instance;
-    final auth = FirebaseAuth.instance;
-    final storage = FirebaseStorage.instance;
-
     return MultiProvider(
       providers: [
-        Provider<AuthService>(create: (_) => AuthService(auth)),
-        Provider<UserService>(create: (_) => UserService(firestore)),
+        Provider<AppStartupState>.value(value: startupState),
+        Provider<AuthService>(
+          create: (_) =>
+              AuthService(auth: auth, firebaseEnabled: startupState.firebaseEnabled),
+        ),
+        if (userService != null) Provider<UserService>.value(value: userService!),
         Provider<ProductService>.value(value: productService),
         Provider<SaleService>.value(value: saleService),
-        Provider<StorageService>(create: (_) => StorageService(storage)),
-        Provider<SettingsService>(create: (_) => SettingsService(firestore)),
+        Provider<StorageService>.value(value: storageService),
+        if (settingsService != null)
+          Provider<SettingsService>.value(value: settingsService!),
         ChangeNotifierProvider(
-          create: (c) => AuthProvider(c.read<AuthService>(), c.read<UserService>()),
+          create: (c) => AuthProvider(
+            c.read<AuthService>(),
+            userService,
+          ),
         ),
         ChangeNotifierProvider(
           create: (c) => ProductsProvider(c.read<ProductService>()),
@@ -68,18 +149,29 @@ class InventoryApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (c) => SalesProvider(c.read<SaleService>()),
         ),
-        ChangeNotifierProvider(
-          create: (c) => SettingsProvider(c.read<SettingsService>()),
-        ),
+        if (settingsService != null)
+          ChangeNotifierProvider(
+            create: (c) => SettingsProvider(c.read<SettingsService>()),
+          ),
         ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
-      child: MaterialApp(
-        title: 'INVENTORY',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: AppRoutes.onGenerateRoute,
-      ),
+      child: const InventoryApp(),
+    );
+  }
+}
+
+/// App shell with routes/screens; providers are injected above this widget.
+class InventoryApp extends StatelessWidget {
+  const InventoryApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'INVENTORY',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

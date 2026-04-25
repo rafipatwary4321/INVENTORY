@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,20 +29,60 @@ class CartLine {
 
 /// Creates sales, sale_items, and decrements inventory in one batch.
 class SaleService {
-  SaleService(this._db, this._products);
+  SaleService({
+    required FirebaseFirestore? firestore,
+    required ProductService products,
+    required bool firebaseEnabled,
+  })  : _db = firestore,
+        _products = products,
+        _firebaseEnabled = firebaseEnabled {
+    if (!_firebaseEnabled) {
+      _emitLocalSales();
+      _emitLocalItems();
+    }
+  }
 
-  final FirebaseFirestore _db;
+  final FirebaseFirestore? _db;
   final ProductService _products;
+  final bool _firebaseEnabled;
   final _uuid = const Uuid();
+  final _localSalesStream = StreamController<List<Sale>>.broadcast();
+  final _localItemsStream = StreamController<List<SaleItem>>.broadcast();
+
+  static final List<Sale> _localSales = [];
+  static final List<SaleItem> _localSaleItems = [];
 
   CollectionReference<Map<String, dynamic>> get _sales =>
-      _db.collection(AppConstants.salesCollection);
+      _db!.collection(AppConstants.salesCollection);
 
   CollectionReference<Map<String, dynamic>> get _items =>
-      _db.collection(AppConstants.saleItemsCollection);
+      _db!.collection(AppConstants.saleItemsCollection);
+
+  void _emitLocalSales() {
+    final list = List<Sale>.from(_localSales)
+      ..sort((a, b) {
+        final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bd.compareTo(ad);
+      });
+    _localSalesStream.add(list);
+  }
+
+  void _emitLocalItems() {
+    final list = List<SaleItem>.from(_localSaleItems)
+      ..sort((a, b) {
+        final ad = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bd = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bd.compareTo(ad);
+      });
+    _localItemsStream.add(list);
+  }
 
   /// Streams recent sales (newest first) for reports.
   Stream<List<Sale>> salesStream({int limit = 200}) {
+    if (!_firebaseEnabled) {
+      return _localSalesStream.stream;
+    }
     return _sales
         .orderBy('createdAt', descending: true)
         .limit(limit)
@@ -49,6 +91,11 @@ class SaleService {
   }
 
   Stream<List<SaleItem>> saleItemsForSale(String saleId) {
+    if (!_firebaseEnabled) {
+      return _localItemsStream.stream.map(
+        (items) => items.where((i) => i.saleId == saleId).toList(),
+      );
+    }
     return _items
         .where('saleId', isEqualTo: saleId)
         .snapshots()
@@ -58,6 +105,9 @@ class SaleService {
   /// All sale items for aggregation (reports) — client-side filter by date.
   /// Line items for P&L / sales reports (sorted newest first in Dart).
   Stream<List<SaleItem>> allSaleItemsStream({int limit = 500}) {
+    if (!_firebaseEnabled) {
+      return _localItemsStream.stream;
+    }
     return _items.limit(limit).snapshots().map((s) {
       final list = s.docs.map(SaleItem.fromFirestore).toList();
       list.sort((a, b) {
@@ -84,32 +134,71 @@ class SaleService {
       count += l.quantity;
     }
 
-    final batch = _db.batch();
-    final saleRef = _sales.doc(saleId);
-    batch.set(saleRef, Sale.createMap(
-      totalAmount: total,
-      itemCount: count,
-      userId: userId,
-      customerNote: customerNote,
-    ));
-
+    // Validate stock first so local and Firebase behavior stay consistent.
     for (final l in lines) {
-      final itemRef = _items.doc(_uuid.v4());
-      batch.set(itemRef, SaleItem.createMap(
-        saleId: saleId,
-        productId: l.productId,
-        productName: l.name,
-        unitPrice: l.unitPrice,
-        quantity: l.quantity,
-        lineTotal: l.lineTotal,
-        buyingPriceAtSale: l.buyingPrice,
-      ));
+      final product = await _products.fetchProduct(l.productId);
+      if (product == null || product.quantity < l.quantity) {
+        throw StateError('Insufficient stock for ${l.name}');
+      }
     }
 
-    await batch.commit();
+    if (_firebaseEnabled) {
+      final batch = _db!.batch();
+      final saleRef = _sales.doc(saleId);
+      batch.set(saleRef, Sale.createMap(
+        totalAmount: total,
+        itemCount: count,
+        userId: userId,
+        customerNote: customerNote,
+      ));
 
-    // Stock runs after the sale doc exists; for full atomicity use CF or one transaction.
-    // One transaction per product line keeps conflicts localized.
+      for (final l in lines) {
+        final itemRef = _items.doc(_uuid.v4());
+        batch.set(itemRef, SaleItem.createMap(
+          saleId: saleId,
+          productId: l.productId,
+          productName: l.name,
+          unitPrice: l.unitPrice,
+          quantity: l.quantity,
+          lineTotal: l.lineTotal,
+          buyingPriceAtSale: l.buyingPrice,
+        ));
+      }
+
+      await batch.commit();
+    } else {
+      final now = DateTime.now();
+      _localSales.add(
+        Sale(
+          id: saleId,
+          totalAmount: total,
+          itemCount: count,
+          userId: userId,
+          customerNote: customerNote,
+          createdAt: now,
+        ),
+      );
+
+      for (final l in lines) {
+        _localSaleItems.add(
+          SaleItem(
+            id: _uuid.v4(),
+            saleId: saleId,
+            productId: l.productId,
+            productName: l.name,
+            unitPrice: l.unitPrice,
+            quantity: l.quantity,
+            lineTotal: l.lineTotal,
+            buyingPriceAtSale: l.buyingPrice,
+            createdAt: now,
+          ),
+        );
+      }
+      _emitLocalSales();
+      _emitLocalItems();
+    }
+
+    // Reduce stock only after sale persistence succeeds.
     for (final l in lines) {
       await _products.applyStockOut(
         productId: l.productId,

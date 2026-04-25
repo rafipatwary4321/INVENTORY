@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/bdt_formatter.dart';
+import '../../main.dart';
 import '../../models/app_user.dart';
 import '../../models/qr_scan_args.dart';
+import '../../models/sale.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
@@ -19,8 +21,13 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final products = context.watch<ProductsProvider>().products;
-    final sales = context.watch<SalesProvider>().sales;
-    final settings = context.watch<SettingsProvider>().settings;
+    final startupState = context.read<AppStartupState>();
+    final List<Sale> sales = startupState.firebaseEnabled
+        ? context.watch<SalesProvider>().sales
+        : const <Sale>[];
+    final settings = startupState.firebaseEnabled
+        ? context.watch<SettingsProvider>().settings
+        : null;
     final user = auth.appUser;
 
     final now = DateTime.now();
@@ -41,7 +48,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(settings.businessName),
+        title: Text(settings?.businessName ?? 'My Business'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -56,7 +63,7 @@ class DashboardScreen extends StatelessWidget {
           if (user != null) _RoleChip(role: user.role),
           const SizedBox(height: 12),
           Text(
-            'Hello, ${user?.displayName ?? 'User'}',
+            'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),

@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
-import '../../models/app_user.dart';
+import '../../main.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/product_service.dart';
 import '../../services/storage_service.dart';
@@ -34,7 +34,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   bool _busy = false;
   String? _existingImageUrl;
 
-  bool get isEdit => widget.productId != null;
+  /// True when editing an existing product (non-empty Firestore document id).
+  bool get isEdit =>
+      widget.productId != null && widget.productId!.trim().isNotEmpty;
 
   @override
   void initState() {
@@ -79,21 +81,26 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final uid = context.read<AuthProvider>().firebaseUser?.uid;
+    final auth = context.read<AuthProvider>();
+    final uid = auth.activeUid;
     if (uid == null) return;
-    final role = context.read<AuthProvider>().appUser?.role;
-    if (role != UserRole.admin) {
+    if (!auth.isAdmin) {
       ErrorHandler.showSnack(context, Exception('Only admins can save products'));
       return;
     }
 
     setState(() => _busy = true);
     try {
+      final startupState = context.read<AppStartupState>();
+      final canUploadImage = startupState.firebaseEnabled;
       final productService = context.read<ProductService>();
       final storage = context.read<StorageService>();
       final buying = double.parse(_buying.text.trim());
       final selling = double.parse(_selling.text.trim());
       final qty = int.parse(_quantity.text.trim());
+      if (selling < buying) {
+        throw Exception('Selling price should be greater than or equal to buying price.');
+      }
 
       final baseData = <String, dynamic>{
         'name': _name.text.trim(),
@@ -110,7 +117,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           ...baseData,
           'imageUrl': _existingImageUrl,
         });
-        if (_pickedFile != null) {
+        if (_pickedFile != null && canUploadImage) {
           final uploaded = await storage.uploadProductImage(
             productId: id,
             file: _pickedFile!,
@@ -122,7 +129,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           data: {...baseData, 'imageUrl': null},
           uid: uid,
         );
-        if (_pickedFile != null) {
+        if (_pickedFile != null && canUploadImage) {
           final uploaded = await storage.uploadProductImage(
             productId: newId,
             file: _pickedFile!,
@@ -142,8 +149,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin =
-        context.watch<AuthProvider>().appUser?.role == UserRole.admin;
+    final isAdmin = context.watch<AuthProvider>().isAdmin;
+    final canUploadImage = context.watch<AppStartupState>().firebaseEnabled;
 
     if (!isAdmin) {
       return Scaffold(
@@ -165,7 +172,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
             child: Column(
               children: [
                 GestureDetector(
-                  onTap: _pickImage,
+                  onTap: canUploadImage ? _pickImage : null,
                   child: AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Card(
@@ -185,6 +192,16 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     ),
                   ),
                 ),
+                if (!canUploadImage)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Demo mode: image upload is disabled.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _name,

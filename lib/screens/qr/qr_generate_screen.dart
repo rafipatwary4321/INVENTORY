@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../core/utils/qr_payload.dart';
+import '../../core/utils/error_handler.dart';
+import '../../core/widgets/product_qr_card.dart';
 import '../../providers/products_provider.dart';
 
-/// Displays a QR code encoding the product id (with app prefix).
+/// Fullscreen view of the product QR (same payload as detail screen).
 class QRGenerateScreen extends StatelessWidget {
   const QRGenerateScreen({super.key, required this.productId});
 
@@ -14,58 +14,57 @@ class QRGenerateScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final product = context.watch<ProductsProvider>().byId(productId);
-    final payload = QrPayload.encodeProductId(productId);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Product QR')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (product != null)
-                Text(
-                  product.name,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            ProductQrCard(
+              productId: productId,
+              productName: product?.name,
+              embeddedSize: 240,
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Print or share this screen so staff can scan the code for stock in or sales.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ErrorHandler.showSnack(
+                        context,
+                        Exception('Download QR will be added soon.'),
+                      );
+                    },
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('Download QR'),
+                  ),
                 ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: () {
+                      ErrorHandler.showSnack(
+                        context,
+                        Exception('Print QR will be added soon.'),
+                      );
+                    },
+                    icon: const Icon(Icons.print_outlined),
+                    label: const Text('Print QR'),
+                  ),
                 ),
-                child: QrImageView(
-                  data: payload,
-                  version: QrVersions.auto,
-                  size: 220,
-                  gapless: true,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SelectableText(
-                payload,
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Scan this code from Stock in, Sell, or POS to load the product.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );

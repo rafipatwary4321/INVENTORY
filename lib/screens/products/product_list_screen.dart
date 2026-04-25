@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../core/widgets/empty_state.dart';
 import '../../core/utils/bdt_formatter.dart';
-import '../../models/app_user.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/products_provider.dart';
 import '../../routes/app_router.dart';
@@ -15,8 +14,7 @@ class ProductListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final products = context.watch<ProductsProvider>().products;
-    final isAdmin =
-        context.watch<AuthProvider>().appUser?.role == UserRole.admin;
+    final isAdmin = context.watch<AuthProvider>().isAdmin;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Products')),
@@ -47,6 +45,7 @@ class ProductListScreen extends StatelessWidget {
                     title: Text(p.name),
                     subtitle: Text(
                       '${p.category} · Qty ${p.quantity} ${p.unit}\n'
+                      'Buy ${BdtFormatter.format(p.buyingPrice)} · '
                       'Sell ${BdtFormatter.format(p.sellingPrice)}',
                     ),
                     isThreeLine: true,
