@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
-import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
 import '../../services/ai/analytics_service.dart';
@@ -21,9 +21,12 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
 
     if (products.isEmpty && items.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Advanced AI Analytics')),
-        body: const EmptyState(
+      return const Scaffold(
+        appBar: PremiumAppBar(
+          title: 'Advanced AI Analytics',
+          subtitle: 'Charts & signals',
+        ),
+        body: EmptyStateWidget(
           title: 'No analytics data yet',
           subtitle: 'Add products and sales to see smart business intelligence.',
           icon: Icons.analytics_outlined,
@@ -32,9 +35,12 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Advanced AI Analytics')),
+      appBar: const PremiumAppBar(
+        title: 'Advanced AI Analytics',
+        subtitle: 'Charts & signals',
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PremiumTokens.pagePadding(context),
         children: [
           _MetricSection(title: 'Top selling products', metrics: analytics.topSelling),
           _MetricSection(title: 'Least selling products', metrics: analytics.leastSelling),

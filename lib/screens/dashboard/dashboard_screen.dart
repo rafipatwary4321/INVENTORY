@@ -70,7 +70,7 @@ class DashboardScreen extends StatelessWidget {
             subtitle:
                 'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
                 'Here is a snapshot of your business.',
-            role: user != null ? user.role.toVisual() : null,
+            role: user?.roleVisual,
           ),
           GridView.count(
             crossAxisCount: crossAxisCount,

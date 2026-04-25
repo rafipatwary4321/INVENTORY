@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
 import '../../services/ai/insights_engine.dart';
@@ -19,25 +19,25 @@ class SmartInsightsScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Smart Business Insights')),
+      appBar: const PremiumAppBar(
+        title: 'Smart Business Insights',
+        subtitle: 'AI patterns',
+      ),
       body: products.isEmpty && items.isEmpty
-          ? const EmptyState(
+          ? const EmptyStateWidget(
               title: 'No insight data yet',
               subtitle: 'Add products and sales to unlock AI pattern insights.',
               icon: Icons.insights_outlined,
             )
           : ListView.separated(
-              padding: const EdgeInsets.all(16),
+              padding: PremiumTokens.pagePadding(context),
               itemCount: insights.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
                 final insight = insights[i];
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.auto_awesome_outlined),
-                    title: Text(insight.title),
-                    subtitle: Text(insight.detail),
-                  ),
+                return AIInsightCard(
+                  title: insight.title,
+                  body: insight.detail,
                 );
               },
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
 import '../../services/ai/ai_api_service.dart';
@@ -78,20 +79,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Assistant'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(26),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Text(
-              _api.isConfigured ? 'Provider: Real AI API' : 'Provider: Local fallback AI',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-          ),
-        ),
+      appBar: PremiumAppBar(
+        title: 'AI Assistant',
+        subtitle: _api.isConfigured
+            ? 'Provider: Real AI API'
+            : 'Provider: Local fallback AI',
       ),
       body: Column(
         children: [

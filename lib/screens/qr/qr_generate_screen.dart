@@ -17,15 +17,20 @@ class QRGenerateScreen extends StatelessWidget {
     final product = context.watch<ProductsProvider>().byId(productId);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Product QR')),
+      appBar: const PremiumAppBar(
+        title: 'Product QR',
+        subtitle: 'Print-ready label',
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: PremiumTokens.pagePadding(context),
         child: Column(
           children: [
-            ProductQrCard(
-              productId: productId,
-              productName: product?.name,
-              embeddedSize: 240,
+            ReportCard(
+              child: ProductQrCard(
+                productId: productId,
+                productName: product?.name,
+                embeddedSize: 240,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -33,34 +38,38 @@ class QRGenerateScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    height: 1.45,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: PremiumButton(
+                    label: 'Download',
+                    outlined: true,
+                    icon: Icons.download_outlined,
+                    expand: true,
                     onPressed: () {
                       ErrorHandler.showSnack(
                         context,
                         Exception('Download QR will be added soon.'),
                       );
                     },
-                    icon: const Icon(Icons.download_outlined),
-                    label: const Text('Download QR'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton.tonalIcon(
+                  child: PremiumButton(
+                    label: 'Print',
+                    icon: Icons.print_outlined,
+                    expand: true,
                     onPressed: () {
                       ErrorHandler.showSnack(
                         context,
                         Exception('Print QR will be added soon.'),
                       );
                     },
-                    icon: const Icon(Icons.print_outlined),
-                    label: const Text('Print QR'),
                   ),
                 ),
               ],

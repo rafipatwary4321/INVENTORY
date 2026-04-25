@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/bdt_formatter.dart';
-import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../models/sale_item.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sales_provider.dart';
@@ -15,10 +15,13 @@ class ProfitLossReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final canView = context.watch<AuthProvider>().canViewProfitLoss;
     if (!canView) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Profit / Loss')),
-        body: const Center(
-          child: Text('Access restricted: only owner/admin can view profit reports.'),
+      return const Scaffold(
+        appBar: PremiumAppBar(title: 'Profit / Loss'),
+        body: EmptyStateWidget(
+          icon: Icons.lock_outline_rounded,
+          title: 'Access restricted',
+          subtitle:
+              'Only owner or admin can view profit and loss reports for this business.',
         ),
       );
     }
@@ -32,9 +35,9 @@ class ProfitLossReportScreen extends StatelessWidget {
       profitBySale[i.saleId] = (profitBySale[i.saleId] ?? 0) + i.lineProfit;
     }
     if (items.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Profit / Loss')),
-        body: const EmptyState(
+      return const Scaffold(
+        appBar: PremiumAppBar(title: 'Profit / Loss'),
+        body: EmptyStateWidget(
           title: 'No profit data yet',
           subtitle: 'Sell products first to see profit and loss analytics.',
           icon: Icons.trending_up,
@@ -46,9 +49,12 @@ class ProfitLossReportScreen extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profit / Loss')),
+      appBar: const PremiumAppBar(
+        title: 'Profit / Loss',
+        subtitle: 'Revenue vs cost',
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PremiumTokens.pagePadding(context),
         children: [
           Text(
             'Based on loaded sale lines (${items.length}). '
@@ -73,21 +79,29 @@ class ProfitLossReportScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (perSaleEntries.isEmpty)
-            const Card(
-              child: ListTile(title: Text('No sale lines available yet')),
+            ReportCard(
+              child: ListTile(
+                title: Text(
+                  'No sale lines available yet',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
             )
           else
             ...perSaleEntries.map(
-              (entry) => Card(
-                child: ListTile(
-                  title: Text(
-                    'Sale ${entry.key.length > 8 ? entry.key.substring(0, 8) : entry.key}',
-                  ),
-                  trailing: Text(
-                    BdtFormatter.format(entry.value),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+              (entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: ReportCard(
+                  child: ListTile(
+                    title: Text(
+                      'Sale ${entry.key.length > 8 ? entry.key.substring(0, 8) : entry.key}',
+                    ),
+                    trailing: Text(
+                      BdtFormatter.format(entry.value),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
                   ),
                 ),
               ),
@@ -111,17 +125,20 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        title: Text(label),
-        trailing: Text(
-          value,
-          style: emphasize
-              ? Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  )
-              : Theme.of(context).textTheme.titleMedium,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ReportCard(
+        child: ListTile(
+          title: Text(label),
+          trailing: Text(
+            value,
+            style: emphasize
+                ? Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                : Theme.of(context).textTheme.titleMedium,
+          ),
         ),
       ),
     );

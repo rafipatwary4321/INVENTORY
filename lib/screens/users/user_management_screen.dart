@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../models/app_user.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/user_service.dart';
@@ -64,24 +65,33 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final auth = context.watch<AuthProvider>();
     final canView = auth.isOwner || auth.isAdmin;
     if (!canView) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Team')),
-        body: const Center(child: Text('Access denied')),
+      return const Scaffold(
+        appBar: PremiumAppBar(title: 'Team'),
+        body: EmptyStateWidget(
+          icon: Icons.lock_outline_rounded,
+          title: 'Access denied',
+          subtitle: 'Only owners and admins can open team management.',
+        ),
       );
     }
 
     if (!auth.isFirebaseEnabled) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Team')),
+        appBar: const PremiumAppBar(
+          title: 'Team',
+          subtitle: 'Demo mode',
+        ),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: PremiumTokens.pagePadding(context),
           children: [
-            const Text(
+            Text(
               'Demo mode users',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
             const SizedBox(height: 12),
-            Card(
+            ReportCard(
               child: ListTile(
                 leading: const Icon(Icons.workspace_premium_outlined),
                 title: const Text('Demo Owner'),
@@ -92,7 +102,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 onTap: () => auth.setDemoRole(UserRole.owner),
               ),
             ),
-            Card(
+            const SizedBox(height: 10),
+            ReportCard(
               child: ListTile(
                 leading: const Icon(Icons.badge_outlined),
                 title: const Text('Demo Staff'),
@@ -109,15 +120,18 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Team management')),
+      appBar: const PremiumAppBar(
+        title: 'Team management',
+        subtitle: 'Roles & access',
+      ),
       body: Column(
         children: [
           if (auth.isOwner)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Card(
+              padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+              child: ReportCard(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(4),
                   child: Column(
                     children: [
                       TextField(
@@ -179,19 +193,33 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               builder: (context, snap) {
                 final users = snap.data ?? const <AppUser>[];
                 if (users.isEmpty) {
-                  return const Center(child: Text('No team members'));
+                  return const EmptyStateWidget(
+                    icon: Icons.group_outlined,
+                    title: 'No team members',
+                    subtitle: 'Invite people from Firebase Auth or add demo roles above.',
+                  );
                 }
                 return ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: PremiumTokens.pagePadding(context),
                   itemCount: users.length,
                   itemBuilder: (_, i) {
                     final u = users[i];
-                    return Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.person_outline),
-                        title: Text(u.displayName),
-                        subtitle: Text('${u.email}\n${u.role.name} · ${u.isActive ? 'active' : 'inactive'}'),
-                        isThreeLine: true,
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: ReportCard(
+                        child: ListTile(
+                          leading: const Icon(Icons.person_outline_rounded),
+                          title: Text(u.displayName),
+                          subtitle: Text(
+                            '${u.email}\n${u.isActive ? 'active' : 'inactive'}',
+                          ),
+                          isThreeLine: true,
+                          trailing: Chip(
+                            label: Text(u.role.name),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ),
                       ),
                     );
                   },

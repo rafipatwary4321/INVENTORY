@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/products_provider.dart';
 import '../../providers/sales_provider.dart';
 import '../../services/ai/prediction_engine.dart';
@@ -19,29 +19,34 @@ class RestockPredictionScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Predictive Restock')),
+      appBar: const PremiumAppBar(
+        title: 'Predictive Restock',
+        subtitle: 'Stockout risk',
+      ),
       body: forecasts.isEmpty
-          ? const EmptyState(
+          ? const EmptyStateWidget(
               title: 'No urgent restock suggestions',
               subtitle: 'AI will suggest products when stockout risk is detected.',
               icon: Icons.inventory_2_outlined,
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: PremiumTokens.pagePadding(context),
               itemCount: forecasts.length,
               itemBuilder: (_, i) {
                 final f = forecasts[i];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: const Icon(Icons.trending_up),
-                    title: Text(f.productName),
-                    subtitle: Text(
-                      'Current ${f.currentQty} · Avg/day ${f.avgDailySales.toStringAsFixed(1)}\n'
-                      'Stockout ~${f.daysToStockout} day(s) · Suggest +${f.suggestedRestockQty}\n'
-                      '${f.reason}',
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: ReportCard(
+                    child: ListTile(
+                      leading: const Icon(Icons.trending_up),
+                      title: Text(f.productName),
+                      subtitle: Text(
+                        'Current ${f.currentQty} · Avg/day ${f.avgDailySales.toStringAsFixed(1)}\n'
+                        'Stockout ~${f.daysToStockout} day(s) · Suggest +${f.suggestedRestockQty}\n'
+                        '${f.reason}',
+                      ),
+                      isThreeLine: true,
                     ),
-                    isThreeLine: true,
                   ),
                 );
               },

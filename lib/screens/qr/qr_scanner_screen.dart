@@ -4,6 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/utils/qr_payload.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../models/qr_scan_args.dart';
 
 /// Camera QR scanner: requests **camera** permission, then decodes product ids.
@@ -139,12 +140,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     };
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
+      appBar: PremiumAppBar(
+        title: title,
         actions: [
           if (_hasPermission && _controller != null)
             IconButton(
-              icon: const Icon(Icons.flash_on),
+              icon: const Icon(Icons.flash_on_rounded),
               tooltip: 'Torch',
               onPressed: () => _controller!.toggleTorch(),
             ),
@@ -156,15 +157,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
   Widget _buildBody(ColorScheme scheme) {
     if (_checkingPermission) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Checking camera permission…'),
-          ],
-        ),
+      return const LoadingWidget(
+        message: 'Checking camera permission…',
       );
     }
 
@@ -348,38 +342,36 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   }
 
   Widget _manualFallbackCard({bool compact = false}) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: EdgeInsets.all(compact ? 12 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Manual product ID',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+    return ReportCard(
+      padding: EdgeInsets.all(compact ? 12 : 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Manual product ID',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _manualController,
+            decoration: const InputDecoration(
+              hintText: 'Paste product ID or inv:product:... payload',
+              prefixIcon: Icon(Icons.edit_note_outlined),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _manualController,
-              decoration: const InputDecoration(
-                hintText: 'Paste product ID or inv:product:... payload',
-                prefixIcon: Icon(Icons.edit_note_outlined),
-              ),
-              onSubmitted: (_) => _submitManual(),
+            onSubmitted: (_) => _submitManual(),
+          ),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: PremiumButton(
+              label: 'Use ID',
+              icon: Icons.arrow_forward_rounded,
+              onPressed: _submitManual,
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.tonal(
-                onPressed: _submitManual,
-                child: const Text('Use ID'),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

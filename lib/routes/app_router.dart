@@ -9,7 +9,6 @@ import '../screens/ai/restock_prediction_screen.dart';
 import '../screens/ai/smart_insights_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/cart/cart_screen.dart';
-import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/shell/app_shell_screen.dart';
 import '../screens/products/add_edit_product_screen.dart';
 import '../screens/products/product_details_screen.dart';

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
 import '../../core/utils/validators.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../main.dart';
 import '../../models/app_settings.dart';
 import '../../providers/auth_provider.dart';
@@ -119,46 +120,70 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final auth = context.watch<AuthProvider>();
     final canManage = auth.canManageBusinessSettings;
     final settingsProvider = context.watch<SettingsProvider?>();
+    final businessName =
+        settingsProvider?.settings.businessName ?? 'My Business';
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: const PremiumAppBar(
+        title: 'Settings',
+        subtitle: 'Business & app',
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: PremiumTokens.pagePadding(context),
         children: [
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _businessName,
-                  enabled: canManage && !_busy,
-                  decoration: const InputDecoration(
-                    labelText: 'Business name',
-                  ),
-                  validator: (v) => Validators.required(v, field: 'Business name'),
+          BusinessProfileCard(
+            businessName: businessName,
+            businessId: auth.businessId,
+            planLabel: startup.firebaseEnabled ? 'Live' : 'Demo',
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Business settings',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 12),
-                const ListTile(
-                  title: Text('Currency'),
-                  subtitle: Text('BDT (৳) — fixed in this version'),
-                ),
-                const SizedBox(height: 16),
-                if (canManage)
-                  FilledButton(
-                    onPressed:
-                        _busy || settingsProvider == null ? null : _save,
-                    child: _busy
-                        ? const SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Save'),
+          ),
+          const SizedBox(height: 10),
+          ReportCard(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  PremiumTextField(
+                    controller: _businessName,
+                    label: 'Business name',
+                    enabled: canManage && !_busy,
+                    validator: (v) =>
+                        Validators.required(v, field: 'Business name'),
                   ),
-              ],
+                  const SizedBox(height: 12),
+                  const ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Currency'),
+                    subtitle: Text('BDT (৳) — fixed in this version'),
+                  ),
+                  const SizedBox(height: 8),
+                  if (canManage)
+                    PremiumButton(
+                      label: _busy ? 'Saving…' : 'Save changes',
+                      expand: true,
+                      icon: _busy ? null : Icons.save_rounded,
+                      onPressed:
+                          _busy || settingsProvider == null ? null : _save,
+                    ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-          Card(
+          const SizedBox(height: 20),
+          Text(
+            'App & account',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 10),
+          ReportCard(
             child: ListTile(
               leading: const Icon(Icons.cloud_outlined),
               title: const Text('Backend mode'),
@@ -167,25 +192,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.business_center_outlined),
-              title: const Text('Business ID'),
-              subtitle: Text(auth.businessId),
-            ),
-          ),
-          Card(
+          const SizedBox(height: 10),
+          ReportCard(
             child: ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('App version'),
               subtitle: Text(_appVersion),
             ),
           ),
-          const SizedBox(height: 32),
-          OutlinedButton.icon(
+          const SizedBox(height: 28),
+          PremiumButton(
+            label: 'Logout',
+            outlined: true,
+            expand: true,
+            icon: Icons.logout_rounded,
             onPressed: _logout,
-            icon: const Icon(Icons.logout),
-            label: const Text('Logout'),
           ),
         ],
       ),

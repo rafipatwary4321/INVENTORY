@@ -164,9 +164,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     final canUploadImage = context.watch<AppStartupState>().firebaseEnabled;
 
     if (!isAdmin) {
-      return Scaffold(
-        appBar: const PremiumAppBar(title: 'Product'),
-        body: const EmptyStateWidget(
+      return const Scaffold(
+        appBar: PremiumAppBar(title: 'Product'),
+        body: EmptyStateWidget(
           icon: Icons.lock_outline_rounded,
           title: 'Admins only',
           subtitle:

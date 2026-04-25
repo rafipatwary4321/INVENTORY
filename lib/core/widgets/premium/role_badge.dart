@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../models/app_user.dart';
 import 'premium_tokens.dart';
 
+extension AppUserRoleVisual on AppUser {
+  UserRoleVisual get roleVisual => role.toVisual();
+}
+
 enum UserRoleVisual { owner, admin, staff }
 
 extension UserRoleVisualX on UserRole {
