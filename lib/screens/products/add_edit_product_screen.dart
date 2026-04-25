@@ -13,10 +13,17 @@ import '../../services/storage_service.dart';
 
 /// Create or update a product with validation + optional image upload.
 class AddEditProductScreen extends StatefulWidget {
-  const AddEditProductScreen({super.key, this.productId});
+  const AddEditProductScreen({
+    super.key,
+    this.productId,
+    this.initialName,
+    this.initialCategory,
+  });
 
   /// When null, screen is in "add" mode.
   final String? productId;
+  final String? initialName;
+  final String? initialCategory;
 
   @override
   State<AddEditProductScreen> createState() => _AddEditProductScreenState();
@@ -43,6 +50,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     super.initState();
     if (isEdit) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+    } else {
+      _name.text = widget.initialName?.trim() ?? '';
+      _category.text = widget.initialCategory?.trim() ?? '';
     }
   }
 
