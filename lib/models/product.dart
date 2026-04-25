@@ -30,7 +30,7 @@ class Product {
   final DateTime? updatedAt;
   final String createdBy;
 
-  bool get isLowStock => quantity <= AppConstants.lowStockThreshold;
+  bool get isLowStock => quantity < AppConstants.lowStockThreshold;
 
   double get stockValue => buyingPrice * quantity;
 

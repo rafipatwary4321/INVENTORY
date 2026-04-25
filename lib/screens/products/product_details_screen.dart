@@ -142,7 +142,7 @@ class ProductDetailsScreen extends StatelessWidget {
               child: ListTile(
                 leading: const Icon(Icons.warning_amber_rounded),
                 title: Text(
-                  'Low stock (≤ ${AppConstants.lowStockThreshold} ${product.unit})',
+                  'Low stock (< ${AppConstants.lowStockThreshold} ${product.unit})',
                 ),
               ),
             ),
