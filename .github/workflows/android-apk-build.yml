@@ -1,0 +1,42 @@
+name: Android APK Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android-debug-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter stable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: INVENTORY-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
