@@ -1,49 +1,96 @@
 # Contributing to INVENTORY
 
-Thank you for helping improve this project. This guide is written for contributors who may be new to Flutter or open source.
+Thanks for contributing. This guide is designed to be clear for first-time open-source contributors.
 
-## Before you start
+## Start Here
 
-1. Read the [README](README.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
-2. For security-sensitive issues, use [SECURITY.md](SECURITY.md) instead of a public issue.
+Before opening issues or pull requests:
 
-## How to contribute
+1. Read the [README](README.md)
+2. Review [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+3. Read [SECURITY.md](SECURITY.md) for vulnerability reporting
 
-### Report a bug
+## Ways to Contribute
 
-Use **Bug report** in GitHub Issues and include:
+### Report Bugs
 
+Open a GitHub issue and include:
+
+- App version or commit hash
 - Flutter version (`flutter --version`)
-- Device/OS (or emulator)
+- Platform/device (Android, iOS, Web/Chrome)
 - Steps to reproduce
-- What you expected vs what happened
+- Expected vs actual behavior
+- Logs/screenshots if available
 
-### Suggest a feature
+### Propose Features
 
-Use **Feature request** and describe the problem you are solving, not only the solution you imagine.
+Use a feature request issue and explain:
 
-### Submit a pull request
+- The problem you are solving
+- Who benefits
+- Proposed behavior (optional implementation ideas)
 
-1. **Fork** the repository and create a branch from `main` (or the default branch).
-2. **Keep changes focused**—one logical change per PR is easier to review.
-3. **Run checks locally:**
+### Improve Documentation
+
+Docs contributions are welcome:
+
+- Fix unclear instructions
+- Add missing setup details
+- Improve examples and screenshots
+
+## Development Setup
+
+```bash
+git clone <your-fork-url>
+cd INVENTORY
+flutter pub get
+```
+
+Optional (for live backend mode): follow [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md).
+
+## Branching and Pull Requests
+
+1. Create a branch from `main`:
    ```bash
-   flutter pub get
+   git checkout -b feat/my-change
+   ```
+2. Keep changes focused and reviewable.
+3. Run checks locally before pushing:
+   ```bash
    flutter analyze
    flutter test
    ```
-4. **Formatting:** follow existing style; run `dart format .` if you change Dart files.
-5. **Commit messages:** use clear, present-tense summaries (e.g. `Fix cart stock validation`).
-6. Open a PR and fill in the **pull request template**.
+4. Push and open a PR with:
+   - Summary of changes
+   - Why the change is needed
+   - Test evidence (commands/screenshots)
 
-## Project conventions
+## Coding Guidelines
 
-- **State:** `provider`—prefer small, focused providers/notifiers.
-- **Firebase:** do not commit real `google-services.json` / `GoogleService-Info.plist` to a **public** repo if they embed secrets; use placeholders or CI secrets.
-- **i18n / currency:** this app targets **BDT**; keep formatting consistent with `lib/core/utils/bdt_formatter.dart`.
+- Follow existing project style and folder conventions.
+- Prefer reusable widgets and modular services/providers.
+- Do not commit unrelated refactors in the same PR.
+- Keep user-facing copy clear and concise.
 
-## What happens after you open a PR
+## Security and Secrets
 
-Maintainers will review when they can. You may be asked for small follow-ups—that is normal. Once approved, your contribution will be merged and listed in the [CHANGELOG](CHANGELOG.md).
+- Never commit real API keys, `.env`, service account JSON, or private credentials.
+- Keep `.env` local; update `.env.example` when new variables are introduced.
+- For security bugs, follow [SECURITY.md](SECURITY.md) instead of opening a public issue first.
 
-Thank you again for contributing.
+## Commit Message Tips
+
+Use short, clear messages in present tense:
+
+- `Fix QR scan fallback on web`
+- `Update Firebase setup docs`
+- `Refactor report card spacing`
+
+## Review and Merge Process
+
+- Maintainers review PRs based on impact, clarity, and test coverage.
+- You may be asked to make follow-up changes.
+- After merge, notable changes should be reflected in [CHANGELOG.md](CHANGELOG.md).
+
+Thanks again for helping improve INVENTORY.

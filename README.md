@@ -1,100 +1,77 @@
 # INVENTORY
 
-A **Flutter** inventory and light-POS app with **Firebase** (optional), **BDT (৳)** money formatting, **QR** workflows for stock and sales, **role-based access** (owner / admin / staff), and a **premium Material 3** UI with bottom navigation, responsive layout, and **light / dark** themes.
+Modern inventory and sales management built with Flutter, Firebase, and a premium adaptive UI.
 
----
+INVENTORY helps small businesses track stock, process sales, scan QR labels, and gain AI-assisted insights with role-based access for multi-user operations.
 
-## Highlights
+## Key Features
 
-| Area | What you get |
-|------|----------------|
-| **UI** | Premium app chrome (`PremiumAppBar`, cards, gradients, shared tokens), **shell** with bottom nav (Home · Products · Sell · Settings), **appearance** control (System / Light / Dark). |
-| **Auth & SaaS roles** | Email/password; Firestore `users` document drives **owner**, **admin**, or **staff** (profit/loss, business settings, team, product CRUD). |
-| **Demo mode** | Runs without Firebase when options are missing or init fails; fixed **demo** emails + password for local QA (see [Demo mode](#demo-mode)). |
-| **Products** | List, detail, add/edit (admin), optional **Storage** image when Firebase is on. |
-| **QR** | Per-product codes (`inv:product:` + id); **scan** for stock-in path or POS cart; manual ID fallback on web/camera issues. |
-| **Stock in** | Receive quantity per product (writes through `ProductService`). |
-| **POS / cart** | Search, QR add, cart lines, **checkout** (writes sales + stock via `SaleService`). |
-| **Dashboard** | KPIs, shortcuts to reports, AI, team, QR. |
-| **Reports** | Sales, stock valuation, profit/loss (owner/admin). |
-| **AI** | Assistant (local rules + optional **OpenAI / Gemini** via `.env` or `--dart-define`), recognition (mock), smart insights, restock hints, analytics charts. |
-| **Team** | Owner/admin: **User management** (Firebase); demo role switcher when Firebase is off. |
-| **Settings** | Business name (owner), backend mode, version, appearance, logout. |
+- Premium responsive UI (mobile, tablet, web) with light and dark theme support
+- Product inventory management with category, pricing, quantity, and optional image
+- QR-powered inventory workflow for product labels, scanning, and quick stock actions
+- POS and checkout flow with cart, quantity control, and stock-safe sale completion
+- Sales, stock, and profit/loss reporting dashboards
+- SaaS-friendly roles: owner, admin, and staff
+- Demo mode for local development without Firebase setup
 
----
+## AI-Powered Features
 
-## Tech stack
+- AI Assistant for inventory and sales questions
+- AI Product Recognition flow (mock-ready pipeline for real model integration)
+- Smart Insights and restock prediction screens
+- Advanced analytics view with trend charts
 
-- **Flutter** (Dart SDK ≥ 3.2), **Material 3**, `google_fonts`, `intl`
-- **Firebase** (optional): Auth, Firestore, Storage
-- **State:** `provider`
-- **QR:** `qr_flutter`, `mobile_scanner`
-- **Media:** `image_picker`, `cached_network_image`
-- **Charts:** `fl_chart` (analytics)
-- **Config:** `flutter_dotenv` (optional `.env`)
+## QR Inventory Features
 
----
+- Generate product QR labels (`inv:product:<productId>`)
+- Scan QR for stock-in workflow
+- Scan QR directly into POS/cart workflow
+- Manual ID fallback for devices without camera access
 
-## Routes & entry
+## POS / Sales System
 
-Named routes live in **`lib/routes/app_router.dart`**. After login, **`/dashboard`** opens **`AppShellScreen`** (bottom nav + tab stack). Pushed routes (product detail, QR, reports, etc.) stack on top as before.
+- Sell screen with search and quick add
+- Cart with quantity updates and stock validation
+- Checkout flow that records sales and updates stock atomically through services
+- BDT (Tk) currency formatting across sales flows and reports
 
-| Screen | Route constant |
-|--------|------------------|
-| Splash | `AppRoutes.splash` `/` |
-| Login | `AppRoutes.login` |
-| Dashboard (in shell) | `AppRoutes.dashboard` |
-| Products · Add/Edit · Detail | `AppRoutes.products` … |
-| QR generate / scan | `AppRoutes.qrGenerate` · `AppRoutes.qrScan` |
-| Stock in · Sell · Cart | `AppRoutes.stockIn` · `AppRoutes.sell` · `AppRoutes.cart` |
-| Reports | `AppRoutes.reportSales` · `reportStock` · `reportPnL` |
-| AI | `AppRoutes.aiRecognition` · `aiAssistant` · `aiInsights` · `aiRestock` · `aiAnalytics` |
-| Team · Settings | `AppRoutes.team` · `AppRoutes.settings` |
+## SaaS Multi-User Roles
 
-Missing arguments show **`MissingRouteArgumentScreen`** (`lib/routes/route_errors.dart`).
+- `owner`: full business control, team management, settings, reports
+- `admin`: product and operational management
+- `staff`: day-to-day operations (sell, stock in, scanning)
 
----
+Role and business scoping are driven by user profile data in Firestore (or demo fallback behavior).
 
-## Demo mode
+## Tech Stack
 
-If Firebase is **not** configured or initialization fails, the app runs in **demo/local** mode:
+- Flutter (Dart, Material 3)
+- Provider state management
+- Firebase Authentication, Cloud Firestore, Firebase Storage (optional/fallback-safe)
+- QR: `qr_flutter`, `mobile_scanner`
+- AI integration layer via optional environment variables (`flutter_dotenv`, HTTP APIs)
+- Charts and analytics with `fl_chart`
 
-- No Firestore writes for business data (in-memory / local services as implemented).
-- Sign in with **`owner@inventory.com`**, **`staff@inventory.com`**, or **`admin@inventory.com`** and password **`123456`** (see `AuthService` in `lib/services/auth_service.dart`).
-- **Do not** use these defaults in production-facing builds; replace with Firebase or your own auth.
+## Screenshots (Placeholder)
 
----
+Add screenshots under `docs/images/` and update this section.
 
-## Firebase & FlutterFire
+Suggested captures:
+- Splash/Login
+- Dashboard
+- Product list/details
+- QR generate/scan
+- Sell + Cart checkout
+- Reports
+- AI assistant/insights
+- Settings (theme switch)
 
-1. Create a project in [Firebase Console](https://console.firebase.google.com/).
-2. Enable **Authentication → Email/Password**.
-3. Create **Firestore** and **Storage** (apply **production rules** before launch).
-4. Run **`flutterfire configure`** to regenerate **`lib/firebase_options.dart`** and platform files.
-5. Place **`google-services.json`** / **`GoogleService-Info.plist`** per FlutterFire output.
-6. Seed **`users/{uid}`** with `businessId`, `role` (`owner` \| `admin` \| `staff`), etc.
+## Installation
 
-QR payloads: see **`lib/core/utils/qr_payload.dart`** (`inv:product:` + product id).
-
----
-
-## Environment variables (AI)
-
-Copy **`.env.example`** → **`.env`** (ignored by git). Variables are documented in the example file.
-
-Alternatively:
-
-```bash
-flutter run -d chrome --dart-define=AI_PROVIDER=openai --dart-define=AI_API_KEY=YOUR_KEY --dart-define=AI_MODEL=gpt-4o-mini
-```
-
-Never commit real API keys. **`lib/firebase_options.dart`** in template form uses **`YOUR_*`** placeholders until you run FlutterFire.
-
----
-
-## Install & run
-
-**Prerequisites:** Flutter SDK (stable), optional Firebase project.
+Prerequisites:
+- Flutter SDK (stable)
+- Git
+- Optional Firebase project for live backend mode
 
 ```bash
 git clone <your-repo-url>
@@ -102,72 +79,80 @@ cd INVENTORY
 flutter pub get
 ```
 
+Run:
+
 ```bash
-flutter devices
-flutter run                    # device / emulator
-flutter run -d chrome          # web (recommended for quick UI checks)
+flutter run
+```
+
+Web (Chrome):
+
+```bash
+flutter run -d chrome
+```
+
+Quality checks:
+
+```bash
 flutter analyze
 flutter test
-flutter build web              # production web bundle
 ```
 
-Release for mobile: follow [Flutter deployment](https://docs.flutter.dev/deployment).
+## Firebase Setup (Summary)
 
----
+1. Create a Firebase project.
+2. Enable Email/Password in Firebase Authentication.
+3. Create Firestore and Storage.
+4. Run `flutterfire configure`.
+5. Verify `lib/firebase_options.dart` is generated for your targets.
+6. Configure roles/business documents for your users.
 
-## Folder structure (selected)
+Detailed guide: [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
 
-```
-lib/
-├── main.dart                    # Providers, theme, MaterialApp
-├── firebase_options.dart        # FlutterFire output (placeholders until configure)
-├── core/
-│   ├── theme/                   # AppTheme, ThemeModeController
-│   ├── widgets/premium/         # Shared premium UI components
-│   └── ...
-├── models/
-├── providers/
-├── routes/
-├── screens/
-│   ├── shell/app_shell_screen.dart
-│   ├── splash/, auth/, dashboard/, products/, qr/, stock/, sell/, cart/
-│   ├── reports/, ai/, users/, settings/
-├── services/
-test/
+## Environment Variables
+
+Copy `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
 ```
 
----
+Supported keys:
+- `AI_PROVIDER`
+- `AI_API_KEY`
+- `AI_MODEL`
 
-## Docs & community
+`.env` is gitignored. Never commit real secrets.
 
-| Doc | Purpose |
-|-----|---------|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
-| [SECURITY.md](SECURITY.md) | Vulnerability reporting |
-| [CHANGELOG.md](CHANGELOG.md) | Release notes |
-| [LICENSE](LICENSE) | MIT |
+## GitHub Workflow
 
----
+Recommended flow:
+1. Create branch from `main`
+2. Make focused changes
+3. Run analyze/tests locally
+4. Open PR with clear summary and test notes
 
-## Screenshots
+See full workflow: [`docs/GITHUB_WORKFLOW.md`](docs/GITHUB_WORKFLOW.md)
 
-Add your own under `docs/images/` and link them here (dashboard, products, QR, cart, settings).
+## Project Documentation
 
----
+- [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md)
+- [`docs/FEATURES.md`](docs/FEATURES.md)
+- [`docs/FIREBASE_SETUP.md`](docs/FIREBASE_SETUP.md)
+- [`docs/GITHUB_WORKFLOW.md`](docs/GITHUB_WORKFLOW.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- [`SECURITY.md`](SECURITY.md)
+- [`CHANGELOG.md`](CHANGELOG.md)
 
-## Roadmap (ideas)
+## Roadmap
 
-- Example **Firestore security rules** in-repo + CI  
-- **Offline** queue and sync indicators  
-- **1D barcodes** alongside QR  
-- Stronger **multi-tenant** admin UX  
-- **CSV/PDF** exports  
-- Deeper **on-device ML** for recognition  
-- **Integration tests** with Firebase Emulator Suite  
-
----
+- Production-grade Firestore/Storage rule templates
+- Offline-first sync improvements
+- Export reports (CSV/PDF)
+- Enhanced AI model integration for recognition and forecasting
+- End-to-end integration tests with Firebase emulator suite
+- Granular tenant and plan controls for SaaS usage
 
 ## License
 
-**MIT** — see [LICENSE](LICENSE).
+MIT License. See [`LICENSE`](LICENSE).

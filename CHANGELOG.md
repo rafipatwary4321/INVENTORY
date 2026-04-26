@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **INVENTORY** will be documented in this file.
+All notable changes to **INVENTORY** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,18 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Premium Material 3 UI kit (`lib/core/widgets/premium/`), app shell with bottom navigation, theme mode (system/light/dark) from Settings.
-- `ThemeModeController`, taller `PremiumAppBar` when a subtitle is shown, responsive `StatCard` grid behavior.
-- Expanded `.env.example` comments for optional AI keys.
+- Professional documentation set under `docs/`:
+  - `PROJECT_OVERVIEW.md`
+  - `FEATURES.md`
+  - `FIREBASE_SETUP.md`
+  - `GITHUB_WORKFLOW.md`
+- Refreshed top-level project docs for onboarding and contribution quality.
 
 ### Changed
 
-- README refreshed for shell routes, demo mode, AI env, web/Chrome run, and security notes.
-- `MissingRouteArgumentScreen` and remaining product/AI cards aligned with `ReportCard` where appropriate.
+- Reworked `README.md` with clearer structure for features, setup, workflow, and roadmap.
+- Improved `.env.example` for safer, clearer AI variable setup.
+- Updated contribution and security guidance to be beginner-friendly and repository-ready.
 
 ### Documentation
 
-- Clarified demo-only credentials in `AuthService`.
+- Standardized language and links across README, contributing, security, and setup docs.
 
 ---
 

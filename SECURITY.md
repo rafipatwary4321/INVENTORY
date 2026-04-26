@@ -1,50 +1,58 @@
-# Security policy
+# Security Policy
 
-## Supported versions
+## Supported Versions
 
-We aim to support the **latest published release** on the default branch. Older tags may not receive security fixes—upgrade when possible.
+Security fixes are prioritized for the latest active release branch.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
+| Version | Supported |
+|---------|-----------|
+| 1.x     | Yes       |
+| < 1.0   | No        |
 
-## Reporting a vulnerability
+## Reporting a Vulnerability
 
-**Please do not** open a public GitHub issue for undisclosed security vulnerabilities.
+Please do **not** open a public issue for undisclosed security vulnerabilities.
 
-Instead:
+Preferred reporting order:
 
-1. Use **GitHub Security Advisories** (“Report a vulnerability”) if the repository has private reporting enabled, **or**
-2. Email the maintainers at a dedicated security address **if one is published in the repository or organization profile**, **or**
-3. Open a **draft** issue with minimal detail and ask maintainers to contact you privately (only if no other channel exists).
+1. Use GitHub Security Advisories ("Report a vulnerability") if enabled.
+2. If advisories are unavailable, contact maintainers privately via published repository/org channel.
+3. Only if private channels are unavailable, open a minimal draft issue requesting secure contact.
 
-Include:
+Include the following:
 
-- A short description of the issue and its impact
-- Steps to reproduce (proof-of-concept if safe)
-- Affected versions or commits (if known)
-- Whether you believe the issue is already exploitable in production setups
+- Vulnerability summary and impact
+- Reproduction steps (safe proof of concept)
+- Affected area/version/commit
+- Suggested mitigation (if known)
 
-We will try to acknowledge receipt within a reasonable time. Please allow maintainers time to patch before public disclosure.
+We aim to acknowledge reports promptly and coordinate responsible disclosure.
 
-## Scope (examples)
+## Security Scope
 
-In scope for this project:
+Examples in scope:
 
-- Authentication bypass, insecure Firestore/Storage access patterns suggested by the app
-- Client-side logic that could lead to inventory or financial abuse when combined with weak server rules
-- Dependency vulnerabilities in shipped Flutter/Dart packages (report upstream too when appropriate)
+- Authentication and authorization bypass
+- Business/tenant isolation issues in role or data access logic
+- Unsafe Firestore/Storage access patterns caused by code guidance
+- Secret leakage in repository, build config, or documentation
+- High-impact dependency vulnerabilities affecting shipped behavior
 
-Out of scope (examples):
+Examples typically out of scope:
 
-- Issues that require physical access to an unlocked device
-- Social engineering of end users
-- Firebase misconfiguration **only** on a self-hosted project without a code defect (still worth documenting in discussions)
+- Device compromise requiring local physical access
+- Social engineering unrelated to code vulnerabilities
+- Misconfigured third-party deployment with no project code defect
 
-## Secure development reminders
+## Security Best Practices for This Project
 
-- **Firestore and Storage rules** are your primary enforcement layer—never rely on the client alone.
-- Rotate API keys and service accounts if they are ever exposed.
-- Keep Flutter, Gradle, CocoaPods, and dependencies updated.
+- Treat `.env` and API keys as sensitive; never commit them.
+- Keep Firebase rules strict; do not rely only on client checks.
+- Rotate credentials immediately if exposure is suspected.
+- Keep Flutter SDK and dependencies updated.
+- Review AI provider usage and restrict key scopes where possible.
 
-Thank you for helping keep users safe.
+## Disclosure Policy
+
+Please allow maintainers time to investigate and patch before public disclosure.
+Coordinated disclosure helps protect all users and integrators.
