@@ -383,23 +383,35 @@ class _PosProductCard extends StatelessWidget {
             '${product.category} • Stock ${product.quantity} ${product.unit}'
             '${inCartQty > 0 ? ' • In cart $inCartQty' : ''}',
           ),
-          trailing: Wrap(
-            spacing: 6,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              IconButton.filledTonal(
-                onPressed: onDecrement,
-                icon: const Icon(Icons.remove_rounded, size: 18),
-              ),
-              Text(
-                '$inCartQty',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              IconButton.filled(
-                onPressed: onIncrement,
-                icon: const Icon(Icons.add_rounded, size: 18),
-              ),
-            ],
+          trailing: SizedBox(
+            width: 126,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton.filledTonal(
+                  onPressed: onDecrement,
+                  constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.remove_rounded, size: 16),
+                ),
+                const SizedBox(width: 6),
+                SizedBox(
+                  width: 24,
+                  child: Text(
+                    '$inCartQty',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                IconButton.filled(
+                  onPressed: onIncrement,
+                  constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.add_rounded, size: 16),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -435,11 +447,8 @@ class _CartSummaryPanel extends StatelessWidget {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 220),
               child: cart.lines.isEmpty
-                  ? const EmptyStateWidget(
+                  ? const _MiniCartEmptyState(
                       key: ValueKey('empty'),
-                      icon: Icons.shopping_cart_outlined,
-                      title: 'Cart is empty',
-                      subtitle: 'Add products using tap, + button, scan, or manual ID.',
                     )
                   : ListView.builder(
                       key: const ValueKey('list'),
@@ -473,6 +482,37 @@ class _CartSummaryPanel extends StatelessWidget {
             label: const Text('Open Checkout'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MiniCartEmptyState extends StatelessWidget {
+  const _MiniCartEmptyState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.shopping_cart_outlined, color: cs.outline, size: 34),
+            const SizedBox(height: 8),
+            Text(
+              'Cart is empty',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Add products using tap, controls, scan, or manual ID.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }

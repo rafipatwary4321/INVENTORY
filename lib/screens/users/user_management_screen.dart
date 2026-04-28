@@ -99,16 +99,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 leading: const Icon(Icons.workspace_premium_outlined),
                 title: const Text('Demo Owner'),
                 subtitle: const Text('Full access'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const _RolePill(role: UserRole.owner),
-                    if (auth.appUser?.role == UserRole.owner)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(Icons.check_circle, color: Colors.green),
-                      ),
-                  ],
+                trailing: _RoleSelectionTrailing(
+                  role: UserRole.owner,
+                  selected: auth.appUser?.role == UserRole.owner,
                 ),
                 onTap: () => auth.setDemoRole(UserRole.owner),
               ),
@@ -119,16 +112,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 leading: const Icon(Icons.admin_panel_settings_outlined),
                 title: const Text('Demo Admin'),
                 subtitle: const Text('Business operation access'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const _RolePill(role: UserRole.admin),
-                    if (auth.appUser?.role == UserRole.admin)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(Icons.check_circle, color: Colors.green),
-                      ),
-                  ],
+                trailing: _RoleSelectionTrailing(
+                  role: UserRole.admin,
+                  selected: auth.appUser?.role == UserRole.admin,
                 ),
                 onTap: () => auth.setDemoRole(UserRole.admin),
               ),
@@ -139,16 +125,9 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 leading: const Icon(Icons.badge_outlined),
                 title: const Text('Demo Staff'),
                 subtitle: const Text('Scan/stock/sell only'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const _RolePill(role: UserRole.staff),
-                    if (auth.appUser?.role == UserRole.staff)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(Icons.check_circle, color: Colors.green),
-                      ),
-                  ],
+                trailing: _RoleSelectionTrailing(
+                  role: UserRole.staff,
+                  selected: auth.appUser?.role == UserRole.staff,
                 ),
                 onTap: () => auth.setDemoRole(UserRole.staff),
               ),
@@ -347,6 +326,34 @@ class _RolePill extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoleSelectionTrailing extends StatelessWidget {
+  const _RoleSelectionTrailing({
+    required this.role,
+    required this.selected,
+  });
+
+  final UserRole role;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 88,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          _RolePill(role: role),
+          if (selected)
+            const Padding(
+              padding: EdgeInsets.only(left: 4),
+              child: Icon(Icons.check_circle, color: Colors.green, size: 18),
+            ),
         ],
       ),
     );
