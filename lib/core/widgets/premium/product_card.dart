@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../models/product.dart';
 import '../../../core/utils/bdt_formatter.dart';
@@ -29,10 +30,25 @@ class ProductCard extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: cs.primaryContainer.withValues(alpha: 0.6),
-                  child: Icon(categoryIcon, color: cs.primary, size: 24),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: product.imageUrl == null
+                        ? Container(
+                            color: cs.primaryContainer.withValues(alpha: 0.55),
+                            child: Icon(categoryIcon, color: cs.primary, size: 24),
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: product.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => Container(
+                              color: cs.primaryContainer.withValues(alpha: 0.55),
+                              child: Icon(categoryIcon, color: cs.primary, size: 24),
+                            ),
+                          ),
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -46,15 +62,26 @@ class ProductCard extends StatelessWidget {
                             ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        '${product.category} · ${product.quantity} ${product.unit}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          _SmallChip(
+                            icon: categoryIcon,
+                            label: product.category,
+                          ),
+                          _SmallChip(
+                            icon: product.isLowStock
+                                ? Icons.warning_amber_rounded
+                                : Icons.check_circle_outline_rounded,
+                            label: product.isLowStock ? 'Low stock' : 'In stock',
+                            color: product.isLowStock ? Colors.deepOrange : Colors.green,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Sell ${BdtFormatter.format(product.sellingPrice)}',
+                        '${product.quantity} ${product.unit} • Sell ${BdtFormatter.format(product.sellingPrice)}',
                         style: Theme.of(context).textTheme.labelMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: cs.primary,
@@ -68,6 +95,45 @@ class ProductCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SmallChip extends StatelessWidget {
+  const _SmallChip({
+    required this.icon,
+    required this.label,
+    this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final c = color ?? cs.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: c.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: c),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: c,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
       ),
     );
   }

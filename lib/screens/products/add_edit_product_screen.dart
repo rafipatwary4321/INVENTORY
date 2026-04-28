@@ -186,95 +186,163 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           padding: PremiumTokens.pagePadding(context),
           child: Form(
             key: _formKey,
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: canUploadImage ? _pickImage : null,
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: ReportCard(
-                      padding: EdgeInsets.zero,
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(PremiumTokens.radiusMd),
-                        child: _pickedFile != null
-                            ? Image.file(_pickedFile!, fit: BoxFit.cover)
-                            : _existingImageUrl != null
-                                ? Image.network(
-                                    _existingImageUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Center(child: Icon(Icons.image)),
-                                  )
-                                : const Center(
-                                    child:
-                                        Text('Tap to pick image (optional)'),
-                                  ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 900;
+                final mediaSection = Column(
+                  children: [
+                    const FeatureHeaderCard(
+                      title: 'Product Media',
+                      subtitle: 'Add an optional product photo for better catalog visuals.',
+                      icon: Icons.image_outlined,
+                      trailingIcon: Icons.photo_camera_back_outlined,
+                    ),
+                    GestureDetector(
+                      onTap: canUploadImage ? _pickImage : null,
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: ReportCard(
+                          padding: EdgeInsets.zero,
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(PremiumTokens.radiusMd),
+                            child: _pickedFile != null
+                                ? Image.file(_pickedFile!, fit: BoxFit.cover)
+                                : _existingImageUrl != null
+                                    ? Image.network(
+                                        _existingImageUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Center(child: Icon(Icons.image)),
+                                      )
+                                    : Container(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceContainerHighest
+                                            .withValues(alpha: 0.45),
+                                        child: const Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.image_outlined, size: 44),
+                                            SizedBox(height: 8),
+                                            Text('Tap to pick image (optional)'),
+                                          ],
+                                        ),
+                                      ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                if (!canUploadImage)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      'Demo mode: image upload is disabled.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                    if (!canUploadImage)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Demo mode: image upload is disabled.',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ),
+                  ],
+                );
+                final formSection = Column(
+                  children: [
+                    const FeatureHeaderCard(
+                      title: 'Product Information',
+                      subtitle: 'Enter category, pricing, and stock values.',
+                      icon: Icons.inventory_2_outlined,
+                      trailingIcon: Icons.sell_outlined,
                     ),
-                  ),
-                const SizedBox(height: 16),
-                PremiumTextField(
-                  controller: _name,
-                  label: 'Product name',
-                  validator: (v) => Validators.required(v, field: 'Name'),
-                ),
-                const SizedBox(height: 12),
-                PremiumTextField(
-                  controller: _category,
-                  label: 'Category',
-                  validator: (v) => Validators.required(v, field: 'Category'),
-                ),
-                const SizedBox(height: 12),
-                PremiumTextField(
-                  controller: _buying,
-                  keyboardType: TextInputType.number,
-                  label: 'Buying price (BDT)',
-                  validator: (v) =>
-                      Validators.nonNegativeNumber(v, field: 'Buying price'),
-                ),
-                const SizedBox(height: 12),
-                PremiumTextField(
-                  controller: _selling,
-                  keyboardType: TextInputType.number,
-                  label: 'Selling price (BDT)',
-                  validator: (v) =>
-                      Validators.nonNegativeNumber(v, field: 'Selling price'),
-                ),
-                const SizedBox(height: 12),
-                PremiumTextField(
-                  controller: _quantity,
-                  keyboardType: TextInputType.number,
-                  label: 'Quantity',
-                  validator: (v) => Validators.positiveInt(v, field: 'Quantity'),
-                ),
-                const SizedBox(height: 12),
-                PremiumTextField(
-                  controller: _unit,
-                  label: 'Unit (pcs, kg, box…)',
-                  validator: (v) => Validators.required(v, field: 'Unit'),
-                ),
-                const SizedBox(height: 24),
-                PremiumButton(
-                  label: _busy
-                      ? 'Saving…'
-                      : (isEdit ? 'Update product' : 'Create product'),
-                  expand: true,
-                  icon: _busy ? null : Icons.check_rounded,
-                  onPressed: _busy ? null : _save,
-                ),
-              ],
+                    ReportCard(
+                      child: Column(
+                        children: [
+                          PremiumTextField(
+                            controller: _name,
+                            label: 'Product name',
+                            validator: (v) => Validators.required(v, field: 'Name'),
+                          ),
+                          const SizedBox(height: 12),
+                          PremiumTextField(
+                            controller: _category,
+                            label: 'Category',
+                            validator: (v) => Validators.required(v, field: 'Category'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ReportCard(
+                      child: Column(
+                        children: [
+                          PremiumTextField(
+                            controller: _buying,
+                            keyboardType: TextInputType.number,
+                            label: 'Buying price (BDT)',
+                            validator: (v) =>
+                                Validators.nonNegativeNumber(v, field: 'Buying price'),
+                          ),
+                          const SizedBox(height: 12),
+                          PremiumTextField(
+                            controller: _selling,
+                            keyboardType: TextInputType.number,
+                            label: 'Selling price (BDT)',
+                            validator: (v) =>
+                                Validators.nonNegativeNumber(v, field: 'Selling price'),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: PremiumTextField(
+                                  controller: _quantity,
+                                  keyboardType: TextInputType.number,
+                                  label: 'Quantity',
+                                  validator: (v) =>
+                                      Validators.positiveInt(v, field: 'Quantity'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: PremiumTextField(
+                                  controller: _unit,
+                                  label: 'Unit',
+                                  validator: (v) => Validators.required(v, field: 'Unit'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+                return Column(
+                  children: [
+                    if (!isWide) ...[
+                      mediaSection,
+                      const SizedBox(height: 16),
+                      formSection,
+                    ] else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: mediaSection),
+                          const SizedBox(width: 12),
+                          Expanded(child: formSection),
+                        ],
+                      ),
+                    const SizedBox(height: 24),
+                    PremiumButton(
+                      label: _busy
+                          ? 'Saving...'
+                          : (isEdit ? 'Update product' : 'Create product'),
+                      expand: true,
+                      icon: _busy ? null : Icons.check_rounded,
+                      onPressed: _busy ? null : _save,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

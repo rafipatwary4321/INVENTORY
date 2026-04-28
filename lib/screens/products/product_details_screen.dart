@@ -150,9 +150,30 @@ class ProductDetailsScreen extends StatelessWidget {
                     ),
             ),
           ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              Chip(
+                avatar: const Icon(Icons.category_outlined, size: 16),
+                label: Text(product.category),
+              ),
+              Chip(
+                avatar: Icon(
+                  product.isLowStock
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline_rounded,
+                  size: 16,
+                  color: product.isLowStock ? Colors.deepOrange : Colors.green,
+                ),
+                label: Text(product.isLowStock ? 'Low stock' : 'In stock'),
+              ),
+            ],
+          ),
           if (product.isLowStock)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(top: 10, bottom: 12),
               child: ActionCard(
                 icon: Icons.warning_amber_rounded,
                 label: 'Low stock',
@@ -163,27 +184,62 @@ class ProductDetailsScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 16),
-          ReportCard(
-            child: Column(
-              children: [
-                _DetailRow('Category', product.category),
-                _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
-                _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
-                _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
-                _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          ProductQrCard(
-            productId: product.id,
-            productName: product.name,
-            embeddedSize: 148,
-            onViewFullscreen: () => Navigator.pushNamed(
-              context,
-              AppRoutes.qrGenerate,
-              arguments: product.id,
-            ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 860;
+              final detailsCard = ReportCard(
+                child: Column(
+                  children: [
+                    _DetailRow('Category', product.category),
+                    _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
+                    _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
+                    _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
+                    _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
+                  ],
+                ),
+              );
+              final qrCard = ReportCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'QR preview',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    ProductQrCard(
+                      productId: product.id,
+                      productName: product.name,
+                      embeddedSize: 148,
+                      onViewFullscreen: () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.qrGenerate,
+                        arguments: product.id,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              if (!isWide) {
+                return Column(
+                  children: [
+                    detailsCard,
+                    const SizedBox(height: 16),
+                    qrCard,
+                  ],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: detailsCard),
+                  const SizedBox(width: 10),
+                  Expanded(flex: 2, child: qrCard),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           Text(
