@@ -65,6 +65,8 @@ class _SellScreenState extends State<SellScreen> {
   @override
   Widget build(BuildContext context) {
     final products = context.watch<ProductsProvider>().products;
+    final cart = context.watch<CartProvider>();
+    final cartItems = cart.lines.fold<int>(0, (sum, line) => sum + line.quantity);
     final q = _search.text.trim().toLowerCase();
     final filtered = q.isEmpty
         ? products
@@ -102,6 +104,20 @@ class _SellScreenState extends State<SellScreen> {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
+                    Row(
+                      children: [
+                        _PosInfoChip(
+                          icon: Icons.inventory_2_outlined,
+                          label: '${filtered.length} visible',
+                        ),
+                        const SizedBox(width: 8),
+                        _PosInfoChip(
+                          icon: Icons.shopping_cart_outlined,
+                          label: '$cartItems in cart',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _search,
                       decoration: const InputDecoration(
@@ -190,30 +206,66 @@ class _SellScreenState extends State<SellScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(10),
                   child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _scanForCart,
-                      icon: const Icon(Icons.qr_code_scanner),
-                      label: const Text('Scan to add'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, AppRoutes.cart),
-                      icon: const Icon(Icons.shopping_cart_checkout),
-                      label: const Text('Open cart'),
-                    ),
-                  ),
-                ],
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _scanForCart,
+                          icon: const Icon(Icons.qr_code_scanner),
+                          label: const Text('Scan to add'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () =>
+                              Navigator.pushNamed(context, AppRoutes.cart),
+                          icon: const Icon(Icons.shopping_cart_checkout),
+                          label: Text('Cart ($cartItems)'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PosInfoChip extends StatelessWidget {
+  const _PosInfoChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.72),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }

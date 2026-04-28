@@ -53,6 +53,7 @@ class PremiumTextField extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
         ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }

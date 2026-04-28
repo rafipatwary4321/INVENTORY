@@ -36,7 +36,7 @@ class PremiumButton extends StatelessWidget {
         ? OutlinedButton(
             onPressed: onPressed,
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
               ),
@@ -46,7 +46,7 @@ class PremiumButton extends StatelessWidget {
         : FilledButton(
             onPressed: onPressed,
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
               ),
