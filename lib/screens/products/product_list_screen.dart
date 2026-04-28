@@ -47,7 +47,12 @@ class ProductListScreen extends StatelessWidget {
           : ListView(
               padding: PremiumTokens.pagePadding(context),
               children: [
-                _ProductsHeroCard(totalProducts: products.length),
+                FeatureHeaderCard(
+                  title: 'Product Catalog',
+                  subtitle: '${products.length} item(s) in your inventory workspace.',
+                  icon: Icons.inventory_2_rounded,
+                  trailingIcon: Icons.storefront_rounded,
+                ),
                 const SizedBox(height: 12),
                 ...List.generate(products.length, (i) {
                   final p = products[i];
@@ -76,68 +81,6 @@ class ProductListScreen extends StatelessWidget {
                 }),
               ],
             ),
-    );
-  }
-}
-
-class _ProductsHeroCard extends StatelessWidget {
-  const _ProductsHeroCard({required this.totalProducts});
-
-  final int totalProducts;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.primaryContainer.withValues(alpha: 0.82),
-            cs.secondaryContainer.withValues(alpha: 0.68),
-          ],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: cs.surface.withValues(alpha: 0.75),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(Icons.inventory_2_rounded, color: cs.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Product catalog',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onPrimaryContainer,
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '$totalProducts item(s) ready for stock and POS flow',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onPrimaryContainer.withValues(alpha: 0.84),
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(Icons.widgets_rounded, color: cs.onPrimaryContainer.withValues(alpha: 0.7)),
-          ],
-        ),
-      ),
     );
   }
 }

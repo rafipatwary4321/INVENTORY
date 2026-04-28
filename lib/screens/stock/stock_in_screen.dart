@@ -77,6 +77,12 @@ class _StockInScreenState extends State<StockInScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const FeatureHeaderCard(
+                        title: 'Receive Inventory',
+                        subtitle: 'Add newly arrived units and keep stock accurate.',
+                        icon: Icons.add_box_outlined,
+                        trailingIcon: Icons.local_shipping_outlined,
+                      ),
                       ReportCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

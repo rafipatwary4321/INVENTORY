@@ -123,6 +123,12 @@ class ProductDetailsScreen extends StatelessWidget {
       body: ListView(
         padding: PremiumTokens.pagePadding(context),
         children: [
+          FeatureHeaderCard(
+            title: 'Product Details',
+            subtitle: 'Review stock, QR label, and quick actions for this item.',
+            icon: Icons.inventory_2_rounded,
+            trailingIcon: Icons.qr_code_2_rounded,
+          ),
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: AspectRatio(
@@ -157,11 +163,17 @@ class ProductDetailsScreen extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 16),
-          _DetailRow('Category', product.category),
-          _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
-          _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
-          _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
-          _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
+          ReportCard(
+            child: Column(
+              children: [
+                _DetailRow('Category', product.category),
+                _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
+                _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
+                _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
+                _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           ProductQrCard(
             productId: product.id,

@@ -3,6 +3,7 @@ export 'ai_insight_card.dart';
 export 'business_profile_card.dart';
 export 'empty_state_widget.dart';
 export 'error_state_widget.dart';
+export 'feature_header_card.dart';
 export 'gradient_dashboard_header.dart';
 export 'loading_widget.dart';
 export 'premium_app_bar.dart';
