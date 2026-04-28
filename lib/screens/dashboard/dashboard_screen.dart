@@ -165,7 +165,7 @@ class DashboardScreen extends StatelessWidget {
           ListView(
             padding: PremiumTokens.pagePadding(context),
             children: [
-              GradientDashboardHeader(
+              VisualHeroHeader(
                 title: 'Warehouse Control Center',
                 subtitle:
                     'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
@@ -207,31 +207,31 @@ class DashboardScreen extends StatelessWidget {
                 mainAxisSpacing: 12,
                 childAspectRatio: cardRatio,
                 children: [
-                  StatCard(
+                  GlassStatCard(
                     title: 'Products',
                     value: '${products.length}',
                     icon: Icons.category_outlined,
                     accentColor: Colors.blue,
                   ),
-                  StatCard(
+                  GlassStatCard(
                     title: 'Stock qty',
                     value: '$totalStockQty',
                     icon: Icons.format_list_numbered_rounded,
                     accentColor: Colors.indigo,
                   ),
-                  StatCard(
+                  GlassStatCard(
                     title: 'Stock value',
                     value: BdtFormatter.format(totalStockValue),
                     icon: Icons.account_balance_wallet_outlined,
                     accentColor: Colors.teal,
                   ),
-                  StatCard(
+                  GlassStatCard(
                     title: 'Today sales',
                     value: BdtFormatter.format(todaySales),
                     icon: Icons.point_of_sale,
                     accentColor: Colors.deepPurple,
                   ),
-                  StatCard(
+                  GlassStatCard(
                     title: 'Low stock',
                     value: '$lowStock',
                     icon: Icons.warning_amber_rounded,
@@ -281,7 +281,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     itemBuilder: (context, i) {
                       final item = quickActions[i];
-                      return ActionCard(
+                      return PremiumActionCard(
                         icon: item.icon,
                         label: item.label,
                         subtitle: item.subtitle,

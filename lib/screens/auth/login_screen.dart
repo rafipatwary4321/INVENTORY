@@ -54,64 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
     final isDemoMode = !startupState.firebaseEnabled;
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    cs.primary,
-                    Color.lerp(cs.primary, cs.secondary, 0.35)!,
-                  ],
-                ),
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(PremiumTokens.radiusXl),
-                ),
-                boxShadow: PremiumTokens.cardShadow(context),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.layers_rounded,
-                    size: 40,
-                    color: Colors.white.withValues(alpha: 0.95),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Sign in',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Owner, admin, and staff use the same screen. '
-                    'Access is scoped by your business role.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.4,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: PremiumTokens.pagePadding(context),
-            sliver: SliverToBoxAdapter(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+    Widget formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
                     if (isDemoMode) ...[
                       ReportCard(
                         child: Row(
@@ -198,12 +145,90 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                     const SizedBox(height: 32),
-                  ],
+        ],
+      ),
+    );
+
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 980;
+          final hero = Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  cs.primary,
+                  Color.lerp(cs.primary, cs.secondary, 0.35)!,
+                ],
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(isWide ? 0 : PremiumTokens.radiusXl),
+              ),
+              boxShadow: PremiumTokens.cardShadow(context),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.layers_rounded,
+                  size: 40,
+                  color: Colors.white.withValues(alpha: 0.95),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Sign in',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Owner, admin, and staff use the same screen. Access is scoped by your business role.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.4,
+                      ),
+                ),
+              ],
+            ),
+          );
+          if (!isWide) {
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: hero),
+                SliverPadding(
+                  padding: PremiumTokens.pagePadding(context),
+                  sliver: SliverToBoxAdapter(child: formContent),
+                ),
+              ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: hero),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: PremiumTokens.pagePadding(context),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 460),
+                      child: ReportCard(child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: formContent,
+                      )),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

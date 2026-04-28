@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/product.dart';
 import '../../../core/utils/bdt_formatter.dart';
 import 'premium_tokens.dart';
+import 'stock_status_badge.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({
@@ -70,12 +71,9 @@ class ProductCard extends StatelessWidget {
                             icon: categoryIcon,
                             label: product.category,
                           ),
-                          _SmallChip(
-                            icon: product.isLowStock
-                                ? Icons.warning_amber_rounded
-                                : Icons.check_circle_outline_rounded,
-                            label: product.isLowStock ? 'Low stock' : 'In stock',
-                            color: product.isLowStock ? Colors.deepOrange : Colors.green,
+                          StockStatusBadge(
+                            isLowStock: product.isLowStock,
+                            quantityLabel: '${product.quantity} ${product.unit}',
                           ),
                         ],
                       ),
@@ -104,17 +102,15 @@ class _SmallChip extends StatelessWidget {
   const _SmallChip({
     required this.icon,
     required this.label,
-    this.color,
   });
 
   final IconData icon;
   final String label;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final c = color ?? cs.primary;
+    final c = cs.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

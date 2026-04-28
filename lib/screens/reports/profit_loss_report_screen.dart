@@ -76,6 +76,12 @@ class ProfitLossReportScreen extends StatelessWidget {
             value: BdtFormatter.format(profit),
             emphasize: true,
           ),
+          ReportSummaryCard(
+            icon: Icons.assessment_outlined,
+            title: 'Profit status',
+            value: profit >= 0 ? 'Positive' : 'Negative',
+            valueColor: profit >= 0 ? Colors.green : Colors.red,
+          ),
           const SizedBox(height: 12),
           Text(
             'Profit per sale',

@@ -48,30 +48,16 @@ class SalesReportScreen extends StatelessWidget {
             icon: Icons.bar_chart_rounded,
             trailingIcon: Icons.receipt_long_outlined,
           ),
-          ReportCard(
-            child: ListTile(
-              leading: const Icon(Icons.summarize_outlined),
-              title: const Text('Total sales amount'),
-              trailing: Text(
-                BdtFormatter.format(totalSales),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-            ),
+          ReportSummaryCard(
+            icon: Icons.summarize_outlined,
+            title: 'Total sales amount',
+            value: BdtFormatter.format(totalSales),
           ),
           const SizedBox(height: 10),
-          ReportCard(
-            child: ListTile(
-              leading: const Icon(Icons.today_outlined),
-              title: const Text('Today sales total'),
-              trailing: Text(
-                BdtFormatter.format(todayTotal),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-            ),
+          ReportSummaryCard(
+            icon: Icons.today_outlined,
+            title: 'Today sales total',
+            value: BdtFormatter.format(todayTotal),
           ),
           const SizedBox(height: 12),
           Text(
