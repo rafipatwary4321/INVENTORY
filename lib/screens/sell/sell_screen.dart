@@ -22,6 +22,7 @@ class SellScreen extends StatefulWidget {
 class _SellScreenState extends State<SellScreen> {
   final _search = TextEditingController();
   final _manualId = TextEditingController();
+  final _searchFocus = FocusNode();
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _SellScreenState extends State<SellScreen> {
   void dispose() {
     _search.dispose();
     _manualId.dispose();
+    _searchFocus.dispose();
     super.dispose();
   }
 
@@ -56,7 +58,10 @@ class _SellScreenState extends State<SellScreen> {
           addQty: 1,
         );
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added ${p.name} to cart')),
+      SnackBar(
+        content: Text('Added ${p.name} to cart'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -109,63 +114,71 @@ class _SellScreenState extends State<SellScreen> {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 1000;
-          return Column(
-            children: [
-              Padding(
-                padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-                child: Column(
-                  children: [
-                    FeatureHeaderCard(
-                      title: 'Premium POS Counter',
-                      subtitle: '$cartItems item(s) in cart • ${filtered.length} visible products',
-                      icon: Icons.point_of_sale_rounded,
-                      trailingIcon: Icons.shopping_bag_outlined,
-                    ),
-                    _ScanManualPanel(
-                      search: _search,
-                      manualId: _manualId,
-                      onSearch: () => setState(() {}),
-                      onManualSubmit: _addById,
-                      onScan: _scanForCart,
-                    ),
-                  ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF050C18),
+              Color(0xFF0A1C35),
+              Color(0xFF0F2F57),
+            ],
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 1000;
+            return Column(
+              children: [
+                Padding(
+                  padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+                  child: Column(
+                    children: [
+                      FeatureHeaderCard(
+                        title: 'Premium POS Counter',
+                        subtitle:
+                            '$cartItems item(s) in cart • ${filtered.length} visible products',
+                        icon: Icons.point_of_sale_rounded,
+                        trailingIcon: Icons.shopping_bag_outlined,
+                      ),
+                      _ScanManualPanel(
+                        search: _search,
+                        searchFocus: _searchFocus,
+                        manualId: _manualId,
+                        onSearch: () => setState(() {}),
+                        onManualSubmit: _addById,
+                        onScan: _scanForCart,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: isWide
-                    ? Row(
-                        children: [
-                          Expanded(child: _buildProductArea(filtered, products)),
-                          SizedBox(
-                            width: 330,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                              child: _CartSummaryPanel(
-                                cart: cart,
-                                total: cartTotal,
-                                cartItems: cartItems,
+                const SizedBox(height: 6),
+                Expanded(
+                  child: isWide
+                      ? Row(
+                          children: [
+                            Expanded(child: _buildProductArea(filtered, products)),
+                            SizedBox(
+                              width: 330,
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                                child: _CartSummaryPanel(
+                                  cart: cart,
+                                  total: cartTotal,
+                                  cartItems: cartItems,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      )
-                    : _buildProductArea(filtered, products),
-              ),
-              if (!isWide)
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
+                          ],
+                        )
+                      : _buildProductArea(filtered, products),
+                ),
+                if (!isWide)
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: PremiumGlassCard(
                         child: Row(
                           children: [
                             Expanded(
@@ -177,10 +190,10 @@ class _SellScreenState extends State<SellScreen> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: FilledButton.icon(
+                              child: GlowButton(
                                 onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
-                                icon: const Icon(Icons.shopping_cart_checkout),
-                                label: Text('Checkout ($cartItems)'),
+                                icon: Icons.shopping_cart_checkout,
+                                label: 'Checkout ($cartItems)',
                               ),
                             ),
                           ],
@@ -188,10 +201,10 @@ class _SellScreenState extends State<SellScreen> {
                       ),
                     ),
                   ),
-                ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -274,6 +287,7 @@ class _PosInfoChip extends StatelessWidget {
 class _ScanManualPanel extends StatelessWidget {
   const _ScanManualPanel({
     required this.search,
+    required this.searchFocus,
     required this.manualId,
     required this.onSearch,
     required this.onManualSubmit,
@@ -281,6 +295,7 @@ class _ScanManualPanel extends StatelessWidget {
   });
 
   final TextEditingController search;
+  final FocusNode searchFocus;
   final TextEditingController manualId;
   final VoidCallback onSearch;
   final void Function(String id) onManualSubmit;
@@ -288,22 +303,35 @@ class _ScanManualPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-      ),
+    return PremiumGlassCard(
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(2),
         child: Column(
           children: [
-            TextField(
-              controller: search,
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search_rounded),
-                hintText: 'Search products...',
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: searchFocus.hasFocus
+                    ? [
+                        BoxShadow(
+                          color: Colors.cyanAccent.withValues(alpha: 0.24),
+                          blurRadius: 20,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
               ),
-              onChanged: (_) => onSearch(),
+              child: TextField(
+                focusNode: searchFocus,
+                controller: search,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search_rounded),
+                  hintText: 'Search products...',
+                ),
+                onChanged: (_) => onSearch(),
+              ),
             ),
             const SizedBox(height: 10),
             Row(
@@ -370,8 +398,10 @@ class _PosProductCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Opacity(
       opacity: product.quantity < 1 ? 0.55 : 1,
-      child: DecoratedBox(
-        decoration: PremiumTokens.cardDecoration(context),
+      child: PremiumGlassCard(
+        borderColor: inCartQty > product.quantity - 1
+            ? Colors.amber.withValues(alpha: 0.45)
+            : null,
         child: ListTile(
           onTap: onTap,
           leading: CircleAvatar(
@@ -383,6 +413,10 @@ class _PosProductCard extends StatelessWidget {
             '${product.category} • Stock ${product.quantity} ${product.unit}'
             '${inCartQty > 0 ? ' • In cart $inCartQty' : ''}',
           ),
+          isThreeLine: inCartQty >= product.quantity && product.quantity > 0,
+          subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
+          titleTextStyle: Theme.of(context).textTheme.titleMedium,
+          minVerticalPadding: 10,
           trailing: SizedBox(
             width: 126,
             child: Row(

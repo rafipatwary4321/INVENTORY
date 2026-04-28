@@ -76,7 +76,10 @@ class _CartScreenState extends State<CartScreen> {
         (route) => false,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sale completed')),
+        const SnackBar(
+          content: Text('Sale completed'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
       if (mounted) ErrorHandler.showSnack(context, e);
@@ -94,131 +97,158 @@ class _CartScreenState extends State<CartScreen> {
         title: 'Cart',
         subtitle: 'Review & checkout',
       ),
-      body: cart.isEmpty
-          ? const EmptyStateWidget(
-              icon: Icons.shopping_cart_outlined,
-              title: 'Cart is empty',
-              subtitle: 'Add products from Sell / POS to build a sale.',
-            )
-          : Column(
-              children: [
-                Padding(
-                  padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-                  child: FeatureHeaderCard(
-                    title: 'Checkout Cart',
-                    subtitle: '${cart.lines.length} line(s) ready for billing review.',
-                    icon: Icons.shopping_cart_checkout_rounded,
-                    trailingIcon: Icons.receipt_long_rounded,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF050C18),
+              Color(0xFF0A1C35),
+              Color(0xFF0F2F57),
+            ],
+          ),
+        ),
+        child: cart.isEmpty
+            ? const EmptyStateVisual(
+                icon: Icons.shopping_cart_outlined,
+                title: 'Cart is empty',
+                subtitle: 'Add products from Sell / POS to build a sale.',
+              )
+            : Column(
+                children: [
+                  Padding(
+                    padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+                    child: FeatureHeaderCard(
+                      title: 'Checkout Cart',
+                      subtitle: '${cart.lines.length} line(s) ready for billing review.',
+                      icon: Icons.shopping_cart_checkout_rounded,
+                      trailingIcon: Icons.receipt_long_rounded,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    padding: PremiumTokens.pagePadding(context),
-                    itemCount: cart.lines.length,
-                    itemBuilder: (context, i) {
-                      final line = cart.lines[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: ReportCard(
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                              Text(
-                                line.name,
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Text(
-                                '${BdtFormatter.format(line.unitPrice)} × ${line.quantity}',
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
+                  Expanded(
+                    child: ListView.builder(
+                      padding: PremiumTokens.pagePadding(context),
+                      itemCount: cart.lines.length,
+                      itemBuilder: (context, i) {
+                        final line = cart.lines[i];
+                        final stock = context.read<ProductsProvider>().byId(line.productId)?.quantity;
+                        final atStockLimit = stock != null && line.quantity >= stock;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: PremiumGlassCard(
+                            borderColor: atStockLimit
+                                ? Colors.amber.withValues(alpha: 0.45)
+                                : null,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      context.read<CartProvider>().setQuantity(
-                                            line.productId,
-                                            line.quantity - 1,
-                                          );
-                                    },
-                                    icon: const Icon(Icons.remove_circle_outline),
-                                  ),
-                                  Text('${line.quantity}'),
-                                  IconButton(
-                                    onPressed: () {
-                                      final stock = context
-                                          .read<ProductsProvider>()
-                                          .byId(line.productId)
-                                          ?.quantity;
-                                      if (stock != null &&
-                                          line.quantity + 1 > stock) {
-                                        ErrorHandler.showSnack(
-                                          context,
-                                          Exception('Cannot exceed stock'),
-                                        );
-                                        return;
-                                      }
-                                      context.read<CartProvider>().setQuantity(
-                                            line.productId,
-                                            line.quantity + 1,
-                                          );
-                                    },
-                                    icon: const Icon(Icons.add_circle_outline),
-                                  ),
-                                  IconButton(
-                                    tooltip: 'Remove',
-                                    onPressed: () => context
-                                        .read<CartProvider>()
-                                        .removeLine(line.productId),
-                                    icon: const Icon(Icons.delete_outline),
-                                  ),
-                                  const Spacer(),
                                   Text(
-                                    BdtFormatter.format(line.lineTotal),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall
-                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                    line.name,
+                                    style: Theme.of(context).textTheme.titleMedium,
+                                  ),
+                                  Text(
+                                    '${BdtFormatter.format(line.unitPrice)} × ${line.quantity}',
+                                  ),
+                                  if (atStockLimit)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text(
+                                        'Stock limit reached',
+                                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                              color: Colors.amber.shade700,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      IconButton.filledTonal(
+                                        onPressed: () {
+                                          context.read<CartProvider>().setQuantity(
+                                                line.productId,
+                                                line.quantity - 1,
+                                              );
+                                        },
+                                        icon: const Icon(Icons.remove_rounded),
+                                      ),
+                                      Text('${line.quantity}'),
+                                      IconButton.filled(
+                                        onPressed: () {
+                                          final stock = context
+                                              .read<ProductsProvider>()
+                                              .byId(line.productId)
+                                              ?.quantity;
+                                          if (stock != null &&
+                                              line.quantity + 1 > stock) {
+                                            ErrorHandler.showSnack(
+                                              context,
+                                              Exception('Cannot exceed stock'),
+                                            );
+                                            return;
+                                          }
+                                          context.read<CartProvider>().setQuantity(
+                                                line.productId,
+                                                line.quantity + 1,
+                                              );
+                                        },
+                                        icon: const Icon(Icons.add_rounded),
+                                      ),
+                                      IconButton(
+                                        tooltip: 'Remove',
+                                        onPressed: () =>
+                                            context.read<CartProvider>().removeLine(line.productId),
+                                        icon: const Icon(Icons.delete_outline),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        BdtFormatter.format(line.lineTotal),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-                SafeArea(
-                  child: Padding(
-                    padding: PremiumTokens.pagePadding(context),
-                    child: ReportCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Total: ${BdtFormatter.format(cart.subtotal)}',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          PremiumButton(
-                            label: _busy ? 'Processing…' : 'Complete sale',
-                            expand: true,
-                            icon: _busy ? null : Icons.check_rounded,
-                            onPressed: _busy ? null : _checkout,
-                          ),
-                        ],
+                  SafeArea(
+                    child: Padding(
+                      padding: PremiumTokens.pagePadding(context),
+                      child: PremiumGlassCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Total: ${BdtFormatter.format(cart.subtotal)}',
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            GlowButton(
+                              label: _busy ? 'Processing…' : 'Complete sale',
+                              icon: _busy ? null : Icons.check_rounded,
+                              onPressed: _busy ? null : _checkout,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+      ),
     );
   }
 }
