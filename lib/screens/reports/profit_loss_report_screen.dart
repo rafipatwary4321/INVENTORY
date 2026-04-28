@@ -53,72 +53,101 @@ class ProfitLossReportScreen extends StatelessWidget {
         title: 'Profit / Loss',
         subtitle: 'Revenue vs cost',
       ),
-      body: ListView(
-        padding: PremiumTokens.pagePadding(context),
-        children: [
-          const FeatureHeaderCard(
-            title: 'Profit & Loss',
-            subtitle: 'Compare revenue against cost of goods sold.',
-            icon: Icons.trending_up_rounded,
-            trailingIcon: Icons.account_balance_wallet_outlined,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
           ),
-          Text(
-            'Based on loaded sale lines (${items.length}). '
-            'For large datasets, add server-side aggregation.',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 16),
-          _MetricTile(label: 'Revenue (selling)', value: BdtFormatter.format(revenue)),
-          _MetricTile(label: 'Cost of goods sold', value: BdtFormatter.format(cost)),
-          const Divider(height: 32),
-          _MetricTile(
-            label: 'Total profit',
-            value: BdtFormatter.format(profit),
-            emphasize: true,
-          ),
-          ReportSummaryCard(
-            icon: Icons.assessment_outlined,
-            title: 'Profit status',
-            value: profit >= 0 ? 'Positive' : 'Negative',
-            valueColor: profit >= 0 ? Colors.green : Colors.red,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Profit per sale',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          if (perSaleEntries.isEmpty)
-            ReportCard(
-              child: ListTile(
-                title: Text(
-                  'No sale lines available yet',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+        ),
+        child: ListView(
+          padding: PremiumTokens.pagePadding(context),
+          children: [
+            const FeatureHeaderCard(
+              title: 'Profit & Loss',
+              subtitle: 'Compare revenue against cost of goods sold.',
+              icon: Icons.trending_up_rounded,
+              trailingIcon: Icons.account_balance_wallet_outlined,
+            ),
+            PremiumGlassCard(
+              child: Row(
+                children: const [
+                  Icon(Icons.date_range_outlined),
+                  SizedBox(width: 10),
+                  Expanded(child: Text('Date filter (coming soon): Today / 7 days / 30 days / Custom')),
+                ],
               ),
-            )
-          else
-            ...perSaleEntries.map(
-              (entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: ReportCard(
-                  child: ListTile(
-                    title: Text(
-                      'Sale ${entry.key.length > 8 ? entry.key.substring(0, 8) : entry.key}',
-                    ),
-                    trailing: Text(
-                      BdtFormatter.format(entry.value),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+            ),
+            const SizedBox(height: 10),
+            PremiumGlassCard(
+              child: const ListTile(
+                leading: Icon(Icons.stacked_line_chart_rounded),
+                title: Text('Profit trend'),
+                subtitle: Text('Chart-style visual placeholder for revenue vs cost'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Based on loaded sale lines (${items.length}). '
+              'For large datasets, add server-side aggregation.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            _MetricTile(label: 'Revenue (selling)', value: BdtFormatter.format(revenue)),
+            _MetricTile(label: 'Cost of goods sold', value: BdtFormatter.format(cost)),
+            const Divider(height: 32),
+            _MetricTile(
+              label: 'Total profit',
+              value: BdtFormatter.format(profit),
+              emphasize: true,
+              isPositive: profit >= 0,
+            ),
+            ReportSummaryCard(
+              icon: Icons.assessment_outlined,
+              title: 'Profit status',
+              value: profit >= 0 ? 'Positive' : 'Negative',
+              valueColor: profit >= 0 ? Colors.green : Colors.red,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Profit per sale',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            if (perSaleEntries.isEmpty)
+              ReportCard(
+                child: ListTile(
+                  title: Text(
+                    'No sale lines available yet',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+              )
+            else
+              ...perSaleEntries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: PremiumGlassCard(
+                    child: ListTile(
+                      title: Text(
+                        'Sale ${entry.key.length > 8 ? entry.key.substring(0, 8) : entry.key}',
+                      ),
+                      trailing: Text(
+                        BdtFormatter.format(entry.value),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: entry.value >= 0 ? Colors.green : Colors.red,
+                            ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -129,17 +158,19 @@ class _MetricTile extends StatelessWidget {
     required this.label,
     required this.value,
     this.emphasize = false,
+    this.isPositive = true,
   });
 
   final String label;
   final String value;
   final bool emphasize;
+  final bool isPositive;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: ReportCard(
+      child: PremiumGlassCard(
         child: ListTile(
           title: Text(label),
           trailing: Text(
@@ -147,7 +178,7 @@ class _MetricTile extends StatelessWidget {
             style: emphasize
                 ? Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: isPositive ? Colors.green : Colors.red,
                     )
                 : Theme.of(context).textTheme.titleMedium,
           ),

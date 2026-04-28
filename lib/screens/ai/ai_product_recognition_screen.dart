@@ -159,14 +159,35 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
         title: 'AI product recognition',
         subtitle: 'Image → product draft',
       ),
-      body: Padding(
-        padding: PremiumTokens.pagePadding(context),
-        child: ListView(
-          children: [
-            Text(_status, style: Theme.of(context).textTheme.bodyLarge),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+          ),
+        ),
+        child: Padding(
+          padding: PremiumTokens.pagePadding(context),
+          child: ListView(
+            children: [
+              PremiumGlassCard(
+                borderColor: Colors.cyanAccent.withValues(alpha: 0.3),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 16,
+                      child: Icon(Icons.auto_awesome_rounded, size: 16),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(_status, style: Theme.of(context).textTheme.bodyLarge)),
+                  ],
+                ),
+              ),
             const SizedBox(height: 12),
             if (_result != null)
-              ReportCard(
+              PremiumGlassCard(
+                borderColor: Colors.cyanAccent.withValues(alpha: 0.32),
                 child: ListTile(
                   leading: const Icon(Icons.auto_awesome_outlined),
                   title: Text(_result!.productName),
@@ -179,7 +200,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
-              child: ReportCard(
+              child: PremiumGlassCard(
                 padding: EdgeInsets.zero,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
@@ -345,7 +366,8 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
                   ),
                 ),
             ],
-          ],
+            ],
+          ),
         ),
       ),
     );

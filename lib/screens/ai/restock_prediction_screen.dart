@@ -23,34 +23,79 @@ class RestockPredictionScreen extends StatelessWidget {
         title: 'Predictive Restock',
         subtitle: 'Stockout risk',
       ),
-      body: forecasts.isEmpty
-          ? const EmptyStateWidget(
-              title: 'No urgent restock suggestions',
-              subtitle: 'AI will suggest products when stockout risk is detected.',
-              icon: Icons.inventory_2_outlined,
-            )
-          : ListView.builder(
-              padding: PremiumTokens.pagePadding(context),
-              itemCount: forecasts.length,
-              itemBuilder: (_, i) {
-                final f = forecasts[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: ReportCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.trending_up),
-                      title: Text(f.productName),
-                      subtitle: Text(
-                        'Current ${f.currentQty} · Avg/day ${f.avgDailySales.toStringAsFixed(1)}\n'
-                        'Stockout ~${f.daysToStockout} day(s) · Suggest +${f.suggestedRestockQty}\n'
-                        '${f.reason}',
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+          ),
+        ),
+        child: forecasts.isEmpty
+            ? const EmptyStateVisual(
+                title: 'No urgent restock suggestions',
+                subtitle: 'AI will suggest products when stockout risk is detected.',
+                icon: Icons.inventory_2_outlined,
+              )
+            : ListView.builder(
+                padding: PremiumTokens.pagePadding(context),
+                itemCount: forecasts.length,
+                itemBuilder: (_, i) {
+                  final f = forecasts[i];
+                  final riskColor = f.daysToStockout <= 2
+                      ? Colors.red
+                      : (f.daysToStockout <= 5 ? Colors.orange : Colors.green);
+                  final riskLabel = f.daysToStockout <= 2
+                      ? 'High risk'
+                      : (f.daysToStockout <= 5 ? 'Medium risk' : 'Low risk');
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: PremiumGlassCard(
+                      borderColor: riskColor.withValues(alpha: 0.35),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.trending_up),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  f.productName,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: riskColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  riskLabel,
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                        color: riskColor,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Current ${f.currentQty} · Avg/day ${f.avgDailySales.toStringAsFixed(1)}\n'
+                            'Stockout ~${f.daysToStockout} day(s) · Suggest +${f.suggestedRestockQty}\n'
+                            '${f.reason}',
+                          ),
+                        ],
                       ),
-                      isThreeLine: true,
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }

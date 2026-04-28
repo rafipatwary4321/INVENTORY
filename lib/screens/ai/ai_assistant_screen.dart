@@ -100,8 +100,16 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             ? 'Provider: Real AI API'
             : 'Provider: Local fallback AI',
       ),
-      body: Column(
-        children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+          ),
+        ),
+        child: Column(
+          children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
             child: FeatureHeaderCard(
@@ -174,7 +182,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
           ),
           Expanded(
             child: _messages.length <= 1
-                ? EmptyStateWidget(
+                ? EmptyStateVisual(
                     icon: Icons.chat_bubble_outline_rounded,
                     title: 'Ask inventory AI',
                     subtitle:
@@ -223,36 +231,16 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                               ),
                             ),
                           Flexible(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: m.fromUser
-                                    ? cs.primaryContainer
-                                    : cs.surfaceContainerHighest,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: const Radius.circular(16),
-                                  topRight: const Radius.circular(16),
-                                  bottomLeft: Radius.circular(m.fromUser ? 16 : 4),
-                                  bottomRight: Radius.circular(m.fromUser ? 4 : 16),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  m.text,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: m.fromUser
-                                            ? cs.onPrimaryContainer
-                                            : cs.onSurface,
-                                        height: 1.35,
-                                      ),
-                                ),
+                            child: PremiumGlassCard(
+                              borderColor: m.fromUser
+                                  ? cs.primary.withValues(alpha: 0.35)
+                                  : Colors.cyanAccent.withValues(alpha: 0.25),
+                              child: Text(
+                                m.text,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.95),
+                                      height: 1.35,
+                                    ),
                               ),
                             ),
                           ),
@@ -282,40 +270,43 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-              child: LayoutBuilder(
-                builder: (context, c) {
-                  final narrow = c.maxWidth < 400;
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _controller,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: _busy ? null : _ask,
-                          decoration: const InputDecoration(
-                            hintText: 'Ask inventory intelligence...',
+              child: PremiumGlassCard(
+                child: LayoutBuilder(
+                  builder: (context, c) {
+                    final narrow = c.maxWidth < 400;
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            textInputAction: TextInputAction.send,
+                            onSubmitted: _busy ? null : _ask,
+                            decoration: const InputDecoration(
+                              hintText: 'Ask inventory intelligence...',
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      narrow
-                          ? IconButton.filled(
-                              onPressed: _busy ? null : () => _ask(),
-                              tooltip: 'Ask',
-                              icon: const Icon(Icons.send_rounded),
-                            )
-                          : FilledButton.icon(
-                              onPressed: _busy ? null : _ask,
-                              icon: const Icon(Icons.send_rounded),
-                              label: const Text('Ask'),
-                            ),
-                    ],
-                  );
-                },
+                        const SizedBox(width: 8),
+                        narrow
+                            ? IconButton.filled(
+                                onPressed: _busy ? null : () => _ask(),
+                                tooltip: 'Ask',
+                                icon: const Icon(Icons.send_rounded),
+                              )
+                            : GlowButton(
+                                onPressed: _busy ? null : _ask,
+                                icon: Icons.send_rounded,
+                                label: 'Ask',
+                              ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -337,6 +328,8 @@ class _QuickQuestion extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         avatar: Icon(icon, size: 16),
+        backgroundColor: Colors.cyanAccent.withValues(alpha: 0.18),
+        side: BorderSide(color: Colors.cyanAccent.withValues(alpha: 0.3)),
         label: Text(label),
         onPressed: onTap,
       ),

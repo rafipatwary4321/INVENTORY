@@ -23,24 +23,45 @@ class SmartInsightsScreen extends StatelessWidget {
         title: 'Smart Business Insights',
         subtitle: 'AI patterns',
       ),
-      body: products.isEmpty && items.isEmpty
-          ? const EmptyStateWidget(
-              title: 'No insight data yet',
-              subtitle: 'Add products and sales to unlock AI pattern insights.',
-              icon: Icons.insights_outlined,
-            )
-          : ListView.separated(
-              padding: PremiumTokens.pagePadding(context),
-              itemCount: insights.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
-              itemBuilder: (_, i) {
-                final insight = insights[i];
-                return AIInsightCard(
-                  title: insight.title,
-                  body: insight.detail,
-                );
-              },
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+          ),
+        ),
+        child: products.isEmpty && items.isEmpty
+            ? const EmptyStateVisual(
+                title: 'No insight data yet',
+                subtitle: 'Add products and sales to unlock AI pattern insights.',
+                icon: Icons.insights_outlined,
+              )
+            : ListView.separated(
+                padding: PremiumTokens.pagePadding(context),
+                itemCount: insights.length + 1,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (_, i) {
+                  if (i == 0) {
+                    return const PremiumGlassCard(
+                      child: ListTile(
+                        leading: Icon(Icons.auto_graph_rounded),
+                        title: Text('AI trend board'),
+                        subtitle: Text('Chart-style insight visual placeholder'),
+                      ),
+                    );
+                  }
+                  final insight = insights[i - 1];
+                  return PremiumGlassCard(
+                    borderColor: Colors.cyanAccent.withValues(alpha: 0.3),
+                    child: AIInsightCard(
+                      title: insight.title,
+                      body: insight.detail,
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }
