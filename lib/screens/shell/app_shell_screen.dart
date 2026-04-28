@@ -87,12 +87,13 @@ class _AppShellScreenState extends State<AppShellScreen> {
         ),
     ];
 
-    final selectedScreen = tabs[_index].screen;
+    final bottomTabs = tabs.where((t) => !t.hideFromBottomNav).toList();
+    final bottomIndex = (_index < bottomTabs.length) ? _index : 0;
+    final activeTab = isWide ? tabs[_index] : bottomTabs[bottomIndex];
+    final selectedScreen = activeTab.screen;
     final bool showsScaffoldActionFab = selectedScreen is DashboardScreen;
 
     if (!isWide) {
-      final bottomTabs = tabs.where((t) => !t.hideFromBottomNav).toList();
-      final bottomIndex = (_index < bottomTabs.length) ? _index : 0;
       return Scaffold(
         body: IndexedStack(
           index: bottomIndex,

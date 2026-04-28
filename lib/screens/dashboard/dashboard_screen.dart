@@ -315,58 +315,6 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Quick actions',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: quickActions.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2.15,
-                ),
-                itemBuilder: (context, i) {
-                  final item = quickActions[i];
-                  return PremiumActionCard(
-                    icon: item.icon,
-                    label: item.label,
-                    subtitle: item.subtitle,
-                    onTap: item.onTap,
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'AI insight preview',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              AIInsightCard(
-                title: 'Smart business tip',
-                body: lowStock > 0
-                    ? '$lowStock item(s) are under threshold. Prioritize fast sellers first for restock.'
-                    : 'Inventory health is stable today. Focus on promoting high margin products.',
-                icon: Icons.auto_awesome_rounded,
-              ),
-              AIInsightCard(
-                title: 'Restock suggestion',
-                body: lowStock > 0
-                    ? 'Open Predictive Restock to see AI recommended purchase quantities.'
-                    : 'No urgent restock need now. Monitor tomorrow sales trend for early action.',
-                icon: Icons.inventory_outlined,
-              ),
               const SizedBox(height: 24),
             ],
           ),
