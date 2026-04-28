@@ -182,69 +182,78 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       ),
       body: AbsorbPointer(
         absorbing: _busy,
-        child: SingleChildScrollView(
-          padding: PremiumTokens.pagePadding(context),
-          child: Form(
-            key: _formKey,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 900;
-                final mediaSection = Column(
-                  children: [
-                    const FeatureHeaderCard(
-                      title: 'Product Media',
-                      subtitle: 'Add an optional product photo for better catalog visuals.',
-                      icon: Icons.image_outlined,
-                      trailingIcon: Icons.photo_camera_back_outlined,
-                    ),
-                    GestureDetector(
-                      onTap: canUploadImage ? _pickImage : null,
-                      child: AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: ReportCard(
-                          padding: EdgeInsets.zero,
-                          child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(PremiumTokens.radiusMd),
-                            child: _pickedFile != null
-                                ? Image.file(_pickedFile!, fit: BoxFit.cover)
-                                : _existingImageUrl != null
-                                    ? Image.network(
-                                        _existingImageUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Center(child: Icon(Icons.image)),
-                                      )
-                                    : Container(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .surfaceContainerHighest
-                                            .withValues(alpha: 0.45),
-                                        child: const Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.image_outlined, size: 44),
-                                            SizedBox(height: 8),
-                                            Text('Tap to pick image (optional)'),
-                                          ],
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF050C18),
+                Color(0xFF0A1C35),
+                Color(0xFF0F2F57),
+              ],
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: PremiumTokens.pagePadding(context),
+            child: Form(
+              key: _formKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  final mediaSection = Column(
+                    children: [
+                      const FeatureHeaderCard(
+                        title: 'Product Media',
+                        subtitle: 'Add an optional product photo for better catalog visuals.',
+                        icon: Icons.image_outlined,
+                        trailingIcon: Icons.photo_camera_back_outlined,
+                      ),
+                      GestureDetector(
+                        onTap: canUploadImage ? _pickImage : null,
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: PremiumGlassCard(
+                            padding: EdgeInsets.zero,
+                            child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(PremiumTokens.radiusMd),
+                              child: _pickedFile != null
+                                  ? Image.file(_pickedFile!, fit: BoxFit.cover)
+                                  : _existingImageUrl != null
+                                      ? Image.network(
+                                          _existingImageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Center(child: Icon(Icons.image)),
+                                        )
+                                      : Container(
+                                          color: Colors.white.withValues(alpha: 0.08),
+                                          child: const Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(Icons.image_outlined, size: 44),
+                                              SizedBox(height: 8),
+                                              Text('Tap to pick image (optional)'),
+                                            ],
+                                          ),
                                         ),
-                                      ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (!canUploadImage)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          'Demo mode: image upload is disabled.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
+                      if (!canUploadImage)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            'Demo mode: image upload is disabled.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
                         ),
-                      ),
-                  ],
-                );
+                    ],
+                  );
                 final formSection = Column(
                   children: [
                     const FeatureHeaderCard(
@@ -253,7 +262,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       icon: Icons.inventory_2_outlined,
                       trailingIcon: Icons.sell_outlined,
                     ),
-                    ReportCard(
+                    PremiumGlassCard(
                       child: Column(
                         children: [
                           PremiumTextField(
@@ -271,7 +280,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ReportCard(
+                    PremiumGlassCard(
                       child: Column(
                         children: [
                           PremiumTextField(
@@ -316,33 +325,36 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     ),
                   ],
                 );
-                return Column(
-                  children: [
-                    if (!isWide) ...[
-                      mediaSection,
-                      const SizedBox(height: 16),
-                      formSection,
-                    ] else
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(child: mediaSection),
-                          const SizedBox(width: 12),
-                          Expanded(child: formSection),
-                        ],
+                  return Column(
+                    children: [
+                      if (!isWide) ...[
+                        mediaSection,
+                        const SizedBox(height: 16),
+                        formSection,
+                      ] else
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: mediaSection),
+                            const SizedBox(width: 12),
+                            Expanded(child: formSection),
+                          ],
+                        ),
+                      const SizedBox(height: 24),
+                      PremiumGlassCard(
+                        child: PremiumButton(
+                          label: _busy
+                              ? 'Saving...'
+                              : (isEdit ? 'Update product' : 'Create product'),
+                          expand: true,
+                          icon: _busy ? null : Icons.check_rounded,
+                          onPressed: _busy ? null : _save,
+                        ),
                       ),
-                    const SizedBox(height: 24),
-                    PremiumButton(
-                      label: _busy
-                          ? 'Saving...'
-                          : (isEdit ? 'Update product' : 'Create product'),
-                      expand: true,
-                      icon: _busy ? null : Icons.check_rounded,
-                      onPressed: _busy ? null : _save,
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),

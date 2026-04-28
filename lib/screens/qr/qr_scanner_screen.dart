@@ -133,7 +133,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final title = switch (widget.mode) {
       QRScanMode.stockIn => 'Scan — Stock in',
       QRScanMode.sell => 'Scan — Sell',
@@ -151,11 +150,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
         ],
       ),
-      body: _buildBody(scheme),
+      body: _buildBody(),
     );
   }
 
-  Widget _buildBody(ColorScheme scheme) {
+  Widget _buildBody() {
+    final scheme = Theme.of(context).colorScheme;
     if (_checkingPermission) {
       return const LoadingWidget(
         message: 'Checking camera permission…',
@@ -163,61 +163,79 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     }
 
     if (!_hasPermission) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const FeatureHeaderCard(
-                title: 'QR Scanner',
-                subtitle: 'Use camera access to scan inventory product labels.',
-                icon: Icons.qr_code_scanner_rounded,
-                trailingIcon: Icons.camera_alt_outlined,
-              ),
-              Icon(
-                Icons.camera_alt_outlined,
-                size: 72,
-                color: scheme.outline,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                _permanentlyDenied
-                    ? 'Camera is blocked for this app.'
-                    : 'Camera permission is required to scan QR codes.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _permanentlyDenied
-                    ? 'Open Settings → Permissions and allow Camera, then return here.'
-                    : 'Tap below to allow access when the system dialog appears.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-              ),
-              const SizedBox(height: 28),
-              FilledButton.icon(
-                onPressed: () async {
-                  if (_permanentlyDenied) {
-                    await openAppSettings();
-                  } else {
-                    await _resolvePermission();
-                  }
-                },
-                icon: Icon(_permanentlyDenied ? Icons.settings : Icons.camera_alt),
-                label: Text(_permanentlyDenied ? 'Open settings' : 'Try again'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              const SizedBox(height: 8),
-              _manualFallbackCard(),
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF050C18),
+              Color(0xFF0A1C35),
+              Color(0xFF0F2F57),
             ],
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: PremiumGlassCard(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const FeatureHeaderCard(
+                      title: 'QR Scanner',
+                      subtitle: 'Use camera access to scan inventory product labels.',
+                      icon: Icons.qr_code_scanner_rounded,
+                      trailingIcon: Icons.camera_alt_outlined,
+                    ),
+                    Icon(
+                      Icons.camera_alt_outlined,
+                      size: 72,
+                      color: scheme.outline,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      _permanentlyDenied
+                          ? 'Camera is blocked for this app.'
+                          : 'Camera permission is required to scan QR codes.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _permanentlyDenied
+                          ? 'Open Settings → Permissions and allow Camera, then return here.'
+                          : 'Tap below to allow access when the system dialog appears.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const SizedBox(height: 18),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        if (_permanentlyDenied) {
+                          await openAppSettings();
+                        } else {
+                          await _resolvePermission();
+                        }
+                      },
+                      icon: Icon(_permanentlyDenied ? Icons.settings : Icons.camera_alt),
+                      label: Text(_permanentlyDenied ? 'Open settings' : 'Try again'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(height: 8),
+                    _manualFallbackCard(),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       );
@@ -361,8 +379,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   }
 
   Widget _manualFallbackCard({bool compact = false}) {
-    return ReportCard(
+    return PremiumGlassCard(
       padding: EdgeInsets.all(compact ? 12 : 16),
+      borderColor: Colors.cyanAccent.withValues(alpha: 0.2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

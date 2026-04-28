@@ -120,36 +120,45 @@ class ProductDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: PremiumTokens.pagePadding(context),
-        children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF050C18),
+              Color(0xFF0A1C35),
+              Color(0xFF0F2F57),
+            ],
+          ),
+        ),
+        child: ListView(
+          padding: PremiumTokens.pagePadding(context),
+          children: [
           FeatureHeaderCard(
             title: 'Product Details',
             subtitle: 'Review stock, QR label, and quick actions for this item.',
             icon: Icons.inventory_2_rounded,
             trailingIcon: Icons.qr_code_2_rounded,
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: product.imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: product.imageUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          const Center(child: CircularProgressIndicator()),
-                      errorWidget: (_, __, ___) => const ColoredBox(
-                        color: Color(0xFFE0E0E0),
-                        child: Icon(Icons.image_not_supported, size: 48),
-                      ),
-                    )
-                  : const ColoredBox(
-                      color: Color(0xFFE0E0E0),
-                      child: Icon(Icons.inventory_2_outlined, size: 48),
-                    ),
+            PremiumGlassCard(
+              padding: EdgeInsets.zero,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: product.imageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: product.imageUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (_, __, ___) => _ImagePlaceholder(),
+                        )
+                      : const _ImagePlaceholder(),
+                ),
+              ),
             ),
-          ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
@@ -174,13 +183,23 @@ class ProductDetailsScreen extends StatelessWidget {
           if (product.isLowStock)
             Padding(
               padding: const EdgeInsets.only(top: 10, bottom: 12),
-              child: ActionCard(
-                icon: Icons.warning_amber_rounded,
-                label: 'Low stock',
-                subtitle:
-                    'Below ${AppConstants.lowStockThreshold} ${product.unit}',
-                iconColor: Colors.deepOrange,
-                onTap: null,
+              child: PremiumGlassCard(
+                borderColor: Colors.deepOrange.withValues(alpha: 0.35),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: Colors.deepOrange),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Low stock warning: below ${AppConstants.lowStockThreshold} ${product.unit}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           const SizedBox(height: 16),
@@ -198,7 +217,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   ],
                 ),
               );
-              final qrCard = ReportCard(
+              final qrCard = PremiumGlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -249,26 +268,28 @@ class ProductDetailsScreen extends StatelessWidget {
                 ),
           ),
           const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  onPressed: () =>
-                      ProductQrScanActions.scanThenStockIn(context),
-                  icon: const Icon(Icons.add_box_outlined),
-                  label: const Text('Stock in'),
+          PremiumGlassCard(
+            child: Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: () =>
+                        ProductQrScanActions.scanThenStockIn(context),
+                    icon: const Icon(Icons.add_box_outlined),
+                    label: const Text('Stock in'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () =>
-                      ProductQrScanActions.scanThenAddToCart(context),
-                  icon: const Icon(Icons.shopping_cart_outlined),
-                  label: const Text('To cart'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        ProductQrScanActions.scanThenAddToCart(context),
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    label: const Text('To cart'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           Text(
@@ -330,7 +351,38 @@ class ProductDetailsScreen extends StatelessWidget {
               label: const Text('Delete product', style: TextStyle(color: Colors.red)),
             ),
           ],
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ImagePlaceholder extends StatelessWidget {
+  const _ImagePlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: Colors.white.withValues(alpha: 0.08),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 54,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No product image',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.82),
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
