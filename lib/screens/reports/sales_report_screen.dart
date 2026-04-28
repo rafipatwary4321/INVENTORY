@@ -42,6 +42,12 @@ class SalesReportScreen extends StatelessWidget {
       body: ListView(
         padding: PremiumTokens.pagePadding(context),
         children: [
+          const FeatureHeaderCard(
+            title: 'Sales Overview',
+            subtitle: 'Track revenue trends and sold item activity.',
+            icon: Icons.bar_chart_rounded,
+            trailingIcon: Icons.receipt_long_outlined,
+          ),
           ReportCard(
             child: ListTile(
               leading: const Icon(Icons.summarize_outlined),

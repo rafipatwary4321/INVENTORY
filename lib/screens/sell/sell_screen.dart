@@ -95,69 +95,79 @@ class _SellScreenState extends State<SellScreen> {
         children: [
           Padding(
             padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        _PosInfoChip(
-                          icon: Icons.inventory_2_outlined,
-                          label: '${filtered.length} visible',
-                        ),
-                        const SizedBox(width: 8),
-                        _PosInfoChip(
-                          icon: Icons.shopping_cart_outlined,
-                          label: '$cartItems in cart',
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _search,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.search_rounded),
-                        hintText: 'Search products...',
-                      ),
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _manualId,
-                            decoration: const InputDecoration(
-                              prefixIcon: Icon(Icons.pin_outlined),
-                              hintText: 'Enter product ID manually',
-                            ),
-                            onSubmitted: (v) {
-                              final id = v.trim();
-                              if (id.isEmpty) return;
-                              _addById(id);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        FilledButton.tonalIcon(
-                          onPressed: () {
-                            final id = _manualId.text.trim();
-                            if (id.isEmpty) return;
-                            _addById(id);
-                          },
-                          icon: const Icon(Icons.add_box_rounded),
-                          label: const Text('Add'),
-                        ),
-                      ],
-                    ),
-                  ],
+            child: Column(
+              children: [
+                const FeatureHeaderCard(
+                  title: 'POS Counter',
+                  subtitle: 'Search products, scan labels, and build checkout quickly.',
+                  icon: Icons.point_of_sale_rounded,
+                  trailingIcon: Icons.shopping_bag_outlined,
                 ),
-              ),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            _PosInfoChip(
+                              icon: Icons.inventory_2_outlined,
+                              label: '${filtered.length} visible',
+                            ),
+                            const SizedBox(width: 8),
+                            _PosInfoChip(
+                              icon: Icons.shopping_cart_outlined,
+                              label: '$cartItems in cart',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _search,
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.search_rounded),
+                            hintText: 'Search products...',
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _manualId,
+                                decoration: const InputDecoration(
+                                  prefixIcon: Icon(Icons.pin_outlined),
+                                  hintText: 'Enter product ID manually',
+                                ),
+                                onSubmitted: (v) {
+                                  final id = v.trim();
+                                  if (id.isEmpty) return;
+                                  _addById(id);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton.tonalIcon(
+                              onPressed: () {
+                                final id = _manualId.text.trim();
+                                if (id.isEmpty) return;
+                                _addById(id);
+                              },
+                              icon: const Icon(Icons.add_box_rounded),
+                              label: const Text('Add'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(

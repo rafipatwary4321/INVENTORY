@@ -33,21 +33,31 @@ class StockReportScreen extends StatelessWidget {
               children: [
                 Padding(
                   padding: PremiumTokens.pagePadding(context).copyWith(bottom: 8),
-                  child: ReportCard(
-                    child: ListTile(
-                      title: const Text('Total inventory value (at cost)'),
-                      subtitle: Text(
-                        BdtFormatter.format(totalValue),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                  child: Column(
+                    children: [
+                      const FeatureHeaderCard(
+                        title: 'Stock Position',
+                        subtitle: 'Monitor on-hand quantity and cost value by product.',
+                        icon: Icons.warehouse_outlined,
+                        trailingIcon: Icons.inventory_2_outlined,
                       ),
-                      trailing: Chip(
-                        avatar:
-                            const Icon(Icons.warning_amber_rounded, size: 16),
-                        label: Text('Low: $lowStockCount'),
+                      ReportCard(
+                        child: ListTile(
+                          title: const Text('Total inventory value (at cost)'),
+                          subtitle: Text(
+                            BdtFormatter.format(totalValue),
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          trailing: Chip(
+                            avatar:
+                                const Icon(Icons.warning_amber_rounded, size: 16),
+                            label: Text('Low: $lowStockCount'),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
                 Expanded(

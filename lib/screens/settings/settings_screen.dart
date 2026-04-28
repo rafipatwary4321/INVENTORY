@@ -132,6 +132,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: PremiumTokens.pagePadding(context),
         children: [
+          const FeatureHeaderCard(
+            title: 'Workspace Settings',
+            subtitle: 'Manage business profile, appearance, and account preferences.',
+            icon: Icons.settings_suggest_outlined,
+            trailingIcon: Icons.tune_rounded,
+          ),
           BusinessProfileCard(
             businessName: businessName,
             businessId: auth.businessId,

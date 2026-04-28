@@ -56,6 +56,12 @@ class ProfitLossReportScreen extends StatelessWidget {
       body: ListView(
         padding: PremiumTokens.pagePadding(context),
         children: [
+          const FeatureHeaderCard(
+            title: 'Profit & Loss',
+            subtitle: 'Compare revenue against cost of goods sold.',
+            icon: Icons.trending_up_rounded,
+            trailingIcon: Icons.account_balance_wallet_outlined,
+          ),
           Text(
             'Based on loaded sale lines (${items.length}). '
             'For large datasets, add server-side aggregation.',

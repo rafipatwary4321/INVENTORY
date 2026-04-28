@@ -169,6 +169,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const FeatureHeaderCard(
+                title: 'QR Scanner',
+                subtitle: 'Use camera access to scan inventory product labels.',
+                icon: Icons.qr_code_scanner_rounded,
+                trailingIcon: Icons.camera_alt_outlined,
+              ),
               Icon(
                 Icons.camera_alt_outlined,
                 size: 72,
@@ -298,13 +304,26 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
             child: SafeArea(
               bottom: false,
-              child: Text(
-                'Point at the product QR code',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+              child: Column(
+                children: [
+                  Text(
+                    'Point at the product QR code',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _OverlayTag(icon: Icons.inventory_2_outlined, label: 'Inventory'),
+                      const SizedBox(width: 8),
+                      _OverlayTag(icon: Icons.qr_code_2_outlined, label: 'QR only'),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -369,6 +388,40 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               label: 'Use ID',
               icon: Icons.arrow_forward_rounded,
               onPressed: _submitManual,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverlayTag extends StatelessWidget {
+  const _OverlayTag({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
             ),
           ),
         ],

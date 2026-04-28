@@ -97,6 +97,15 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       ),
       body: Column(
         children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: FeatureHeaderCard(
+              title: 'AI Assistant',
+              subtitle: 'Ask inventory, profit, and restock questions in natural language.',
+              icon: Icons.smart_toy_outlined,
+              trailingIcon: Icons.bolt_outlined,
+            ),
+          ),
           if (!_api.isConfigured)
             Container(
               width: double.infinity,

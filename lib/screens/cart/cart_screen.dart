@@ -102,6 +102,15 @@ class _CartScreenState extends State<CartScreen> {
             )
           : Column(
               children: [
+                Padding(
+                  padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+                  child: FeatureHeaderCard(
+                    title: 'Checkout Cart',
+                    subtitle: '${cart.lines.length} line(s) ready for billing review.',
+                    icon: Icons.shopping_cart_checkout_rounded,
+                    trailingIcon: Icons.receipt_long_rounded,
+                  ),
+                ),
                 Expanded(
                   child: ListView.builder(
                     padding: PremiumTokens.pagePadding(context),
@@ -185,24 +194,26 @@ class _CartScreenState extends State<CartScreen> {
                 SafeArea(
                   child: Padding(
                     padding: PremiumTokens.pagePadding(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Total: ${BdtFormatter.format(cart.subtotal)}',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        PremiumButton(
-                          label: _busy ? 'Processing…' : 'Complete sale',
-                          expand: true,
-                          icon: _busy ? null : Icons.check_rounded,
-                          onPressed: _busy ? null : _checkout,
-                        ),
-                      ],
+                    child: ReportCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Total: ${BdtFormatter.format(cart.subtotal)}',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          PremiumButton(
+                            label: _busy ? 'Processing…' : 'Complete sale',
+                            expand: true,
+                            icon: _busy ? null : Icons.check_rounded,
+                            onPressed: _busy ? null : _checkout,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
