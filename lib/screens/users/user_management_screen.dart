@@ -64,6 +64,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final canView = auth.isOwner || auth.isAdmin;
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
     if (!canView) {
       return const Scaffold(
         appBar: PremiumAppBar(title: 'Team'),
@@ -84,22 +85,52 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         body: ListView(
           padding: PremiumTokens.pagePadding(context),
           children: [
-            Text(
-              'Demo mode users',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+            const FeatureHeaderCard(
+              title: 'Team Management',
+              subtitle: 'Switch demo roles to preview owner/admin/staff permissions.',
+              icon: Icons.groups_2_outlined,
+              trailingIcon: Icons.manage_accounts_outlined,
             ),
+            const SizedBox(height: 8),
+            const _PermissionGuideCard(),
             const SizedBox(height: 12),
             ReportCard(
               child: ListTile(
                 leading: const Icon(Icons.workspace_premium_outlined),
                 title: const Text('Demo Owner'),
                 subtitle: const Text('Full access'),
-                trailing: auth.appUser?.role == UserRole.owner
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _RolePill(role: UserRole.owner),
+                    if (auth.appUser?.role == UserRole.owner)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(Icons.check_circle, color: Colors.green),
+                      ),
+                  ],
+                ),
                 onTap: () => auth.setDemoRole(UserRole.owner),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ReportCard(
+              child: ListTile(
+                leading: const Icon(Icons.admin_panel_settings_outlined),
+                title: const Text('Demo Admin'),
+                subtitle: const Text('Business operation access'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _RolePill(role: UserRole.admin),
+                    if (auth.appUser?.role == UserRole.admin)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(Icons.check_circle, color: Colors.green),
+                      ),
+                  ],
+                ),
+                onTap: () => auth.setDemoRole(UserRole.admin),
               ),
             ),
             const SizedBox(height: 10),
@@ -108,9 +139,17 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 leading: const Icon(Icons.badge_outlined),
                 title: const Text('Demo Staff'),
                 subtitle: const Text('Scan/stock/sell only'),
-                trailing: auth.appUser?.role == UserRole.staff
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : null,
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _RolePill(role: UserRole.staff),
+                    if (auth.appUser?.role == UserRole.staff)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(Icons.check_circle, color: Colors.green),
+                      ),
+                  ],
+                ),
                 onTap: () => auth.setDemoRole(UserRole.staff),
               ),
             ),
@@ -126,6 +165,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+            child: const FeatureHeaderCard(
+              title: 'Business Team',
+              subtitle: 'Manage members, roles, and access permissions.',
+              icon: Icons.groups_rounded,
+              trailingIcon: Icons.shield_outlined,
+            ),
+          ),
+          Padding(
+            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+            child: const _PermissionGuideCard(),
+          ),
           if (auth.isOwner)
             Padding(
               padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
@@ -134,6 +186,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   padding: const EdgeInsets.all(4),
                   child: Column(
                     children: [
+                      const ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(Icons.person_add_alt_rounded),
+                        title: Text('Invite / save member'),
+                        subtitle: Text('Owners can assign Admin or Staff access.'),
+                      ),
                       TextField(
                         controller: _name,
                         decoration: const InputDecoration(labelText: 'Display name'),
@@ -177,9 +235,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       ),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: FilledButton(
+                        child: FilledButton.icon(
                           onPressed: _busy ? null : _addMember,
-                          child: const Text('Save member'),
+                          icon: const Icon(Icons.save_outlined),
+                          label: Text(_busy ? 'Saving...' : 'Save member'),
                         ),
                       ),
                     ],
@@ -199,33 +258,115 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                     subtitle: 'Invite people from Firebase Auth or add demo roles above.',
                   );
                 }
-                return ListView.builder(
+                if (!isWide) {
+                  return ListView.builder(
+                    padding: PremiumTokens.pagePadding(context),
+                    itemCount: users.length,
+                    itemBuilder: (_, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _UserTeamCard(user: users[i]),
+                    ),
+                  );
+                }
+                return GridView.builder(
                   padding: PremiumTokens.pagePadding(context),
                   itemCount: users.length,
-                  itemBuilder: (_, i) {
-                    final u = users[i];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: ReportCard(
-                        child: ListTile(
-                          leading: const Icon(Icons.person_outline_rounded),
-                          title: Text(u.displayName),
-                          subtitle: Text(
-                            '${u.email}\n${u.isActive ? 'active' : 'inactive'}',
-                          ),
-                          isThreeLine: true,
-                          trailing: Chip(
-                            label: Text(u.role.name),
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 2.2,
+                  ),
+                  itemBuilder: (_, i) => _UserTeamCard(user: users[i]),
                 );
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UserTeamCard extends StatelessWidget {
+  const _UserTeamCard({required this.user});
+
+  final AppUser user;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(
+            user.role == UserRole.owner
+                ? Icons.workspace_premium_outlined
+                : user.role == UserRole.admin
+                    ? Icons.admin_panel_settings_outlined
+                    : Icons.badge_outlined,
+          ),
+        ),
+        title: Text(user.displayName),
+        subtitle: Text(
+          '${user.email}\n${user.isActive ? 'active' : 'inactive'}',
+        ),
+        isThreeLine: true,
+        trailing: _RolePill(role: user.role),
+      ),
+    );
+  }
+}
+
+class _RolePill extends StatelessWidget {
+  const _RolePill({required this.role});
+
+  final UserRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, icon) = switch (role) {
+      UserRole.owner => ('Owner', Colors.amber, Icons.workspace_premium_rounded),
+      UserRole.admin => ('Admin', Colors.indigo, Icons.admin_panel_settings_rounded),
+      UserRole.staff => ('Staff', Colors.teal, Icons.badge_rounded),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PermissionGuideCard extends StatelessWidget {
+  const _PermissionGuideCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.lock_person_outlined),
+            title: Text('Role permissions'),
+            subtitle: Text('Owner: full control • Admin: operations + reports • Staff: sell/stock only'),
           ),
         ],
       ),

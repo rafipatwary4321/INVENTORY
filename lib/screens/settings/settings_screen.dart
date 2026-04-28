@@ -124,6 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final businessName =
         settingsProvider?.settings.businessName ?? 'My Business';
     final themeCtrl = context.watch<ThemeModeController>();
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
     return Scaffold(
       appBar: const PremiumAppBar(
         title: 'Settings',
@@ -143,122 +144,208 @@ class _SettingsScreenState extends State<SettingsScreen> {
             businessId: auth.businessId,
             planLabel: startup.firebaseEnabled ? 'Live' : 'Demo',
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Business settings',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
-          const SizedBox(height: 10),
-          ReportCard(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PremiumTextField(
-                    controller: _businessName,
-                    label: 'Business name',
-                    enabled: canManage && !_busy,
-                    validator: (v) =>
-                        Validators.required(v, field: 'Business name'),
-                  ),
-                  const SizedBox(height: 12),
-                  const ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text('Currency'),
-                    subtitle: Text('BDT (৳) — fixed in this version'),
-                  ),
-                  const SizedBox(height: 8),
-                  if (canManage)
-                    PremiumButton(
-                      label: _busy ? 'Saving…' : 'Save changes',
-                      expand: true,
-                      icon: _busy ? null : Icons.save_rounded,
-                      onPressed:
-                          _busy || settingsProvider == null ? null : _save,
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'App & account',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-          ),
           const SizedBox(height: 10),
           ReportCard(
             child: ListTile(
-              leading: const Icon(Icons.cloud_outlined),
-              title: const Text('Backend mode'),
+              leading: Icon(
+                startup.firebaseEnabled
+                    ? Icons.cloud_done_outlined
+                    : Icons.developer_mode_outlined,
+              ),
+              title: Text(startup.firebaseEnabled ? 'Firebase mode' : 'Demo mode'),
               subtitle: Text(
-                startup.firebaseEnabled ? 'Firebase mode' : 'Demo/local mode',
+                startup.firebaseEnabled
+                    ? 'Live backend and role-based access are active.'
+                    : 'Local demo mode is active. Some cloud features are limited.',
+              ),
+              trailing: Chip(
+                label: Text(startup.firebaseEnabled ? 'LIVE' : 'DEMO'),
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          ReportCard(
-            child: ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('App version'),
-              subtitle: Text(_appVersion),
+          const SizedBox(height: 20),
+          if (!isWide) ...[
+            _BusinessSettingsCard(
+              formKey: _formKey,
+              businessName: _businessName,
+              canManage: canManage,
+              busy: _busy,
+              settingsProviderExists: settingsProvider != null,
+              onSave: _save,
             ),
-          ),
-          const SizedBox(height: 10),
-          ReportCard(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Appearance',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const SizedBox(height: 10),
-                  SegmentedButton<ThemeMode>(
-                    segments: const [
-                      ButtonSegment(
-                        value: ThemeMode.system,
-                        label: Text('System'),
-                        icon: Icon(Icons.brightness_auto_outlined),
-                      ),
-                      ButtonSegment(
-                        value: ThemeMode.light,
-                        label: Text('Light'),
-                        icon: Icon(Icons.light_mode_outlined),
-                      ),
-                      ButtonSegment(
-                        value: ThemeMode.dark,
-                        label: Text('Dark'),
-                        icon: Icon(Icons.dark_mode_outlined),
-                      ),
-                    ],
-                    selected: {themeCtrl.themeMode},
-                    onSelectionChanged: (next) {
-                      if (next.isEmpty) return;
-                      context
-                          .read<ThemeModeController>()
-                          .setThemeMode(next.first);
-                    },
-                  ),
-                ],
-              ),
+            const SizedBox(height: 10),
+            _AppSettingsCard(
+              appVersion: _appVersion,
+              themeCtrl: themeCtrl,
             ),
-          ),
+          ] else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _BusinessSettingsCard(
+                    formKey: _formKey,
+                    businessName: _businessName,
+                    canManage: canManage,
+                    busy: _busy,
+                    settingsProviderExists: settingsProvider != null,
+                    onSave: _save,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _AppSettingsCard(
+                    appVersion: _appVersion,
+                    themeCtrl: themeCtrl,
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: 28),
-          PremiumButton(
-            label: 'Logout',
-            outlined: true,
-            expand: true,
-            icon: Icons.logout_rounded,
-            onPressed: _logout,
+          ReportCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Logout',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Sign out from this business workspace and return to login.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 12),
+                PremiumButton(
+                  label: 'Logout',
+                  outlined: true,
+                  expand: true,
+                  icon: Icons.logout_rounded,
+                  onPressed: _logout,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BusinessSettingsCard extends StatelessWidget {
+  const _BusinessSettingsCard({
+    required this.formKey,
+    required this.businessName,
+    required this.canManage,
+    required this.busy,
+    required this.settingsProviderExists,
+    required this.onSave,
+  });
+
+  final GlobalKey<FormState> formKey;
+  final TextEditingController businessName;
+  final bool canManage;
+  final bool busy;
+  final bool settingsProviderExists;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: Form(
+        key: formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Business settings',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            PremiumTextField(
+              controller: businessName,
+              label: 'Business name',
+              enabled: canManage && !busy,
+              validator: (v) => Validators.required(v, field: 'Business name'),
+            ),
+            const SizedBox(height: 12),
+            const ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(Icons.currency_exchange_outlined),
+              title: Text('Currency'),
+              subtitle: Text('BDT (৳) — fixed in this version'),
+            ),
+            const SizedBox(height: 8),
+            if (canManage)
+              PremiumButton(
+                label: busy ? 'Saving...' : 'Save changes',
+                expand: true,
+                icon: busy ? null : Icons.save_rounded,
+                onPressed: busy || !settingsProviderExists ? null : onSave,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppSettingsCard extends StatelessWidget {
+  const _AppSettingsCard({
+    required this.appVersion,
+    required this.themeCtrl,
+  });
+
+  final String appVersion;
+  final ThemeModeController themeCtrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.info_outline),
+            title: const Text('App version'),
+            subtitle: Text(appVersion),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Appearance',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<ThemeMode>(
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.system,
+                label: Text('System'),
+                icon: Icon(Icons.brightness_auto_outlined),
+              ),
+              ButtonSegment(
+                value: ThemeMode.light,
+                label: Text('Light'),
+                icon: Icon(Icons.light_mode_outlined),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                label: Text('Dark'),
+                icon: Icon(Icons.dark_mode_outlined),
+              ),
+            ],
+            selected: {themeCtrl.themeMode},
+            onSelectionChanged: (next) {
+              if (next.isEmpty) return;
+              themeCtrl.setThemeMode(next.first);
+            },
           ),
         ],
       ),

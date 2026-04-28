@@ -23,11 +23,14 @@ class BusinessProfileCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
             cs.primaryContainer.withValues(alpha: 0.65),
-            cs.surface,
+            cs.secondaryContainer.withValues(alpha: 0.45),
           ],
         ),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
         boxShadow: PremiumTokens.cardShadow(context),
       ),
       child: Padding(
