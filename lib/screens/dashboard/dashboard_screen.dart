@@ -53,14 +53,16 @@ class DashboardScreen extends StatelessWidget {
     final cardRatio = width < 380 ? 1.0 : 1.12;
     final quickActions = <_QuickActionItem>[
       _QuickActionItem(
-        icon: Icons.inventory_2_outlined,
-        label: 'Products',
-        subtitle: 'Browse, add, and edit inventory',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.products),
+        icon: Icons.add_box_outlined,
+        label: 'Add Product',
+        subtitle: auth.isAdmin ? 'Create a new inventory item' : 'Admin only',
+        onTap: auth.isAdmin
+            ? () => Navigator.pushNamed(context, AppRoutes.productAdd)
+            : null,
       ),
       _QuickActionItem(
         icon: Icons.qr_code_scanner_rounded,
-        label: 'Scan QR - Stock in',
+        label: 'Stock In',
         subtitle: 'Receive stock from labels',
         onTap: () async {
           final result = await Navigator.pushNamed(
@@ -80,57 +82,14 @@ class DashboardScreen extends StatelessWidget {
         onTap: () => Navigator.pushNamed(context, AppRoutes.sell),
       ),
       _QuickActionItem(
-        icon: Icons.analytics_outlined,
-        label: 'Sales report',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.reportSales),
-      ),
-      _QuickActionItem(
-        icon: Icons.warehouse_outlined,
-        label: 'Stock report',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
-      ),
-      _QuickActionItem(
-        icon: Icons.trending_up,
-        label: 'Profit / Loss',
-        subtitle: auth.canViewProfitLoss ? null : 'Owner only',
-        onTap: auth.canViewProfitLoss
-            ? () => Navigator.pushNamed(context, AppRoutes.reportPnL)
-            : null,
-      ),
-      _QuickActionItem(
-        icon: Icons.group_outlined,
-        label: 'Team management',
-        subtitle: (auth.isOwner || auth.isAdmin) ? null : 'Admin only',
-        onTap: (auth.isOwner || auth.isAdmin)
-            ? () => Navigator.pushNamed(context, AppRoutes.team)
-            : null,
-      ),
-      _QuickActionItem(
-        icon: Icons.photo_camera_outlined,
-        label: 'AI product recognition',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.aiRecognition),
-      ),
-      _QuickActionItem(
         icon: Icons.chat_bubble_outline_rounded,
         label: 'AI Assistant',
         onTap: () => Navigator.pushNamed(context, AppRoutes.aiAssistant),
       ),
-      _QuickActionItem(
-        icon: Icons.auto_graph_outlined,
-        label: 'Advanced AI Analytics',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.aiAnalytics),
-      ),
-      _QuickActionItem(
-        icon: Icons.insights_outlined,
-        label: 'Smart Insights',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.aiInsights),
-      ),
-      _QuickActionItem(
-        icon: Icons.inventory_outlined,
-        label: 'Predictive Restock',
-        onTap: () => Navigator.pushNamed(context, AppRoutes.aiRestock),
-      ),
     ];
+    final stockHealth = products.isEmpty
+        ? 1.0
+        : ((products.length - lowStock) / products.length).clamp(0, 1).toDouble();
 
     return Scaffold(
       appBar: PremiumAppBar(
@@ -174,7 +133,8 @@ class DashboardScreen extends StatelessWidget {
                 title: 'Warehouse Control Center',
                 subtitle:
                     'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
-                    'Track stock flow, sales pace, and AI guidance from one place.',
+                    'Today sales ${BdtFormatter.format(todaySales)} · '
+                    '${products.length} products · $lowStock low stock.',
                 role: user?.roleVisual,
                 trailing: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -217,32 +177,24 @@ class DashboardScreen extends StatelessWidget {
                     value: '${products.length}',
                     icon: Icons.category_outlined,
                     accentColor: Colors.blue,
-                    changeLabel: '+12%',
+                    changeLabel: 'Inventory size',
                     changeColor: Colors.cyanAccent,
-                  ),
-                  GlassStatCard(
-                    title: 'Stock qty',
-                    value: '$totalStockQty',
-                    icon: Icons.format_list_numbered_rounded,
-                    accentColor: Colors.indigo,
-                    changeLabel: '+5%',
-                    changeColor: Colors.lightBlueAccent,
-                  ),
-                  GlassStatCard(
-                    title: 'Stock value',
-                    value: BdtFormatter.format(totalStockValue),
-                    icon: Icons.account_balance_wallet_outlined,
-                    accentColor: Colors.teal,
-                    changeLabel: '+8%',
-                    changeColor: Colors.greenAccent,
                   ),
                   GlassStatCard(
                     title: 'Today sales',
                     value: BdtFormatter.format(todaySales),
                     icon: Icons.point_of_sale,
                     accentColor: Colors.deepPurple,
-                    changeLabel: '+14%',
+                    changeLabel: '$totalStockQty units on hand',
                     changeColor: Colors.cyanAccent,
+                  ),
+                  GlassStatCard(
+                    title: 'Stock value',
+                    value: BdtFormatter.format(totalStockValue),
+                    icon: Icons.account_balance_wallet_outlined,
+                    accentColor: Colors.teal,
+                    changeLabel: 'Cost basis',
+                    changeColor: Colors.greenAccent,
                   ),
                   GlassStatCard(
                     title: 'Low stock',
@@ -307,37 +259,113 @@ class DashboardScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 12),
+              Text(
+                'Analytics',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 10),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 900;
                   if (!isWide) {
                     return Column(
-                      children: const [
-                        _ActivityCard(),
-                        SizedBox(height: 10),
-                        _AnalyticsRingCard(),
+                      children: [
+                        const _ChartPlaceholderCard(
+                          title: 'Sales overview',
+                          subtitle: 'Chart placeholder for daily/weekly trend',
+                        ),
+                        const SizedBox(height: 10),
+                        _StockDistributionCard(stockHealth: stockHealth),
+                        const SizedBox(height: 10),
+                        _ProfitSummaryCard(
+                          canViewProfit: auth.canViewProfitLoss,
+                          todaySales: todaySales,
+                        ),
                       ],
                     );
                   }
-                  return const Row(
+                  return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(flex: 3, child: _ActivityCard()),
-                      SizedBox(width: 10),
-                      Expanded(flex: 2, child: _AnalyticsRingCard()),
+                      const Expanded(
+                        flex: 3,
+                        child: _ChartPlaceholderCard(
+                          title: 'Sales overview',
+                          subtitle: 'Chart placeholder for daily/weekly trend',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          children: [
+                            _StockDistributionCard(stockHealth: stockHealth),
+                            const SizedBox(height: 10),
+                            _ProfitSummaryCard(
+                              canViewProfit: auth.canViewProfitLoss,
+                              todaySales: todaySales,
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 },
               ),
               const SizedBox(height: 12),
-              const _ChartPlaceholderCard(
-                title: 'Sales overview',
-                subtitle: 'Chart placeholder for daily/weekly trend',
+              Text(
+                'Quick actions',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
               const SizedBox(height: 10),
-              const _ChartPlaceholderCard(
-                title: 'Inventory trend',
-                subtitle: 'Chart placeholder for stock movement',
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: quickActions.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 2.15,
+                ),
+                itemBuilder: (context, i) {
+                  final item = quickActions[i];
+                  return PremiumActionCard(
+                    icon: item.icon,
+                    label: item.label,
+                    subtitle: item.subtitle,
+                    onTap: item.onTap,
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'AI insight preview',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              AIInsightCard(
+                title: 'Smart business tip',
+                body: lowStock > 0
+                    ? '$lowStock item(s) are under threshold. Prioritize fast sellers first for restock.'
+                    : 'Inventory health is stable today. Focus on promoting high margin products.',
+                icon: Icons.auto_awesome_rounded,
+              ),
+              AIInsightCard(
+                title: 'Restock suggestion',
+                body: lowStock > 0
+                    ? 'Open Predictive Restock to see AI recommended purchase quantities.'
+                    : 'No urgent restock need now. Monitor tomorrow sales trend for early action.',
+                icon: Icons.inventory_outlined,
               ),
               const SizedBox(height: 24),
             ],
@@ -391,29 +419,10 @@ class _TopDashboardBar extends StatelessWidget {
   }
 }
 
-class _ActivityCard extends StatelessWidget {
-  const _ActivityCard();
+class _StockDistributionCard extends StatelessWidget {
+  const _StockDistributionCard({required this.stockHealth});
 
-  @override
-  Widget build(BuildContext context) {
-    return ReportCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.history_rounded),
-            title: Text('Recent activity'),
-            subtitle: Text('Stock in updated • POS checkout completed • Report viewed'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AnalyticsRingCard extends StatelessWidget {
-  const _AnalyticsRingCard();
+  final double stockHealth;
 
   @override
   Widget build(BuildContext context) {
@@ -424,7 +433,7 @@ class _AnalyticsRingCard extends StatelessWidget {
           const ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.analytics_outlined),
-            title: Text('Analytics health'),
+            title: Text('Stock distribution'),
           ),
           SizedBox(
             width: 130,
@@ -433,15 +442,44 @@ class _AnalyticsRingCard extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 CircularProgressIndicator(
-                  value: 0.76,
+                  value: stockHealth,
                   strokeWidth: 12,
                   backgroundColor: cs.surfaceContainerHighest,
                 ),
-                const Text('76%'),
+                Text('${(stockHealth * 100).round()}%'),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfitSummaryCard extends StatelessWidget {
+  const _ProfitSummaryCard({
+    required this.canViewProfit,
+    required this.todaySales,
+  });
+
+  final bool canViewProfit;
+  final double todaySales;
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: const Icon(Icons.trending_up_rounded),
+        title: const Text('Profit summary'),
+        subtitle: Text(
+          canViewProfit
+              ? 'Today sales: ${BdtFormatter.format(todaySales)}'
+              : 'Owner/Admin only',
+        ),
+        trailing: canViewProfit
+            ? const Icon(Icons.lock_open_rounded)
+            : const Icon(Icons.lock_outline_rounded),
       ),
     );
   }
