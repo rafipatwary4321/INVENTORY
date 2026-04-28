@@ -20,11 +20,7 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        color: cs.surface,
-        boxShadow: PremiumTokens.cardShadow(context),
-      ),
+      decoration: PremiumTokens.cardDecoration(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
         child: Stack(

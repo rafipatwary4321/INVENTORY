@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -62,75 +63,100 @@ class DashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: PremiumTokens.pagePadding(context),
+      body: Stack(
         children: [
-          GradientDashboardHeader(
-            title: 'Welcome back',
-            subtitle:
-                'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
-                'Here is a snapshot of your business.',
-            role: user?.roleVisual,
-          ),
-          GridView.count(
-            crossAxisCount: crossAxisCount,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: cardRatio,
-            children: [
-              StatCard(
-                title: 'Products',
-                value: '${products.length}',
-                icon: Icons.category_outlined,
-                accentColor: Colors.blue,
-              ),
-              StatCard(
-                title: 'Stock qty',
-                value: '$totalStockQty',
-                icon: Icons.format_list_numbered_rounded,
-                accentColor: Colors.indigo,
-              ),
-              StatCard(
-                title: 'Stock value',
-                value: BdtFormatter.format(totalStockValue),
-                icon: Icons.account_balance_wallet_outlined,
-                accentColor: Colors.teal,
-              ),
-              StatCard(
-                title: 'Today sales',
-                value: BdtFormatter.format(todaySales),
-                icon: Icons.point_of_sale,
-                accentColor: Colors.deepPurple,
-              ),
-              StatCard(
-                title: 'Low stock',
-                value: '$lowStock',
-                icon: Icons.warning_amber_rounded,
-                accentColor: lowStock > 0 ? Colors.deepOrange : Colors.green,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (lowStock > 0)
-            ActionCard(
-              icon: Icons.warning_amber_rounded,
-              label: 'Low stock alert',
-              subtitle:
-                  '$lowStock product(s) below ${AppConstants.lowStockThreshold} units',
-              iconColor: Colors.deepOrange,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
-            ),
-          const SizedBox(height: 20),
-          Text(
-            'Shortcuts',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          const Positioned.fill(child: _DashboardBackdrop()),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.32),
+                    Colors.black.withValues(alpha: 0.05),
+                    Colors.transparent,
+                  ],
+                  stops: const [0, 0.28, 0.6],
                 ),
+              ),
+            ),
           ),
-          const SizedBox(height: 10),
-          ActionCard(
+          ListView(
+            padding: PremiumTokens.pagePadding(context),
+            children: [
+              GradientDashboardHeader(
+                title: 'Welcome back',
+                subtitle:
+                    'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
+                    'Here is a snapshot of your business.',
+                role: user?.roleVisual,
+                trailing: const Icon(
+                  Icons.warehouse_rounded,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              GridView.count(
+                crossAxisCount: crossAxisCount,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: cardRatio,
+                children: [
+                  StatCard(
+                    title: 'Products',
+                    value: '${products.length}',
+                    icon: Icons.category_outlined,
+                    accentColor: Colors.blue,
+                  ),
+                  StatCard(
+                    title: 'Stock qty',
+                    value: '$totalStockQty',
+                    icon: Icons.format_list_numbered_rounded,
+                    accentColor: Colors.indigo,
+                  ),
+                  StatCard(
+                    title: 'Stock value',
+                    value: BdtFormatter.format(totalStockValue),
+                    icon: Icons.account_balance_wallet_outlined,
+                    accentColor: Colors.teal,
+                  ),
+                  StatCard(
+                    title: 'Today sales',
+                    value: BdtFormatter.format(todaySales),
+                    icon: Icons.point_of_sale,
+                    accentColor: Colors.deepPurple,
+                  ),
+                  StatCard(
+                    title: 'Low stock',
+                    value: '$lowStock',
+                    icon: Icons.warning_amber_rounded,
+                    accentColor: lowStock > 0 ? Colors.deepOrange : Colors.green,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (lowStock > 0)
+                ActionCard(
+                  icon: Icons.warning_amber_rounded,
+                  label: 'Low stock alert',
+                  subtitle:
+                      '$lowStock product(s) below ${AppConstants.lowStockThreshold} units',
+                  iconColor: Colors.deepOrange,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
+                ),
+              const SizedBox(height: 20),
+              Text(
+                'Shortcuts',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              ActionCard(
             icon: Icons.inventory_2_outlined,
             label: 'Products',
             subtitle: 'Browse, add, and edit inventory',
@@ -209,7 +235,63 @@ class DashboardScreen extends StatelessWidget {
             label: 'Predictive Restock',
             onTap: () => Navigator.pushNamed(context, AppRoutes.aiRestock),
           ),
-          const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardBackdrop extends StatelessWidget {
+  const _DashboardBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    cs.primary.withValues(alpha: 0.2),
+                    cs.secondary.withValues(alpha: 0.14),
+                    cs.surface,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: -18,
+            right: -8,
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Icon(
+                Icons.warehouse_rounded,
+                size: 220,
+                color: cs.primary.withValues(alpha: 0.16),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 90,
+            left: -20,
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: Icon(
+                Icons.storefront_rounded,
+                size: 210,
+                color: cs.secondary.withValues(alpha: 0.15),
+              ),
+            ),
+          ),
         ],
       ),
     );

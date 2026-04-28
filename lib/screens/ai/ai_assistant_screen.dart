@@ -18,6 +18,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   final _controller = TextEditingController();
   final _service = const AIAssistantService();
   final _api = AIApiService();
+  final _scrollController = ScrollController();
   final List<_Message> _messages = [
     const _Message(
       fromUser: false,
@@ -68,11 +69,20 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       _messages.add(_Message(fromUser: false, text: reply));
       _busy = false;
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + 80,
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+      );
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -105,20 +115,23 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
               ),
             ),
           SizedBox(
-            height: 52,
+            height: 58,
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               scrollDirection: Axis.horizontal,
               children: [
                 _QuickQuestion(
+                  icon: Icons.monetization_on_outlined,
                   label: 'Which product is most profitable?',
                   onTap: () => _ask('Which product is most profitable?'),
                 ),
                 _QuickQuestion(
+                  icon: Icons.inventory_outlined,
                   label: 'What should I restock?',
                   onTap: () => _ask('What should I restock?'),
                 ),
                 _QuickQuestion(
+                  icon: Icons.local_fire_department_outlined,
                   label: 'Top selling product?',
                   onTap: () => _ask('Top selling product?'),
                 ),
@@ -126,24 +139,102 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: _messages.length <= 1
+                ? EmptyStateWidget(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Ask inventory AI',
+                    subtitle:
+                        'Try quick prompts above for restock, profit, and sales insights.',
+                  )
+                : ListView.builder(
+              controller: _scrollController,
               padding: const EdgeInsets.all(12),
               itemCount: _messages.length,
               itemBuilder: (context, i) {
                 final m = _messages[i];
-                return Align(
-                  alignment: m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    constraints: const BoxConstraints(maxWidth: 460),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: m.fromUser
-                          ? Theme.of(context).colorScheme.primaryContainer
-                          : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(12),
+                final cs = Theme.of(context).colorScheme;
+                return TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 180),
+                  tween: Tween(begin: 0, end: 1),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, (1 - value) * 8),
+                      child: Opacity(opacity: value, child: child),
+                    );
+                  },
+                  child: Align(
+                    alignment: m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (!m.fromUser)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8, bottom: 4),
+                              child: CircleAvatar(
+                                radius: 14,
+                                backgroundColor: cs.secondaryContainer,
+                                child: Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 16,
+                                  color: cs.onSecondaryContainer,
+                                ),
+                              ),
+                            ),
+                          Flexible(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: m.fromUser
+                                    ? cs.primaryContainer
+                                    : cs.surfaceContainerHighest,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: const Radius.circular(16),
+                                  topRight: const Radius.circular(16),
+                                  bottomLeft: Radius.circular(m.fromUser ? 16 : 4),
+                                  bottomRight: Radius.circular(m.fromUser ? 4 : 16),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  m.text,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: m.fromUser
+                                            ? cs.onPrimaryContainer
+                                            : cs.onSurface,
+                                        height: 1.35,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (m.fromUser)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8, bottom: 4),
+                              child: CircleAvatar(
+                                radius: 14,
+                                backgroundColor: cs.primaryContainer,
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 16,
+                                  color: cs.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    child: Text(m.text),
                   ),
                 );
               },
@@ -194,15 +285,24 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
 }
 
 class _QuickQuestion extends StatelessWidget {
-  const _QuickQuestion({required this.label, required this.onTap});
+  const _QuickQuestion({
+    required this.label,
+    required this.onTap,
+    required this.icon,
+  });
   final String label;
   final VoidCallback onTap;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ActionChip(label: Text(label), onPressed: onTap),
+      child: ActionChip(
+        avatar: Icon(icon, size: 16),
+        label: Text(label),
+        onPressed: onTap,
+      ),
     );
   }
 }

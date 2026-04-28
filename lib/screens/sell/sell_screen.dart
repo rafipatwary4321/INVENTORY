@@ -93,51 +93,61 @@ class _SellScreenState extends State<SellScreen> {
         children: [
           Padding(
             padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _search,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search_rounded),
-                    hintText: 'Search products…',
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-                const SizedBox(height: 10),
-                Row(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _manualId,
-                        decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.pin_outlined),
-                          hintText: 'Enter product ID manually',
-                        ),
-                        onSubmitted: (v) {
-                          final id = v.trim();
-                          if (id.isEmpty) return;
-                          _addById(id);
-                        },
+                    TextField(
+                      controller: _search,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.search_rounded),
+                        hintText: 'Search products...',
                       ),
+                      onChanged: (_) => setState(() {}),
                     ),
-                    const SizedBox(width: 8),
-                    FilledButton.tonal(
-                      onPressed: () {
-                        final id = _manualId.text.trim();
-                        if (id.isEmpty) return;
-                        _addById(id);
-                      },
-                      child: const Text('Add ID'),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _manualId,
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.pin_outlined),
+                              hintText: 'Enter product ID manually',
+                            ),
+                            onSubmitted: (v) {
+                              final id = v.trim();
+                              if (id.isEmpty) return;
+                              _addById(id);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton.tonalIcon(
+                          onPressed: () {
+                            final id = _manualId.text.trim();
+                            if (id.isEmpty) return;
+                            _addById(id);
+                          },
+                          icon: const Icon(Icons.add_box_rounded),
+                          label: const Text('Add'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
           Expanded(
             child: filtered.isEmpty
                 ? EmptyStateWidget(
-                    icon: Icons.search_off_rounded,
+                    icon: products.isEmpty ? Icons.storefront_outlined : Icons.search_off_rounded,
                     title: products.isEmpty ? 'No products' : 'No matches',
                     subtitle: products.isEmpty
                         ? 'Add products before you can sell from this screen.'
@@ -148,15 +158,21 @@ class _SellScreenState extends State<SellScreen> {
                     itemCount: filtered.length,
                     itemBuilder: (context, i) {
                       final p = filtered[i];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Opacity(
-                          opacity: p.quantity < 1 ? 0.55 : 1,
-                          child: ProductCard(
-                            product: p,
-                            onTap: p.quantity < 1
-                                ? () {}
-                                : () => _addById(p.id),
+                      return TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 220),
+                        tween: Tween(begin: 0.97, end: 1),
+                        curve: Curves.easeOut,
+                        builder: (context, value, child) {
+                          return Transform.scale(scale: value, child: child);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Opacity(
+                            opacity: p.quantity < 1 ? 0.55 : 1,
+                            child: ProductCard(
+                              product: p,
+                              onTap: p.quantity < 1 ? () {} : () => _addById(p.id),
+                            ),
                           ),
                         ),
                       );
@@ -166,7 +182,14 @@ class _SellScreenState extends State<SellScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
@@ -181,10 +204,12 @@ class _SellScreenState extends State<SellScreen> {
                       onPressed: () =>
                           Navigator.pushNamed(context, AppRoutes.cart),
                       icon: const Icon(Icons.shopping_cart_checkout),
-                      label: const Text('Cart'),
+                      label: const Text('Open cart'),
                     ),
                   ),
                 ],
+                  ),
+                ),
               ),
             ),
           ),

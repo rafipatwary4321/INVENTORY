@@ -32,7 +32,15 @@ class ActionCard extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-            color: cs.surface,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cs.surface,
+                cs.surfaceContainerHighest.withValues(alpha: 0.32),
+              ],
+            ),
+            border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.25)),
             boxShadow: PremiumTokens.cardShadow(context),
           ),
           child: Padding(

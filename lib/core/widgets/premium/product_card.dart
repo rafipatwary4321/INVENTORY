@@ -17,17 +17,14 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final categoryIcon = _categoryIcon(product.category);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
         child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-            color: cs.surface,
-            boxShadow: PremiumTokens.cardShadow(context),
-          ),
+          decoration: PremiumTokens.cardDecoration(context),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -35,14 +32,7 @@ class ProductCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 26,
                   backgroundColor: cs.primaryContainer.withValues(alpha: 0.6),
-                  child: Text(
-                    product.name.isNotEmpty ? product.name[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: cs.primary,
-                      fontSize: 18,
-                    ),
-                  ),
+                  child: Icon(categoryIcon, color: cs.primary, size: 24),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -81,4 +71,24 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
+}
+
+IconData _categoryIcon(String category) {
+  final value = category.toLowerCase();
+  if (value.contains('drink') || value.contains('beverage')) {
+    return Icons.local_drink_outlined;
+  }
+  if (value.contains('food') || value.contains('grocery')) {
+    return Icons.fastfood_outlined;
+  }
+  if (value.contains('electronic') || value.contains('device')) {
+    return Icons.devices_other_outlined;
+  }
+  if (value.contains('cloth') || value.contains('fashion')) {
+    return Icons.checkroom_outlined;
+  }
+  if (value.contains('medicine') || value.contains('health')) {
+    return Icons.medical_services_outlined;
+  }
+  return Icons.inventory_2_outlined;
 }

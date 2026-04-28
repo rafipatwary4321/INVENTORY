@@ -14,14 +14,9 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        color: cs.surface,
-        boxShadow: PremiumTokens.cardShadow(context),
-      ),
+      decoration: PremiumTokens.cardDecoration(context),
       child: Padding(padding: padding, child: child),
     );
   }
