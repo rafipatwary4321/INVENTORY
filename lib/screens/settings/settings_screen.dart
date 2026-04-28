@@ -130,105 +130,129 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: 'Settings',
         subtitle: 'Business & app',
       ),
-      body: ListView(
-        padding: PremiumTokens.pagePadding(context),
-        children: [
-          const FeatureHeaderCard(
-            title: 'Workspace Settings',
-            subtitle: 'Manage business profile, appearance, and account preferences.',
-            icon: Icons.settings_suggest_outlined,
-            trailingIcon: Icons.tune_rounded,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
           ),
-          BusinessProfileCard(
-            businessName: businessName,
-            businessId: auth.businessId,
-            planLabel: startup.firebaseEnabled ? 'Live' : 'Demo',
-          ),
-          const SizedBox(height: 10),
-          ReportCard(
-            child: ListTile(
-              leading: Icon(
-                startup.firebaseEnabled
-                    ? Icons.cloud_done_outlined
-                    : Icons.developer_mode_outlined,
-              ),
-              title: Text(startup.firebaseEnabled ? 'Firebase mode' : 'Demo mode'),
-              subtitle: Text(
-                startup.firebaseEnabled
-                    ? 'Live backend and role-based access are active.'
-                    : 'Local demo mode is active. Some cloud features are limited.',
-              ),
-              trailing: Chip(
-                label: Text(startup.firebaseEnabled ? 'LIVE' : 'DEMO'),
-              ),
+        ),
+        child: ListView(
+          padding: PremiumTokens.pagePadding(context),
+          children: [
+            const FeatureHeaderCard(
+              title: 'Workspace Settings',
+              subtitle: 'Manage business profile, appearance, and account preferences.',
+              icon: Icons.settings_suggest_outlined,
+              trailingIcon: Icons.tune_rounded,
             ),
-          ),
-          const SizedBox(height: 20),
-          if (!isWide) ...[
-            _BusinessSettingsCard(
-              formKey: _formKey,
-              businessName: _businessName,
-              canManage: canManage,
-              busy: _busy,
-              settingsProviderExists: settingsProvider != null,
-              onSave: _save,
+            PremiumGlassCard(
+              child: BusinessProfileCard(
+                businessName: businessName,
+                businessId: auth.businessId,
+                planLabel: startup.firebaseEnabled ? 'Live' : 'Demo',
+              ),
             ),
             const SizedBox(height: 10),
-            _AppSettingsCard(
-              appVersion: _appVersion,
-              themeCtrl: themeCtrl,
+            PremiumGlassCard(
+              child: ListTile(
+                leading: Icon(
+                  startup.firebaseEnabled
+                      ? Icons.cloud_done_outlined
+                      : Icons.developer_mode_outlined,
+                ),
+                title: Text(startup.firebaseEnabled ? 'Firebase mode' : 'Demo mode'),
+                subtitle: Text(
+                  startup.firebaseEnabled
+                      ? 'Live backend and role-based access are active.'
+                      : 'Local demo mode is active. Some cloud features are limited.',
+                ),
+                trailing: Chip(
+                  label: Text(startup.firebaseEnabled ? 'LIVE' : 'DEMO'),
+                ),
+              ),
             ),
-          ] else
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: _BusinessSettingsCard(
-                    formKey: _formKey,
-                    businessName: _businessName,
-                    canManage: canManage,
-                    busy: _busy,
-                    settingsProviderExists: settingsProvider != null,
-                    onSave: _save,
+            const SizedBox(height: 10),
+            PremiumGlassCard(
+              child: ListTile(
+                leading: const Icon(Icons.security_outlined),
+                title: const Text('Security / environment status'),
+                subtitle: Text(
+                  startup.firebaseEnabled
+                      ? 'Cloud auth and data sync enabled.'
+                      : 'Running in local demo environment.',
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (!isWide) ...[
+              _BusinessSettingsCard(
+                formKey: _formKey,
+                businessName: _businessName,
+                canManage: canManage,
+                busy: _busy,
+                settingsProviderExists: settingsProvider != null,
+                onSave: _save,
+              ),
+              const SizedBox(height: 10),
+              _AppSettingsCard(
+                appVersion: _appVersion,
+                themeCtrl: themeCtrl,
+              ),
+            ] else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _BusinessSettingsCard(
+                      formKey: _formKey,
+                      businessName: _businessName,
+                      canManage: canManage,
+                      busy: _busy,
+                      settingsProviderExists: settingsProvider != null,
+                      onSave: _save,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _AppSettingsCard(
-                    appVersion: _appVersion,
-                    themeCtrl: themeCtrl,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _AppSettingsCard(
+                      appVersion: _appVersion,
+                      themeCtrl: themeCtrl,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            const SizedBox(height: 28),
+            PremiumGlassCard(
+              borderColor: Colors.red.withValues(alpha: 0.3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Logout',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Sign out from this business workspace and return to login.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  PremiumButton(
+                    label: 'Logout',
+                    outlined: true,
+                    expand: true,
+                    icon: Icons.logout_rounded,
+                    onPressed: _logout,
+                  ),
+                ],
+              ),
             ),
-          const SizedBox(height: 28),
-          ReportCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Logout',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Sign out from this business workspace and return to login.',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-                PremiumButton(
-                  label: 'Logout',
-                  outlined: true,
-                  expand: true,
-                  icon: Icons.logout_rounded,
-                  onPressed: _logout,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -253,7 +277,7 @@ class _BusinessSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReportCard(
+    return PremiumGlassCard(
       child: Form(
         key: formKey,
         child: Column(
@@ -305,7 +329,7 @@ class _AppSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReportCard(
+    return PremiumGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

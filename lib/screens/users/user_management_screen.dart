@@ -82,57 +82,66 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           title: 'Team',
           subtitle: 'Demo mode',
         ),
-        body: ListView(
-          padding: PremiumTokens.pagePadding(context),
-          children: [
-            const FeatureHeaderCard(
-              title: 'Team Management',
-              subtitle: 'Switch demo roles to preview owner/admin/staff permissions.',
-              icon: Icons.groups_2_outlined,
-              trailingIcon: Icons.manage_accounts_outlined,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
             ),
-            const SizedBox(height: 8),
-            const _PermissionGuideCard(),
-            const SizedBox(height: 12),
-            ReportCard(
-              child: ListTile(
-                leading: const Icon(Icons.workspace_premium_outlined),
-                title: const Text('Demo Owner'),
-                subtitle: const Text('Full access'),
-                trailing: _RoleSelectionTrailing(
-                  role: UserRole.owner,
-                  selected: auth.appUser?.role == UserRole.owner,
-                ),
-                onTap: () => auth.setDemoRole(UserRole.owner),
+          ),
+          child: ListView(
+            padding: PremiumTokens.pagePadding(context),
+            children: [
+              const FeatureHeaderCard(
+                title: 'Team Management',
+                subtitle: 'Switch demo roles to preview owner/admin/staff permissions.',
+                icon: Icons.groups_2_outlined,
+                trailingIcon: Icons.manage_accounts_outlined,
               ),
-            ),
-            const SizedBox(height: 10),
-            ReportCard(
-              child: ListTile(
-                leading: const Icon(Icons.admin_panel_settings_outlined),
-                title: const Text('Demo Admin'),
-                subtitle: const Text('Business operation access'),
-                trailing: _RoleSelectionTrailing(
-                  role: UserRole.admin,
-                  selected: auth.appUser?.role == UserRole.admin,
+              const SizedBox(height: 8),
+              const _PermissionGuideCard(),
+              const SizedBox(height: 12),
+              PremiumGlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.workspace_premium_outlined),
+                  title: const Text('Demo Owner'),
+                  subtitle: const Text('Full access'),
+                  trailing: _RoleSelectionTrailing(
+                    role: UserRole.owner,
+                    selected: auth.appUser?.role == UserRole.owner,
+                  ),
+                  onTap: () => auth.setDemoRole(UserRole.owner),
                 ),
-                onTap: () => auth.setDemoRole(UserRole.admin),
               ),
-            ),
-            const SizedBox(height: 10),
-            ReportCard(
-              child: ListTile(
-                leading: const Icon(Icons.badge_outlined),
-                title: const Text('Demo Staff'),
-                subtitle: const Text('Scan/stock/sell only'),
-                trailing: _RoleSelectionTrailing(
-                  role: UserRole.staff,
-                  selected: auth.appUser?.role == UserRole.staff,
+              const SizedBox(height: 10),
+              PremiumGlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.admin_panel_settings_outlined),
+                  title: const Text('Demo Admin'),
+                  subtitle: const Text('Business operation access'),
+                  trailing: _RoleSelectionTrailing(
+                    role: UserRole.admin,
+                    selected: auth.appUser?.role == UserRole.admin,
+                  ),
+                  onTap: () => auth.setDemoRole(UserRole.admin),
                 ),
-                onTap: () => auth.setDemoRole(UserRole.staff),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              PremiumGlassCard(
+                child: ListTile(
+                  leading: const Icon(Icons.badge_outlined),
+                  title: const Text('Demo Staff'),
+                  subtitle: const Text('Scan/stock/sell only'),
+                  trailing: _RoleSelectionTrailing(
+                    role: UserRole.staff,
+                    selected: auth.appUser?.role == UserRole.staff,
+                  ),
+                  onTap: () => auth.setDemoRole(UserRole.staff),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -142,8 +151,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         title: 'Team management',
         subtitle: 'Roles & access',
       ),
-      body: Column(
-        children: [
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+          ),
+        ),
+        child: Column(
+          children: [
           Padding(
             padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
             child: const FeatureHeaderCard(
@@ -160,7 +177,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           if (auth.isOwner)
             Padding(
               padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-              child: ReportCard(
+              child: PremiumGlassCard(
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Column(
@@ -261,7 +278,8 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               },
             ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -274,7 +292,7 @@ class _UserTeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReportCard(
+    return PremiumGlassCard(
       child: ListTile(
         leading: CircleAvatar(
           child: Icon(
@@ -365,7 +383,7 @@ class _PermissionGuideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReportCard(
+    return PremiumGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
@@ -374,6 +392,12 @@ class _PermissionGuideCard extends StatelessWidget {
             leading: Icon(Icons.lock_person_outlined),
             title: Text('Role permissions'),
             subtitle: Text('Owner: full control • Admin: operations + reports • Staff: sell/stock only'),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.info_outline_rounded),
+            title: Text('Permission explanation'),
+            subtitle: Text('Staff cannot change business settings or manage team members.'),
           ),
         ],
       ),
