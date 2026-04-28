@@ -27,6 +27,17 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   ];
   bool _busy = false;
 
+  void _scrollToLatest() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent + 120,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
   Future<void> _ask([String? value]) async {
     final query = (value ?? _controller.text).trim();
     if (query.isEmpty) return;
@@ -36,6 +47,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       _messages.add(_Message(fromUser: true, text: query));
       _controller.clear();
     });
+    _scrollToLatest();
 
     final products = context.read<ProductsProvider>().products;
     final items = context.read<SalesProvider>().saleItems;
@@ -69,14 +81,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
       _messages.add(_Message(fromUser: false, text: reply));
       _busy = false;
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) return;
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent + 80,
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-      );
-    });
+    _scrollToLatest();
   }
 
   @override
@@ -110,17 +115,32 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .secondaryContainer
-                    .withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(10),
+                color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.62),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+                ),
               ),
-              child: Text(
-                'Real AI key not configured. Using local assistant fallback.',
-                style: Theme.of(context).textTheme.bodySmall,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.key_off_outlined,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.onErrorContainer,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'API key missing. Running local AI fallback mode.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onErrorContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ),
           SizedBox(
@@ -130,9 +150,9 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
               scrollDirection: Axis.horizontal,
               children: [
                 _QuickQuestion(
-                  icon: Icons.monetization_on_outlined,
-                  label: 'Which product is most profitable?',
-                  onTap: () => _ask('Which product is most profitable?'),
+                  icon: Icons.warning_amber_rounded,
+                  label: 'Which products are low stock?',
+                  onTap: () => _ask('Which products are low stock?'),
                 ),
                 _QuickQuestion(
                   icon: Icons.inventory_outlined,
@@ -140,9 +160,14 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                   onTap: () => _ask('What should I restock?'),
                 ),
                 _QuickQuestion(
+                  icon: Icons.monetization_on_outlined,
+                  label: 'Which product is most profitable?',
+                  onTap: () => _ask('Which product is most profitable?'),
+                ),
+                _QuickQuestion(
                   icon: Icons.local_fire_department_outlined,
-                  label: 'Top selling product?',
-                  onTap: () => _ask('Top selling product?'),
+                  label: 'What sold the most today?',
+                  onTap: () => _ask('What sold the most today?'),
                 ),
               ],
             ),
@@ -158,8 +183,11 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                 : ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(12),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_busy ? 1 : 0),
               itemBuilder: (context, i) {
+                if (_busy && i == _messages.length) {
+                  return const _TypingBubble();
+                }
                 final m = _messages[i];
                 final cs = Theme.of(context).colorScheme;
                 return TweenAnimationBuilder<double>(
@@ -323,4 +351,106 @@ class _Message {
   });
   final bool fromUser;
   final String text;
+}
+
+class _TypingBubble extends StatelessWidget {
+  const _TypingBubble();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        constraints: const BoxConstraints(maxWidth: 220),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 4),
+              child: CircleAvatar(
+                radius: 14,
+                backgroundColor: cs.secondaryContainer,
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 16,
+                  color: cs.onSecondaryContainer,
+                ),
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(4),
+                  bottomRight: Radius.circular(16),
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: _TypingDots(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TypingDots extends StatefulWidget {
+  const _TypingDots();
+
+  @override
+  State<_TypingDots> createState() => _TypingDotsState();
+}
+
+class _TypingDotsState extends State<_TypingDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final t = _controller.value;
+        double alphaFor(int index) {
+          final phase = (t + (index * 0.18)) % 1.0;
+          return 0.35 + (phase < 0.5 ? phase : 1 - phase) * 1.3;
+        }
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (i) {
+            return Padding(
+              padding: EdgeInsets.only(right: i == 2 ? 0 : 5),
+              child: Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withValues(alpha: alphaFor(i).clamp(0.25, 1)),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
 }
