@@ -51,6 +51,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       floatingActionButton: isAdmin
           ? FloatingActionButton.extended(
+              heroTag: 'products_add_fab',
               onPressed: () =>
                   Navigator.pushNamed(context, AppRoutes.productAdd),
               icon: const Icon(Icons.add_rounded),

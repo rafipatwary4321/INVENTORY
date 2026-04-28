@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'premium_tokens.dart';
+import 'premium_glass_card.dart';
 
 class ReportCard extends StatelessWidget {
   const ReportCard({
@@ -14,10 +14,13 @@ class ReportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      decoration: PremiumTokens.cardDecoration(context),
-      child: Padding(padding: padding, child: child),
+      child: PremiumGlassCard(
+        radius: 20,
+        padding: padding,
+        child: child,
+      ),
     );
   }
 }

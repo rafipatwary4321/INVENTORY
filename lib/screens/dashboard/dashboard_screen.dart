@@ -165,6 +165,11 @@ class DashboardScreen extends StatelessWidget {
           ListView(
             padding: PremiumTokens.pagePadding(context),
             children: [
+              _TopDashboardBar(
+                businessName: settings?.businessName ?? 'My Business',
+                userName: user?.displayName ?? 'User',
+              ),
+              const SizedBox(height: 10),
               VisualHeroHeader(
                 title: 'Warehouse Control Center',
                 subtitle:
@@ -212,30 +217,40 @@ class DashboardScreen extends StatelessWidget {
                     value: '${products.length}',
                     icon: Icons.category_outlined,
                     accentColor: Colors.blue,
+                    changeLabel: '+12%',
+                    changeColor: Colors.cyanAccent,
                   ),
                   GlassStatCard(
                     title: 'Stock qty',
                     value: '$totalStockQty',
                     icon: Icons.format_list_numbered_rounded,
                     accentColor: Colors.indigo,
+                    changeLabel: '+5%',
+                    changeColor: Colors.lightBlueAccent,
                   ),
                   GlassStatCard(
                     title: 'Stock value',
                     value: BdtFormatter.format(totalStockValue),
                     icon: Icons.account_balance_wallet_outlined,
                     accentColor: Colors.teal,
+                    changeLabel: '+8%',
+                    changeColor: Colors.greenAccent,
                   ),
                   GlassStatCard(
                     title: 'Today sales',
                     value: BdtFormatter.format(todaySales),
                     icon: Icons.point_of_sale,
                     accentColor: Colors.deepPurple,
+                    changeLabel: '+14%',
+                    changeColor: Colors.cyanAccent,
                   ),
                   GlassStatCard(
                     title: 'Low stock',
                     value: '$lowStock',
                     icon: Icons.warning_amber_rounded,
                     accentColor: lowStock > 0 ? Colors.deepOrange : Colors.green,
+                    changeLabel: lowStock > 0 ? 'Action needed' : 'Healthy',
+                    changeColor: lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
                   ),
                 ],
               ),
@@ -291,8 +306,181 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 12),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 900;
+                  if (!isWide) {
+                    return Column(
+                      children: const [
+                        _ActivityCard(),
+                        SizedBox(height: 10),
+                        _AnalyticsRingCard(),
+                      ],
+                    );
+                  }
+                  return const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: _ActivityCard()),
+                      SizedBox(width: 10),
+                      Expanded(flex: 2, child: _AnalyticsRingCard()),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              const _ChartPlaceholderCard(
+                title: 'Sales overview',
+                subtitle: 'Chart placeholder for daily/weekly trend',
+              ),
+              const SizedBox(height: 10),
+              const _ChartPlaceholderCard(
+                title: 'Inventory trend',
+                subtitle: 'Chart placeholder for stock movement',
+              ),
               const SizedBox(height: 24),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TopDashboardBar extends StatelessWidget {
+  const _TopDashboardBar({
+    required this.businessName,
+    required this.userName,
+  });
+
+  final String businessName;
+  final String userName;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            readOnly: true,
+            decoration: InputDecoration(
+              hintText: 'Search products, sales, reports...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              filled: true,
+              fillColor: cs.surface.withValues(alpha: 0.7),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        IconButton.filledTonal(
+          onPressed: () {},
+          icon: const Icon(Icons.notifications_none_rounded),
+        ),
+        const SizedBox(width: 8),
+        CircleAvatar(
+          backgroundColor: cs.primaryContainer,
+          child: Text(
+            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+            style: TextStyle(color: cs.onPrimaryContainer),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivityCard extends StatelessWidget {
+  const _ActivityCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return ReportCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.history_rounded),
+            title: Text('Recent activity'),
+            subtitle: Text('Stock in updated • POS checkout completed • Report viewed'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalyticsRingCard extends StatelessWidget {
+  const _AnalyticsRingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ReportCard(
+      child: Column(
+        children: [
+          const ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.analytics_outlined),
+            title: Text('Analytics health'),
+          ),
+          SizedBox(
+            width: 130,
+            height: 130,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: 0.76,
+                  strokeWidth: 12,
+                  backgroundColor: cs.surfaceContainerHighest,
+                ),
+                const Text('76%'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChartPlaceholderCard extends StatelessWidget {
+  const _ChartPlaceholderCard({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ReportCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 10),
+          Container(
+            height: 140,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  cs.primary.withValues(alpha: 0.16),
+                  cs.tertiary.withValues(alpha: 0.08),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -432,7 +432,7 @@ class _CartSummaryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReportCard(
+    return POSCartCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -476,10 +476,10 @@ class _CartSummaryPanel extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
-          FilledButton.icon(
+          GlowButton(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
-            icon: const Icon(Icons.shopping_cart_checkout_rounded),
-            label: const Text('Open Checkout'),
+            icon: Icons.shopping_cart_checkout_rounded,
+            label: 'Open Checkout',
           ),
         ],
       ),

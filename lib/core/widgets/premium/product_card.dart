@@ -3,8 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../models/product.dart';
 import '../../../core/utils/bdt_formatter.dart';
-import 'premium_tokens.dart';
 import 'stock_status_badge.dart';
+import 'premium_glass_card.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({
@@ -24,12 +24,12 @@ class ProductCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        child: Ink(
-          decoration: PremiumTokens.cardDecoration(context),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
+        borderRadius: BorderRadius.circular(20),
+        child: PremiumGlassCard(
+          radius: 20,
+          borderColor: cs.primary.withValues(alpha: 0.2),
+          padding: const EdgeInsets.all(14),
+          child: Row(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -90,7 +90,6 @@ class ProductCard extends StatelessWidget {
                 ),
                 Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
               ],
-            ),
           ),
         ),
       ),

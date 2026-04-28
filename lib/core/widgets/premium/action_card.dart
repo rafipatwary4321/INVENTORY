@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'premium_tokens.dart';
+import 'premium_glass_card.dart';
 
 class ActionCard extends StatelessWidget {
   const ActionCard({
@@ -25,25 +25,13 @@ class ActionCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                cs.surface,
-                cs.surfaceContainerHighest.withValues(alpha: 0.32),
-              ],
-            ),
-            border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.25)),
-            boxShadow: PremiumTokens.cardShadow(context),
-          ),
-          child: Padding(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: PremiumGlassCard(
+            radius: 20,
+            borderColor: cs.primary.withValues(alpha: 0.18),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
@@ -66,7 +54,7 @@ class ActionCard extends StatelessWidget {
                       Text(
                         label,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: disabled ? cs.onSurfaceVariant : null,
                             ),
                       ),
@@ -89,7 +77,6 @@ class ActionCard extends StatelessWidget {
           ),
         ),
       ),
-    ),
     );
   }
 }

@@ -44,6 +44,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
       ),
       floatingActionButton: _index == 0
           ? FloatingActionButton.extended(
+              heroTag: 'shell_scan_fab',
               onPressed: () => _scanStockIn(context),
               icon: const Icon(Icons.qr_code_scanner_rounded),
               label: const Text('Scan QR'),

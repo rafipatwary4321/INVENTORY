@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'premium_tokens.dart';
+import 'premium_glass_card.dart';
 
 class AIInsightCard extends StatelessWidget {
   const AIInsightCard({
@@ -17,22 +17,11 @@ class AIInsightCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.tertiaryContainer.withValues(alpha: 0.55),
-            cs.surface,
-          ],
-        ),
-        boxShadow: PremiumTokens.cardShadow(context),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
-      ),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: PremiumGlassCard(
+        radius: 20,
+        borderColor: cs.tertiary.withValues(alpha: 0.25),
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

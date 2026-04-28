@@ -22,8 +22,14 @@ abstract final class PremiumTokens {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
+        color: (isDark ? const Color(0xFF59A8FF) : const Color(0xFF2D7CFF))
+            .withValues(alpha: isDark ? 0.12 : 0.08),
+        blurRadius: 24,
+        offset: const Offset(0, 8),
+      ),
+      BoxShadow(
         color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
-        blurRadius: 20,
+        blurRadius: 18,
         offset: const Offset(0, 8),
       ),
     ];
@@ -38,7 +44,14 @@ abstract final class PremiumTokens {
     final cs = Theme.of(context).colorScheme;
     return BoxDecoration(
       borderRadius: BorderRadius.circular(radius),
-      color: color ?? cs.surface,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          (color ?? cs.surface).withValues(alpha: 0.86),
+          cs.surfaceContainerHighest.withValues(alpha: 0.42),
+        ],
+      ),
       border: useBorder
           ? Border.all(color: cs.outlineVariant.withValues(alpha: 0.3))
           : null,

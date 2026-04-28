@@ -20,18 +20,10 @@ class BusinessProfileCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusLg),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.primaryContainer.withValues(alpha: 0.65),
-            cs.secondaryContainer.withValues(alpha: 0.45),
-          ],
-        ),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
-        boxShadow: PremiumTokens.cardShadow(context),
+      decoration: PremiumTokens.cardDecoration(
+        context,
+        radius: PremiumTokens.radiusLg,
+        color: cs.primaryContainer.withValues(alpha: 0.62),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
