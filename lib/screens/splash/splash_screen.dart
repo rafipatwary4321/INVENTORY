@@ -20,10 +20,12 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   static const _startupTimeout = Duration(seconds: 3);
   bool _navigated = false;
+  bool _pulse = false;
 
   @override
   void initState() {
     super.initState();
+    _pulse = true;
     _boot();
   }
 
@@ -89,7 +91,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -97,9 +98,9 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              cs.primary,
-              Color.lerp(cs.primary, cs.tertiary, 0.4)!,
-              cs.tertiary.withValues(alpha: 0.95),
+              const Color(0xFF050C18),
+              const Color(0xFF0A1C35),
+              const Color(0xFF0F2F57),
             ],
           ),
         ),
@@ -108,23 +109,38 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 32,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.inventory_2_rounded,
-                    size: 72,
-                    color: Colors.white.withValues(alpha: 0.95),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.96, end: _pulse ? 1.0 : 0.96),
+                  duration: const Duration(milliseconds: 1100),
+                  curve: Curves.easeInOut,
+                  onEnd: () => setState(() => _pulse = !_pulse),
+                  builder: (context, value, child) {
+                    return Transform.scale(scale: value, child: child);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.cyanAccent.withValues(alpha: 0.28),
+                          blurRadius: 34,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.28),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.inventory_2_rounded,
+                      size: 72,
+                      color: Colors.white.withValues(alpha: 0.98),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -138,9 +154,10 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Stock · Sales · Insights',
+                  'AI Powered Smart Inventory',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: 0.2,
                       ),
                 ),
                 const SizedBox(height: 36),
@@ -154,7 +171,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Preparing your workspace…',
+                  'Preparing your premium workspace...',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.88),
                       ),

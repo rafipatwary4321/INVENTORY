@@ -52,7 +52,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final startupState = context.read<AppStartupState>();
     final isDemoMode = !startupState.firebaseEnabled;
-    final cs = Theme.of(context).colorScheme;
 
     Widget formContent = Form(
       key: _formKey,
@@ -60,17 +59,20 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
                     if (isDemoMode) ...[
-                      ReportCard(
+                      PremiumGlassCard(
+                        borderColor: Colors.amber.withValues(alpha: 0.28),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.info_outline_rounded, color: cs.primary),
+                            const Icon(Icons.info_outline_rounded, color: Colors.amberAccent),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 startupState.startupWarning ??
                                     'Demo mode active. Use demo credentials to continue.',
-                                style: Theme.of(context).textTheme.bodySmall,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
                               ),
                             ),
                           ],
@@ -150,85 +152,124 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 980;
-          final hero = Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 56, 24, 32),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  cs.primary,
-                  Color.lerp(cs.primary, cs.secondary, 0.35)!,
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF050C18),
+              Color(0xFF0A1C35),
+              Color(0xFF0F2F57),
+            ],
+          ),
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 980;
+            final brandPanel = Padding(
+              padding: const EdgeInsets.fromLTRB(28, 56, 28, 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: Colors.white.withValues(alpha: 0.1),
+                      border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.28)),
+                    ),
+                    child: const Icon(
+                      Icons.inventory_2_rounded,
+                      size: 34,
+                      color: Colors.cyanAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'INVENTORY',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.4,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'AI Powered Smart Inventory',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                  ),
+                  const SizedBox(height: 18),
+                  _ModeIndicator(isDemoMode: isDemoMode),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Owner, admin, and staff use the same screen. Access is scoped by your business role.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.86),
+                          height: 1.4,
+                        ),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(isWide ? 0 : PremiumTokens.radiusXl),
-              ),
-              boxShadow: PremiumTokens.cardShadow(context),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.layers_rounded,
-                  size: 40,
-                  color: Colors.white.withValues(alpha: 0.95),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Sign in',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Owner, admin, and staff use the same screen. Access is scoped by your business role.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.4,
-                      ),
-                ),
-              ],
-            ),
-          );
-          if (!isWide) {
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: hero),
-                SliverPadding(
-                  padding: PremiumTokens.pagePadding(context),
-                  sliver: SliverToBoxAdapter(child: formContent),
-                ),
-              ],
             );
-          }
-          return Row(
-            children: [
-              Expanded(child: hero),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: PremiumTokens.pagePadding(context),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 460),
-                      child: ReportCard(child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: formContent,
-                      )),
-                    ),
+            final loginCard = SingleChildScrollView(
+              padding: PremiumTokens.pagePadding(context),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 480),
+                  child: PremiumGlassCard(
+                    borderColor: Colors.cyanAccent.withValues(alpha: 0.26),
+                    child: formContent,
                   ),
                 ),
               ),
-            ],
-          );
-        },
+            );
+            if (!isWide) {
+              return Column(
+                children: [
+                  brandPanel,
+                  Expanded(child: loginCard),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(child: brandPanel),
+                Expanded(child: loginCard),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeIndicator extends StatelessWidget {
+  const _ModeIndicator({required this.isDemoMode});
+
+  final bool isDemoMode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: (isDemoMode ? Colors.amber : Colors.green).withValues(alpha: 0.15),
+        border: Border.all(
+          color: (isDemoMode ? Colors.amber : Colors.green).withValues(alpha: 0.4),
+        ),
+      ),
+      child: Text(
+        isDemoMode ? 'Mode: Demo' : 'Mode: Firebase',
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
       ),
     );
   }
