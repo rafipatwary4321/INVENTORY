@@ -90,6 +90,16 @@ class DashboardScreen extends StatelessWidget {
     final stockHealth = products.isEmpty
         ? 1.0
         : ((products.length - lowStock) / products.length).clamp(0, 1).toDouble();
+    Future<void> openStockInScan() async {
+      final result = await Navigator.pushNamed(
+        context,
+        AppRoutes.qrScan,
+        arguments: QRScanArgs(mode: QRScanMode.stockIn),
+      );
+      final id = result as String?;
+      if (!context.mounted || id == null) return;
+      Navigator.pushNamed(context, AppRoutes.stockIn, arguments: id);
+    }
 
     return Scaffold(
       appBar: PremiumAppBar(
@@ -129,64 +139,16 @@ class DashboardScreen extends StatelessWidget {
                 userName: user?.displayName ?? 'User',
               ),
               const SizedBox(height: 10),
-              const AnimatedFeatureHero(
-                title: 'Warehouse Live Flow',
-                subtitle: 'Shelves, boxes, and movement status in sync.',
-                icon: Icons.warehouse_rounded,
-                gradientColors: [Color(0xFF6D38FF), Color(0xFF148CFF), Color(0xFF16D9B4)],
-                animationType: FeatureHeroAnimationType.warehouse,
-              ),
-              VisualHeroHeader(
-                title: 'Warehouse Control Center',
-                subtitle:
-                    'Hello, ${user?.displayName ?? (auth.isLoggedIn ? 'Demo Admin' : 'User')}. '
-                    'Today sales ${BdtFormatter.format(todaySales)} · '
-                    '${products.length} products · $lowStock low stock.',
-                role: user?.roleVisual,
-                trailing: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Icon(
-                      Icons.storefront_rounded,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
-                      child: const Text(
-                        'Live Ops',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 36,
-                      child: GlowButton(
-                        onPressed: () => Navigator.pushNamed(context, AppRoutes.sell),
-                        icon: Icons.flash_on_rounded,
-                        label: 'Quick Sell',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _StockHealthRingCard(
+              _PremiumDashboardHero(
+                businessName: settings?.businessName ?? 'My Business',
+                userName: user?.displayName ?? 'User',
+                todaySales: todaySales,
+                totalStockValue: totalStockValue,
                 stockHealth: stockHealth,
                 lowStock: lowStock,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
+                onStartSelling: () => Navigator.pushNamed(context, AppRoutes.sell),
+                onStockIn: openStockInScan,
               ),
-              const SizedBox(height: 10),
-              const _FeatureBannerRow(),
               const SizedBox(height: 10),
               GridView.count(
                 crossAxisCount: crossAxisCount,
@@ -387,6 +349,217 @@ class _TopDashboardBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PremiumDashboardHero extends StatelessWidget {
+  const _PremiumDashboardHero({
+    required this.businessName,
+    required this.userName,
+    required this.todaySales,
+    required this.totalStockValue,
+    required this.stockHealth,
+    required this.lowStock,
+    required this.onStartSelling,
+    required this.onStockIn,
+  });
+
+  final String businessName;
+  final String userName;
+  final double todaySales;
+  final double totalStockValue;
+  final double stockHealth;
+  final int lowStock;
+  final VoidCallback onStartSelling;
+  final VoidCallback onStockIn;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.985, end: 1),
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) {
+        return Transform.scale(scale: value, child: child);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF4D2BFF), Color(0xFF127DFF), Color(0xFF15CFA7)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF4D2BFF).withValues(alpha: 0.34),
+              blurRadius: 28,
+              offset: const Offset(0, 12),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: Stack(
+            children: [
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Color(0xAD02040A),
+                        Color(0x78030A16),
+                        Color(0x22000000),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
+                  child: AnimatedFeatureHero(
+                    title: 'Warehouse Activity',
+                    subtitle: 'Smart inventory movement and shelf health',
+                    icon: Icons.warehouse_rounded,
+                    compact: true,
+                    gradientColors: const [
+                      Color(0x007A37FF),
+                      Color(0x0013A7FF),
+                      Color(0x001DE2B0),
+                    ],
+                    animationType: FeatureHeroAnimationType.warehouse,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      businessName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Hi ${userName.isEmpty ? 'User' : userName} · Today ${BdtFormatter.format(todaySales)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.92),
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      BdtFormatter.format(totalStockValue),
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            shadows: [
+                              Shadow(
+                                color: const Color(0xFF20E3BE).withValues(alpha: 0.7),
+                                blurRadius: 16,
+                              ),
+                            ],
+                          ),
+                    ),
+                    Text(
+                      'Inventory Value',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GlowButton(
+                            onPressed: onStartSelling,
+                            icon: Icons.shopping_cart_checkout_rounded,
+                            label: 'Start Selling',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: onStockIn,
+                          icon: const Icon(Icons.qr_code_scanner_rounded),
+                          label: const Text('Stock In'),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.white.withValues(alpha: 0.4)),
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _HeroStockRing(stockHealth: stockHealth, lowStock: lowStock),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroStockRing extends StatelessWidget {
+  const _HeroStockRing({
+    required this.stockHealth,
+    required this.lowStock,
+  });
+
+  final double stockHealth;
+  final int lowStock;
+
+  @override
+  Widget build(BuildContext context) {
+    final valueColor = lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent;
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.black.withValues(alpha: 0.22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(
+              value: stockHealth,
+              strokeWidth: 5,
+              backgroundColor: Colors.white.withValues(alpha: 0.12),
+              valueColor: AlwaysStoppedAnimation<Color>(valueColor),
+            ),
+          ),
+          Text(
+            '${(stockHealth * 100).round()}',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -644,178 +817,3 @@ class _DashboardBackdrop extends StatelessWidget {
   }
 }
 
-class _StockHealthRingCard extends StatelessWidget {
-  const _StockHealthRingCard({
-    required this.stockHealth,
-    required this.lowStock,
-    required this.onTap,
-  });
-
-  final double stockHealth;
-  final int lowStock;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return PremiumGlassCard(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 84,
-              height: 84,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: stockHealth,
-                    strokeWidth: 9,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
-                    ),
-                  ),
-                  Text(
-                    '${(stockHealth * 100).round()}%',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Stock Health',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    lowStock > 0
-                        ? '$lowStock item(s) need restock attention now.'
-                        : 'Inventory status is stable across products.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: Colors.white70),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FeatureBannerRow extends StatelessWidget {
-  const _FeatureBannerRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 96,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: const [
-          _FeatureBanner(
-            title: 'POS',
-            subtitle: 'Fast checkout',
-            icon: Icons.point_of_sale_rounded,
-            colors: [Color(0xFF5F2CFF), Color(0xFF1D8BFF)],
-          ),
-          SizedBox(width: 10),
-          _FeatureBanner(
-            title: 'AI',
-            subtitle: 'Smart insights',
-            icon: Icons.auto_awesome_rounded,
-            colors: [Color(0xFF0D92FF), Color(0xFF16D9B4)],
-          ),
-          SizedBox(width: 10),
-          _FeatureBanner(
-            title: 'Reports',
-            subtitle: 'Live metrics',
-            icon: Icons.query_stats_rounded,
-            colors: [Color(0xFF7C3BFF), Color(0xFF2BD972)],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeatureBanner extends StatelessWidget {
-  const _FeatureBanner({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.colors,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final List<Color> colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 180,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.first.withValues(alpha: 0.45),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 28),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-                Text(
-                  subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.88),
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
