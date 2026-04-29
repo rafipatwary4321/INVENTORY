@@ -483,16 +483,19 @@ class _PremiumDashboardHero extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Expanded(
+                        SizedBox(
+                          width: 168,
                           child: GlowButton(
                             onPressed: onStartSelling,
                             icon: Icons.shopping_cart_checkout_rounded,
                             label: 'Start Selling',
                           ),
                         ),
-                        const SizedBox(width: 8),
                         OutlinedButton.icon(
                           onPressed: onStockIn,
                           icon: const Icon(Icons.qr_code_scanner_rounded),
@@ -503,7 +506,6 @@ class _PremiumDashboardHero extends StatelessWidget {
                             backgroundColor: Colors.white.withValues(alpha: 0.08),
                           ),
                         ),
-                        const SizedBox(width: 8),
                         _HeroStockRing(stockHealth: stockHealth, lowStock: lowStock),
                       ],
                     ),

@@ -30,6 +30,11 @@ class AppTheme {
     final bodyColor = isDark ? const Color(0xFFE9EEF7) : const Color(0xFF122033);
     final mutedColor = isDark ? const Color(0xFFBBC7DA) : const Color(0xFF4D5D78);
     return base.copyWith(
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.35,
+        color: bodyColor,
+      ),
       headlineSmall: base.headlineSmall?.copyWith(
         fontWeight: FontWeight.w800,
         letterSpacing: -0.2,
@@ -40,7 +45,7 @@ class AppTheme {
         color: bodyColor,
       ),
       titleMedium: base.titleMedium?.copyWith(
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: bodyColor,
       ),
       titleSmall: base.titleSmall?.copyWith(
@@ -49,17 +54,21 @@ class AppTheme {
       ),
       bodyLarge: base.bodyLarge?.copyWith(
         color: bodyColor,
-        height: 1.4,
+        height: 1.45,
       ),
       bodyMedium: base.bodyMedium?.copyWith(
         color: bodyColor,
-        height: 1.4,
+        height: 1.42,
       ),
       bodySmall: base.bodySmall?.copyWith(
         color: mutedColor,
         height: 1.35,
       ),
       labelLarge: base.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.1,
+      ),
+      labelMedium: base.labelMedium?.copyWith(
         fontWeight: FontWeight.w700,
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'premium_tokens.dart';
 
-class PremiumButton extends StatelessWidget {
+class PremiumButton extends StatefulWidget {
   const PremiumButton({
     super.key,
     required this.label,
@@ -19,23 +19,31 @@ class PremiumButton extends StatelessWidget {
   final bool expand;
 
   @override
+  State<PremiumButton> createState() => _PremiumButtonState();
+}
+
+class _PremiumButtonState extends State<PremiumButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    final child = icon != null
+    final child = widget.icon != null
         ? Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20),
+              Icon(widget.icon, size: 20),
               const SizedBox(width: 8),
-              Text(label),
+              Text(widget.label),
             ],
           )
-        : Text(label);
+        : Text(widget.label);
 
-    final btn = outlined
+    final btn = widget.outlined
         ? OutlinedButton(
-            onPressed: onPressed,
+            onPressed: widget.onPressed,
             style: OutlinedButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
@@ -44,18 +52,33 @@ class PremiumButton extends StatelessWidget {
             child: child,
           )
         : FilledButton(
-            onPressed: onPressed,
+            onPressed: widget.onPressed,
             style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
               ),
-              elevation: onPressed == null ? 0 : 1,
+              elevation: widget.onPressed == null ? 0 : 1,
             ),
             child: child,
           );
 
-    if (expand) return SizedBox(width: double.infinity, child: btn);
-    return btn;
+    final scaled = AnimatedScale(
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      scale: _pressed ? 0.98 : 1,
+      child: btn,
+    );
+
+    final wrapped = Listener(
+      onPointerDown: (_) => setState(() => _pressed = true),
+      onPointerUp: (_) => setState(() => _pressed = false),
+      onPointerCancel: (_) => setState(() => _pressed = false),
+      child: scaled,
+    );
+
+    if (widget.expand) return SizedBox(width: double.infinity, child: wrapped);
+    return wrapped;
   }
 }
