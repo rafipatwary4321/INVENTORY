@@ -142,6 +142,11 @@ class _SellScreenState extends State<SellScreen> {
                         icon: Icons.point_of_sale_rounded,
                         trailingIcon: Icons.shopping_bag_outlined,
                       ),
+                      _PosHeroCard(
+                        cartItems: cartItems,
+                        cartTotal: cartTotal,
+                      ),
+                      const SizedBox(height: 8),
                       const AnimatedFeatureHero(
                         title: 'Checkout Operations',
                         subtitle: 'Cashier lane, cart flow, and billing readiness.',
@@ -186,8 +191,41 @@ class _SellScreenState extends State<SellScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: PremiumGlassCard(
+                        borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.45),
                         child: Row(
                           children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF7A37FF), Color(0xFF13A7FF)],
+                                ),
+                              ),
+                              child: const Icon(Icons.price_check_rounded, color: Colors.white),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Total ৳ ${cartTotal.toStringAsFixed(2)}',
+                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                  Text(
+                                    '$cartItems item(s) in checkout',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.white70,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: _scanForCart,
@@ -311,6 +349,7 @@ class _ScanManualPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PremiumGlassCard(
+      borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.35),
       child: Padding(
         padding: const EdgeInsets.all(2),
         child: Column(
@@ -440,56 +479,167 @@ class _PosProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final lowStock = product.quantity <= 2;
     return Opacity(
       opacity: product.quantity < 1 ? 0.55 : 1,
       child: PremiumGlassCard(
         borderColor: inCartQty > product.quantity - 1
             ? Colors.amber.withValues(alpha: 0.45)
             : null,
-        child: ListTile(
-          onTap: onTap,
-          leading: CircleAvatar(
-            backgroundColor: cs.primaryContainer.withValues(alpha: 0.7),
-            child: Icon(Icons.inventory_2_outlined, color: cs.primary),
-          ),
-          title: Text(product.name),
-          subtitle: Text(
-            '${product.category} • Stock ${product.quantity} ${product.unit}'
-            '${inCartQty > 0 ? ' • In cart $inCartQty' : ''}',
-          ),
-          isThreeLine: inCartQty >= product.quantity && product.quantity > 0,
-          subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
-          titleTextStyle: Theme.of(context).textTheme.titleMedium,
-          minVerticalPadding: 10,
-          trailing: SizedBox(
-            width: 126,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton.filledTonal(
-                  onPressed: onDecrement,
-                  constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.remove_rounded, size: 16),
+        child: Column(
+          children: [
+            if (lowStock)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.orange.withValues(alpha: 0.14),
+                  border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.35)),
                 ),
-                const SizedBox(width: 6),
-                SizedBox(
-                  width: 24,
-                  child: Text(
-                    '$inCartQty',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelLarge,
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Low stock: ${product.quantity} ${product.unit}',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Colors.orangeAccent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ListTile(
+              onTap: onTap,
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7A37FF), Color(0xFF13A7FF)],
                   ),
                 ),
-                const SizedBox(width: 6),
-                IconButton.filled(
-                  onPressed: onIncrement,
-                  constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.add_rounded, size: 16),
+                child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+              ),
+              title: Text(
+                product.name,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              subtitle: Text(
+                '${product.category} • Stock ${product.quantity} ${product.unit}'
+                '${inCartQty > 0 ? ' • In cart $inCartQty' : ''}',
+              ),
+              isThreeLine: inCartQty >= product.quantity && product.quantity > 0,
+              subtitleTextStyle: Theme.of(context).textTheme.bodySmall,
+              minVerticalPadding: 10,
+              trailing: SizedBox(
+                width: 156,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    _QtyButton(
+                      icon: Icons.remove_rounded,
+                      onTap: onDecrement,
+                      filled: false,
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 28,
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$inCartQty',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _QtyButton(
+                      icon: Icons.add_rounded,
+                      onTap: onIncrement,
+                      filled: true,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
+            if (inCartQty > 0)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'In cart total: ৳ ${(inCartQty * product.sellingPrice).toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: cs.secondary.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QtyButton extends StatefulWidget {
+  const _QtyButton({
+    required this.icon,
+    required this.onTap,
+    required this.filled,
+  });
+
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool filled;
+
+  @override
+  State<_QtyButton> createState() => _QtyButtonState();
+}
+
+class _QtyButtonState extends State<_QtyButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTap: widget.onTap,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 120),
+        scale: _pressed ? 0.94 : 1,
+        child: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: widget.filled
+                ? const LinearGradient(colors: [Color(0xFF7A37FF), Color(0xFF13A7FF)])
+                : null,
+            color: widget.filled ? null : Colors.white.withValues(alpha: 0.1),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+            boxShadow: widget.filled
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF13A7FF).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            widget.icon,
+            size: 20,
+            color: widget.onTap == null ? Colors.white38 : Colors.white,
           ),
         ),
       ),
@@ -533,12 +683,48 @@ class _CartSummaryPanel extends StatelessWidget {
                       itemCount: cart.lines.length,
                       itemBuilder: (context, i) {
                         final line = cart.lines[i];
-                        return ListTile(
-                          dense: true,
-                          contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.sell_outlined, size: 18),
-                          title: Text(line.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                          subtitle: Text('Qty ${line.quantity}'),
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white.withValues(alpha: 0.08),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.sell_outlined, size: 18, color: Colors.white70),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      line.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                            color: Colors.white,
+                                          ),
+                                    ),
+                                    Text(
+                                      'Qty ${line.quantity}',
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                            color: Colors.white70,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                '৳ ${line.lineTotal.toStringAsFixed(0)}',
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
@@ -577,7 +763,17 @@ class _MiniCartEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.shopping_cart_outlined, color: cs.outline, size: 34),
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF7A37FF), Color(0xFF13A7FF)],
+                ),
+              ),
+              child: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 32),
+            ),
             const SizedBox(height: 8),
             Text(
               'Cart is empty',
@@ -591,6 +787,72 @@ class _MiniCartEmptyState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PosHeroCard extends StatelessWidget {
+  const _PosHeroCard({
+    required this.cartItems,
+    required this.cartTotal,
+  });
+
+  final int cartItems;
+  final double cartTotal;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6E37FF), Color(0xFF148CFF), Color(0xFF1AD3A9)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6E37FF).withValues(alpha: 0.34),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const AnimatedFeatureHero(
+            title: 'POS Checkout',
+            subtitle: 'Fast billing lane',
+            icon: Icons.point_of_sale_rounded,
+            compact: true,
+            gradientColors: [Color(0x007A37FF), Color(0x0013A7FF)],
+            animationType: FeatureHeroAnimationType.pos,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '৳ ${cartTotal.toStringAsFixed(2)}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+                Text(
+                  '$cartItems items in cart',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
