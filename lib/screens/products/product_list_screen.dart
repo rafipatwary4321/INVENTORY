@@ -225,6 +225,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           padding: const EdgeInsets.only(bottom: 10),
                           child: ProductVisualCard(
                             product: p,
+                            onView: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.productDetails,
+                              arguments: p.id,
+                            ),
+                            onEdit: isAdmin
+                                ? () => Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.productEdit,
+                                      arguments: p.id,
+                                    )
+                                : null,
+                            onQr: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.qrGenerate,
+                              arguments: p.id,
+                            ),
                             onTap: () => Navigator.pushNamed(
                               context,
                               AppRoutes.productDetails,
@@ -249,6 +266,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         final p = filtered[i];
                         return ProductVisualCard(
                           product: p,
+                          onView: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.productDetails,
+                            arguments: p.id,
+                          ),
+                          onEdit: isAdmin
+                              ? () => Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.productEdit,
+                                    arguments: p.id,
+                                  )
+                              : null,
+                          onQr: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.qrGenerate,
+                            arguments: p.id,
+                          ),
                           onTap: () => Navigator.pushNamed(
                             context,
                             AppRoutes.productDetails,
