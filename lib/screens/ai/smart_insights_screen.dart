@@ -43,12 +43,35 @@ class SmartInsightsScreen extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
                   if (i == 0) {
-                    return const PremiumGlassCard(
-                      child: ListTile(
-                        leading: Icon(Icons.auto_graph_rounded),
-                        title: Text('AI trend board'),
-                        subtitle: Text('Chart-style insight visual placeholder'),
-                      ),
+                    return const Column(
+                      children: [
+                        AnimatedFeatureHero(
+                          title: 'AI Insight Deck',
+                          subtitle: 'Recommendations, risks, and growth patterns.',
+                          icon: Icons.auto_graph_rounded,
+                          gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                          animationType: FeatureHeroAnimationType.ai,
+                        ),
+                        PremiumGlassCard(
+                          child: Row(
+                            children: [
+                              Icon(Icons.date_range_outlined),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text('Date filter (coming soon): Today / 7 days / 30 days / Custom'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        PremiumGlassCard(
+                          child: ListTile(
+                            leading: Icon(Icons.auto_graph_rounded),
+                            title: Text('AI trend board'),
+                            subtitle: Text('Chart-style insight visual placeholder'),
+                          ),
+                        ),
+                      ],
                     );
                   }
                   final insight = insights[i - 1];

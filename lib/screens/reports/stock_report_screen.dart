@@ -32,10 +32,17 @@ class StockReportScreen extends StatelessWidget {
           ),
         ),
         child: products.isEmpty
-            ? const EmptyStateVisual(
-                title: 'No products found',
-                subtitle: 'Add products to see your stock report.',
-                icon: Icons.inventory_2_outlined,
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: AnimatedFeatureHero(
+                    title: 'Stock Report Empty',
+                    subtitle: 'Add products to visualize stock health and value.',
+                    icon: Icons.inventory_2_outlined,
+                    gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                    animationType: FeatureHeroAnimationType.reports,
+                  ),
+                ),
               )
             : Column(
                 children: [
@@ -73,6 +80,8 @@ class StockReportScreen extends StatelessWidget {
                             subtitle: Text('Chart-style visual placeholder by category and value'),
                           ),
                         ),
+                        const SizedBox(height: 10),
+                        const _StockRiskHeatCard(),
                         const SizedBox(height: 10),
                         ReportCard(
                           child: ListTile(
@@ -129,6 +138,39 @@ class StockReportScreen extends StatelessWidget {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+class _StockRiskHeatCard extends StatelessWidget {
+  const _StockRiskHeatCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumGlassCard(
+      borderColor: Colors.orangeAccent.withValues(alpha: 0.35),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.radar_rounded),
+            title: Text('Low stock risk map'),
+            subtitle: Text('Visual risk intensity placeholder by category'),
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: 66,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF17D7A7), Color(0xFFFFD166), Color(0xFFFF5C8A)],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

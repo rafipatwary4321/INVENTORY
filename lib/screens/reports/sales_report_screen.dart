@@ -24,12 +24,28 @@ class SalesReportScreen extends StatelessWidget {
         .where((s) => s.createdAt != null && !s.createdAt!.isBefore(todayStart))
         .fold<double>(0, (sum, s) => sum + s.totalAmount);
     if (sales.isEmpty && items.isEmpty) {
-      return const Scaffold(
-        appBar: PremiumAppBar(title: 'Sales report', subtitle: 'Revenue'),
-        body: EmptyStateWidget(
-          icon: Icons.receipt_long_outlined,
-          title: 'No sales yet',
-          subtitle: 'Complete a checkout to generate sales reports.',
+      return Scaffold(
+        appBar: const PremiumAppBar(title: 'Sales report', subtitle: 'Revenue'),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            ),
+          ),
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: AnimatedFeatureHero(
+                title: 'No Sales Data Yet',
+                subtitle: 'Complete checkout to unlock live sales analytics.',
+                icon: Icons.receipt_long_outlined,
+                gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                animationType: FeatureHeroAnimationType.reports,
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -91,6 +107,8 @@ class SalesReportScreen extends StatelessWidget {
               revenue: totalSales,
               estimatedCost: totalSales * 0.72,
             ),
+            const SizedBox(height: 10),
+            const _LowStockRiskVisualCard(),
             const SizedBox(height: 12),
             Text(
               'Sales',
@@ -290,6 +308,39 @@ class _PillMetric extends StatelessWidget {
                       ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LowStockRiskVisualCard extends StatelessWidget {
+  const _LowStockRiskVisualCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumGlassCard(
+      borderColor: Colors.orangeAccent.withValues(alpha: 0.35),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF8A3D), Color(0xFFFF5F8E)],
+              ),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Low stock risk card placeholder • connect to stock alerts stream.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ),
         ],

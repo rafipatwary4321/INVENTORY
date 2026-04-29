@@ -15,13 +15,28 @@ class ProfitLossReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final canView = context.watch<AuthProvider>().canViewProfitLoss;
     if (!canView) {
-      return const Scaffold(
-        appBar: PremiumAppBar(title: 'Profit / Loss'),
-        body: EmptyStateWidget(
-          icon: Icons.lock_outline_rounded,
-          title: 'Access restricted',
-          subtitle:
-              'Only owner or admin can view profit and loss reports for this business.',
+      return Scaffold(
+        appBar: const PremiumAppBar(title: 'Profit / Loss'),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            ),
+          ),
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: AnimatedFeatureHero(
+                title: 'Access Restricted',
+                subtitle: 'Owner/Admin permission required for P&L analytics.',
+                icon: Icons.lock_outline_rounded,
+                gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                animationType: FeatureHeroAnimationType.reports,
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -35,12 +50,28 @@ class ProfitLossReportScreen extends StatelessWidget {
       profitBySale[i.saleId] = (profitBySale[i.saleId] ?? 0) + i.lineProfit;
     }
     if (items.isEmpty) {
-      return const Scaffold(
-        appBar: PremiumAppBar(title: 'Profit / Loss'),
-        body: EmptyStateWidget(
-          title: 'No profit data yet',
-          subtitle: 'Sell products first to see profit and loss analytics.',
-          icon: Icons.trending_up,
+      return Scaffold(
+        appBar: const PremiumAppBar(title: 'Profit / Loss'),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            ),
+          ),
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: AnimatedFeatureHero(
+                title: 'No Profit Data',
+                subtitle: 'Complete sales to populate profit/loss indicators.',
+                icon: Icons.trending_up_rounded,
+                gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                animationType: FeatureHeroAnimationType.reports,
+              ),
+            ),
+          ),
         ),
       );
     }
@@ -139,6 +170,8 @@ class ProfitLossReportScreen extends StatelessWidget {
               value: profit >= 0 ? 'Positive' : 'Negative',
               valueColor: profit >= 0 ? Colors.green : Colors.red,
             ),
+            const SizedBox(height: 10),
+            const _AiRecommendationCard(),
             const SizedBox(height: 12),
             Text(
               'Profit per sale',
@@ -213,6 +246,22 @@ class _MetricTile extends StatelessWidget {
                 : Theme.of(context).textTheme.titleMedium,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _AiRecommendationCard extends StatelessWidget {
+  const _AiRecommendationCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumGlassCard(
+      borderColor: Colors.cyanAccent.withValues(alpha: 0.35),
+      child: const AIInsightCard(
+        title: 'AI Recommendation',
+        body:
+            'Keep margin healthy by promoting high-profit products and monitoring fast-moving low-margin items.',
       ),
     );
   }

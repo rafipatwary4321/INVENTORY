@@ -16,6 +16,7 @@ class AIAssistantScreen extends StatefulWidget {
 
 class _AIAssistantScreenState extends State<AIAssistantScreen> {
   final _controller = TextEditingController();
+  final _inputFocus = FocusNode();
   final _service = const AIAssistantService();
   final _api = AIApiService();
   final _scrollController = ScrollController();
@@ -87,6 +88,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _inputFocus.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -110,13 +112,10 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
         ),
         child: Column(
           children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: FeatureHeaderCard(
-              title: 'AI Assistant',
-              subtitle: 'Ask inventory, profit, and restock questions in natural language.',
-              icon: Icons.smart_toy_outlined,
-              trailingIcon: Icons.bolt_outlined,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: _AiHeaderCard(
+              subtitle: _api.isConfigured ? 'Connected to AI API' : 'Fallback AI mode',
             ),
           ),
           const Padding(
@@ -215,88 +214,43 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             ),
           ),
           Expanded(
-            child: _messages.length <= 1
-                ? EmptyStateVisual(
-                    icon: Icons.chat_bubble_outline_rounded,
-                    title: 'Ask inventory AI',
-                    subtitle:
-                        'Try quick prompts above for restock, profit, and sales insights.',
-                  )
-                : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(12),
-              itemCount: _messages.length + (_busy ? 1 : 0),
-              itemBuilder: (context, i) {
-                if (_busy && i == _messages.length) {
-                  return const _TypingBubble();
-                }
-                final m = _messages[i];
-                final cs = Theme.of(context).colorScheme;
-                return TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 180),
-                  tween: Tween(begin: 0, end: 1),
-                  curve: Curves.easeOut,
-                  builder: (context, value, child) {
-                    return Transform.translate(
-                      offset: Offset(0, (1 - value) * 8),
-                      child: Opacity(opacity: value, child: child),
-                    );
-                  },
-                  child: Align(
-                    alignment: m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (!m.fromUser)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8, bottom: 4),
-                              child: CircleAvatar(
-                                radius: 14,
-                                backgroundColor: cs.secondaryContainer,
-                                child: Icon(
-                                  Icons.auto_awesome_rounded,
-                                  size: 16,
-                                  color: cs.onSecondaryContainer,
-                                ),
-                              ),
-                            ),
-                          Flexible(
-                            child: PremiumGlassCard(
-                              borderColor: m.fromUser
-                                  ? cs.primary.withValues(alpha: 0.35)
-                                  : Colors.cyanAccent.withValues(alpha: 0.25),
-                              child: Text(
-                                m.text,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.white.withValues(alpha: 0.95),
-                                      height: 1.35,
-                                    ),
-                              ),
-                            ),
-                          ),
-                          if (m.fromUser)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8, bottom: 4),
-                              child: CircleAvatar(
-                                radius: 14,
-                                backgroundColor: cs.primaryContainer,
-                                child: Icon(
-                                  Icons.person_rounded,
-                                  size: 16,
-                                  color: cs.onPrimaryContainer,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: Colors.white.withValues(alpha: 0.04),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: _messages.length <= 1
+                  ? const EmptyStateVisual(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      title: 'Ask inventory AI',
+                      subtitle:
+                          'Try quick prompts above for restock, profit, and sales insights.',
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(12),
+                      itemCount: _messages.length + (_busy ? 1 : 0),
+                      itemBuilder: (context, i) {
+                        if (_busy && i == _messages.length) {
+                          return const _TypingBubble();
+                        }
+                        final m = _messages[i];
+                        return TweenAnimationBuilder<double>(
+                          duration: const Duration(milliseconds: 210),
+                          tween: Tween(begin: 0, end: 1),
+                          curve: Curves.easeOut,
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(0, (1 - value) * 10),
+                              child: Opacity(opacity: value, child: child),
+                            );
+                          },
+                          child: _MessageBubble(message: m),
+                        );
+                      },
                     ),
-                  ),
-                );
-              },
             ),
           ),
           if (_busy) const LinearProgressIndicator(minHeight: 2),
@@ -304,7 +258,28 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-              child: PremiumGlassCard(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(22),
+                  color: Colors.white.withValues(alpha: 0.06),
+                  border: Border.all(
+                    color: (_inputFocus.hasFocus
+                            ? const Color(0xFF13A7FF)
+                            : Colors.white.withValues(alpha: 0.2))
+                        .withValues(alpha: _inputFocus.hasFocus ? 0.65 : 0.2),
+                  ),
+                  boxShadow: _inputFocus.hasFocus
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF13A7FF).withValues(alpha: 0.32),
+                            blurRadius: 16,
+                          ),
+                        ]
+                      : null,
+                ),
                 child: LayoutBuilder(
                   builder: (context, c) {
                     final narrow = c.maxWidth < 400;
@@ -312,6 +287,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                       children: [
                         Expanded(
                           child: TextField(
+                            focusNode: _inputFocus,
                             controller: _controller,
                             textInputAction: TextInputAction.send,
                             onSubmitted: _busy ? null : _ask,
@@ -323,6 +299,9 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                         const SizedBox(width: 8),
                         narrow
                             ? IconButton.filled(
+                                style: IconButton.styleFrom(
+                                  backgroundColor: const Color(0xFF13A7FF),
+                                ),
                                 onPressed: _busy ? null : () => _ask(),
                                 tooltip: 'Ask',
                                 icon: const Icon(Icons.send_rounded),
@@ -362,8 +341,8 @@ class _QuickQuestion extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         avatar: Icon(icon, size: 16),
-        backgroundColor: const Color(0xFF13A7FF).withValues(alpha: 0.2),
-        side: BorderSide(color: const Color(0xFF13A7FF).withValues(alpha: 0.5)),
+        backgroundColor: const Color(0xFF0D1B33),
+        side: BorderSide(color: const Color(0xFF13A7FF).withValues(alpha: 0.55)),
         label: Text(label),
         onPressed: onTap,
       ),
@@ -466,7 +445,8 @@ class _TypingBubble extends StatelessWidget {
             ),
             DecoratedBox(
               decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
+                color: const Color(0xFF0C1A30),
+                border: Border.all(color: const Color(0xFF13A7FF).withValues(alpha: 0.35)),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
@@ -479,6 +459,164 @@ class _TypingBubble extends StatelessWidget {
                 child: _TypingDots(),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AiHeaderCard extends StatelessWidget {
+  const _AiHeaderCard({required this.subtitle});
+
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF6B38FF), Color(0xFF1288FF), Color(0xFF14D2B2)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1288FF).withValues(alpha: 0.35),
+            blurRadius: 18,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.cyanAccent.withValues(alpha: 0.4),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.smart_toy_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'AI Assistant',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MessageBubble extends StatelessWidget {
+  const _MessageBubble({required this.message});
+
+  final _Message message;
+
+  @override
+  Widget build(BuildContext context) {
+    final fromUser = message.fromUser;
+    final alignment = fromUser ? Alignment.centerRight : Alignment.centerLeft;
+    return Align(
+      alignment: alignment,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            if (!fromUser)
+              Padding(
+                padding: const EdgeInsets.only(right: 8, bottom: 4),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF13A7FF).withValues(alpha: 0.2),
+                    border: Border.all(color: const Color(0xFF13A7FF).withValues(alpha: 0.45)),
+                  ),
+                  child: const Icon(Icons.auto_awesome_rounded, size: 16, color: Colors.white),
+                ),
+              ),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(22),
+                    topRight: const Radius.circular(22),
+                    bottomLeft: Radius.circular(fromUser ? 22 : 8),
+                    bottomRight: Radius.circular(fromUser ? 8 : 22),
+                  ),
+                  gradient: fromUser
+                      ? const LinearGradient(
+                          colors: [Color(0xFF6B38FF), Color(0xFF1288FF)],
+                        )
+                      : null,
+                  color: fromUser ? null : const Color(0xFF0D1A31),
+                  border: Border.all(
+                    color: fromUser
+                        ? Colors.transparent
+                        : const Color(0xFF13A7FF).withValues(alpha: 0.4),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (fromUser ? const Color(0xFF6B38FF) : const Color(0xFF13A7FF))
+                          .withValues(alpha: 0.28),
+                      blurRadius: 12,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  message.text,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.96),
+                        height: 1.35,
+                      ),
+                ),
+              ),
+            ),
+            if (fromUser)
+              Padding(
+                padding: const EdgeInsets.only(left: 8, bottom: 4),
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.16),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+                  ),
+                  child: const Icon(Icons.person_rounded, size: 16, color: Colors.white),
+                ),
+              ),
           ],
         ),
       ),
