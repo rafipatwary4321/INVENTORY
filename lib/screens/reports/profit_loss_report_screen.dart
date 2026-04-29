@@ -70,6 +70,13 @@ class ProfitLossReportScreen extends StatelessWidget {
               icon: Icons.trending_up_rounded,
               trailingIcon: Icons.account_balance_wallet_outlined,
             ),
+            const AnimatedFeatureHero(
+              title: 'Profit Signal',
+              subtitle: 'Revenue, cost, and margin dynamics visualized.',
+              icon: Icons.stacked_line_chart_rounded,
+              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+              animationType: FeatureHeroAnimationType.reports,
+            ),
             PremiumGlassCard(
               child: Row(
                 children: const [
@@ -103,6 +110,29 @@ class ProfitLossReportScreen extends StatelessWidget {
               emphasize: true,
               isPositive: profit >= 0,
             ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Expanded(
+                  child: ReportSummaryCard(
+                    icon: Icons.arrow_upward_rounded,
+                    title: 'Revenue',
+                    value: BdtFormatter.format(revenue),
+                    valueColor: const Color(0xFF1DE2B0),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ReportSummaryCard(
+                    icon: Icons.arrow_downward_rounded,
+                    title: 'Cost',
+                    value: BdtFormatter.format(cost),
+                    valueColor: const Color(0xFFFF6B9A),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             ReportSummaryCard(
               icon: Icons.assessment_outlined,
               title: 'Profit status',

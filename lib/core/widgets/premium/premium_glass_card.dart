@@ -45,8 +45,9 @@ class PremiumGlassCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(radius),
             gradient: LinearGradient(
               colors: [
-                Colors.white.withValues(alpha: 0.05),
-                Colors.white.withValues(alpha: 0.02),
+                const Color(0xFF7C3BFF).withValues(alpha: 0.11),
+                const Color(0xFF1A8CFF).withValues(alpha: 0.08),
+                const Color(0xFF0EDFA9).withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -56,9 +57,14 @@ class PremiumGlassCard extends StatelessWidget {
             ),
             boxShadow: [
               BoxShadow(
-                color: cs.primary.withValues(alpha: 0.3),
+                color: cs.primary.withValues(alpha: 0.24),
                 blurRadius: 30,
                 spreadRadius: 1,
+              ),
+              BoxShadow(
+                color: const Color(0xFF7C3BFF).withValues(alpha: 0.2),
+                blurRadius: 20,
+                spreadRadius: 0.8,
               ),
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),

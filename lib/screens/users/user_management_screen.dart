@@ -99,6 +99,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 icon: Icons.groups_2_outlined,
                 trailingIcon: Icons.manage_accounts_outlined,
               ),
+              const AnimatedFeatureHero(
+                title: 'Team Operations',
+                subtitle: 'Role controls and business access orchestration.',
+                icon: Icons.groups_rounded,
+                gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                animationType: FeatureHeroAnimationType.settings,
+              ),
               const SizedBox(height: 8),
               const _PermissionGuideCard(),
               const SizedBox(height: 12),
@@ -168,6 +175,16 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
               subtitle: 'Manage members, roles, and access permissions.',
               icon: Icons.groups_rounded,
               trailingIcon: Icons.shield_outlined,
+            ),
+          ),
+          Padding(
+            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
+            child: const AnimatedFeatureHero(
+              title: 'Access Matrix',
+              subtitle: 'Owners, admins, and staff roles in coordinated flow.',
+              icon: Icons.manage_accounts_rounded,
+              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+              animationType: FeatureHeroAnimationType.settings,
             ),
           ),
           Padding(

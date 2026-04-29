@@ -9,7 +9,7 @@ class AppTheme {
   static const Color _brandIndigo = Color(0xFF3949AB);
   static const Color _brandTeal = Color(0xFF00897B);
   static const Color _lightScaffold = Color(0xFFF4F7FB);
-  static const Color _darkScaffold = Color(0xFF0F141B);
+  static const Color _darkScaffold = Color(0xFF04070F);
 
   static PageTransitionsTheme _pageTransitions() {
     return const PageTransitionsTheme(
@@ -141,6 +141,7 @@ class AppTheme {
         height: 68,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         indicatorColor: colorScheme.primaryContainer,
+        backgroundColor: const Color(0xFF070C18),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -180,17 +181,19 @@ class AppTheme {
       tertiary: _brandTeal,
       brightness: Brightness.dark,
     ).copyWith(
-      primary: const Color(0xFFAAC7FF),
-      onPrimary: const Color(0xFF003061),
-      primaryContainer: const Color(0xFF00478A),
-      onPrimaryContainer: const Color(0xFFD7E7FF),
-      surface: const Color(0xFF141B24),
-      onSurface: const Color(0xFFE9EEF7),
-      onSurfaceVariant: const Color(0xFFBBC7DA),
-      outline: const Color(0xFF8E99AD),
-      outlineVariant: const Color(0xFF404A5B),
-      surfaceContainerHighest: const Color(0xFF1F2936),
-      inversePrimary: _brandBlue,
+      primary: const Color(0xFF64B5FF),
+      onPrimary: const Color(0xFF001C39),
+      primaryContainer: const Color(0xFF2C2CFF),
+      onPrimaryContainer: const Color(0xFFE5E9FF),
+      secondary: const Color(0xFF9B7BFF),
+      tertiary: const Color(0xFF1DE2B0),
+      surface: const Color(0xFF0A1020),
+      onSurface: const Color(0xFFF6FAFF),
+      onSurfaceVariant: const Color(0xFFAFC0DA),
+      outline: const Color(0xFF7A8AA3),
+      outlineVariant: const Color(0xFF2A3345),
+      surfaceContainerHighest: const Color(0xFF151D31),
+      inversePrimary: const Color(0xFF2D7CFF),
     );
     return _base(colorScheme, _darkScaffold);
   }

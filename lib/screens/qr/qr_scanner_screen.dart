@@ -190,6 +190,13 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                       icon: Icons.qr_code_scanner_rounded,
                       trailingIcon: Icons.camera_alt_outlined,
                     ),
+                      const AnimatedFeatureHero(
+                        title: 'Scanner Visualization',
+                        subtitle: 'QR capture and barcode intake workflow.',
+                        icon: Icons.qr_code_scanner_rounded,
+                        gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                        animationType: FeatureHeroAnimationType.scanner,
+                      ),
                     Icon(
                       Icons.camera_alt_outlined,
                       size: 72,
@@ -324,6 +331,23 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               bottom: false,
               child: Column(
                 children: [
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 10),
+                    child: IgnorePointer(
+                      child: AnimatedFeatureHero(
+                        title: 'Live Scan Mode',
+                        subtitle: 'Align QR inside frame for instant decode.',
+                        icon: Icons.qr_code_2_rounded,
+                        compact: true,
+                        gradientColors: [
+                          Color(0xCC7A37FF),
+                          Color(0xCC13A7FF),
+                          Color(0xCC1DE2B0),
+                        ],
+                        animationType: FeatureHeroAnimationType.scanner,
+                      ),
+                    ),
+                  ),
                   Text(
                     'Point at the product QR code',
                     textAlign: TextAlign.center,

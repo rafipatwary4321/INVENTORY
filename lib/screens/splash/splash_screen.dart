@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../firebase_options.dart';
 import '../../main.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 import '../../providers/auth_provider.dart';
 import '../../routes/app_router.dart';
 import '../../services/settings_service.dart';
@@ -159,6 +160,41 @@ class _SplashScreenState extends State<SplashScreen> {
                         color: Colors.white.withValues(alpha: 0.9),
                         letterSpacing: 0.2,
                       ),
+                ),
+                const SizedBox(height: 10),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: AnimatedFeatureHero(
+                    title: 'Booting Warehouse Engine',
+                    subtitle: 'Loading inventory, POS, reports, and AI modules.',
+                    icon: Icons.inventory_2_rounded,
+                    compact: true,
+                    gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                    animationType: FeatureHeroAnimationType.warehouse,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(999),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF13A7FF).withValues(alpha: 0.35),
+                        blurRadius: 14,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    'Premium Mobile Workspace',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
                 ),
                 const SizedBox(height: 36),
                 SizedBox(

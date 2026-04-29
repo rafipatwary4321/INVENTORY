@@ -49,6 +49,13 @@ class StockReportScreen extends StatelessWidget {
                           icon: Icons.warehouse_outlined,
                           trailingIcon: Icons.inventory_2_outlined,
                         ),
+                        const AnimatedFeatureHero(
+                          title: 'Stock Analytics',
+                          subtitle: 'Warehouse value and composition in motion.',
+                          icon: Icons.warehouse_outlined,
+                          gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                          animationType: FeatureHeroAnimationType.reports,
+                        ),
                         PremiumGlassCard(
                           child: Row(
                             children: const [

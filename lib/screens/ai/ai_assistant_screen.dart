@@ -119,6 +119,16 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
               trailingIcon: Icons.bolt_outlined,
             ),
           ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: AnimatedFeatureHero(
+              title: 'AI + Inventory Brain',
+              subtitle: 'Assistant intelligence over boxes, stock, and demand.',
+              icon: Icons.smart_toy_rounded,
+              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+              animationType: FeatureHeroAnimationType.ai,
+            ),
+          ),
           if (!_api.isConfigured)
             Container(
               width: double.infinity,
@@ -176,6 +186,30 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
                   icon: Icons.local_fire_department_outlined,
                   label: 'What sold the most today?',
                   onTap: () => _ask('What sold the most today?'),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _AiInsightMiniCard(
+                    title: 'Demand Pulse',
+                    subtitle: 'Analyzing movement',
+                    icon: Icons.graphic_eq_rounded,
+                    glow: Color(0xFF13A7FF),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: _AiInsightMiniCard(
+                    title: 'Restock AI',
+                    subtitle: 'Priority suggestions',
+                    icon: Icons.auto_awesome_rounded,
+                    glow: Color(0xFF7C3BFF),
+                  ),
                 ),
               ],
             ),
@@ -328,10 +362,67 @@ class _QuickQuestion extends StatelessWidget {
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         avatar: Icon(icon, size: 16),
-        backgroundColor: Colors.cyanAccent.withValues(alpha: 0.18),
-        side: BorderSide(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+        backgroundColor: const Color(0xFF13A7FF).withValues(alpha: 0.2),
+        side: BorderSide(color: const Color(0xFF13A7FF).withValues(alpha: 0.5)),
         label: Text(label),
         onPressed: onTap,
+      ),
+    );
+  }
+}
+
+class _AiInsightMiniCard extends StatelessWidget {
+  const _AiInsightMiniCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.glow,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color glow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: glow.withValues(alpha: 0.14),
+        border: Border.all(color: glow.withValues(alpha: 0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: glow.withValues(alpha: 0.3),
+            blurRadius: 12,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                      ),
+                ),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white70,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

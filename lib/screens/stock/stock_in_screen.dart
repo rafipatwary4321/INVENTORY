@@ -101,6 +101,13 @@ class _StockInScreenState extends State<StockInScreen> {
                           icon: Icons.add_box_outlined,
                           trailingIcon: Icons.local_shipping_outlined,
                         ),
+                        const AnimatedFeatureHero(
+                          title: 'Scan & Receive Flow',
+                          subtitle: 'Barcode intake to shelf-ready inventory.',
+                          icon: Icons.qr_code_scanner_rounded,
+                          gradientColors: [Color(0xFF6F39FF), Color(0xFF1A8DFF), Color(0xFF1DE2B0)],
+                          animationType: FeatureHeroAnimationType.scanner,
+                        ),
                         PremiumGlassCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

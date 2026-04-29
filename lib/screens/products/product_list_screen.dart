@@ -53,6 +53,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       return matchQuery && matchCategory;
     }).toList();
     final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final lowStockCount = filtered.where((p) => p.isLowStock).length;
 
     return Scaffold(
       appBar: const PremiumAppBar(
@@ -106,6 +107,34 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     icon: Icons.inventory_2_rounded,
                     trailingIcon: Icons.storefront_rounded,
                   ),
+                  const AnimatedFeatureHero(
+                    title: 'Product Shelves',
+                    subtitle: 'Smart visual lane for products and stock bins.',
+                    icon: Icons.storefront_rounded,
+                    gradientColors: [Color(0xFF6F39FF), Color(0xFF1A8DFF), Color(0xFF1DE2B0)],
+                    animationType: FeatureHeroAnimationType.products,
+                  ),
+                  if (lowStockCount > 0) ...[
+                    PremiumGlassCard(
+                      borderColor: Colors.orangeAccent.withValues(alpha: 0.55),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '$lowStockCount product(s) are low stock and highlighted with glow.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   PremiumGlassCard(
                     child: Column(
                       children: [

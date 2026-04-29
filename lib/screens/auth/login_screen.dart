@@ -169,60 +169,81 @@ class _LoginScreenState extends State<LoginScreen> {
             final isWide = constraints.maxWidth >= 980;
             final brandPanel = Padding(
               padding: const EdgeInsets.fromLTRB(28, 56, 28, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: Colors.white.withValues(alpha: 0.1),
-                      border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.28)),
+              child: PremiumGlassCard(
+                borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.35),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7A37FF), Color(0xFF13A7FF)],
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.inventory_2_rounded,
+                        size: 34,
+                        color: Colors.white,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.inventory_2_rounded,
-                      size: 34,
-                      color: Colors.cyanAccent,
+                    const SizedBox(height: 20),
+                    Text(
+                      'INVENTORY',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.4,
+                          ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'INVENTORY',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.4,
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'AI Powered Smart Inventory',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                  ),
-                  const SizedBox(height: 18),
-                  _ModeIndicator(isDemoMode: isDemoMode),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Owner, admin, and staff use the same screen. Access is scoped by your business role.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.86),
-                          height: 1.4,
-                        ),
-                  ),
-                ],
+                    const SizedBox(height: 6),
+                    Text(
+                      'AI Powered Smart Inventory',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                    ),
+                    const SizedBox(height: 10),
+                    const AnimatedFeatureHero(
+                      title: 'Smart Inventory Access',
+                      subtitle: 'Secure sign-in to warehouse and POS operations.',
+                      icon: Icons.lock_open_rounded,
+                      compact: true,
+                      gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                      animationType: FeatureHeroAnimationType.settings,
+                    ),
+                    const SizedBox(height: 18),
+                    _ModeIndicator(isDemoMode: isDemoMode),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Owner, admin, and staff use the same screen. Access is scoped by your business role.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.86),
+                            height: 1.4,
+                          ),
+                    ),
+                  ],
+                ),
               ),
             );
-            final loginCard = SingleChildScrollView(
-              padding: PremiumTokens.pagePadding(context),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 480),
-                  child: PremiumGlassCard(
-                    borderColor: Colors.cyanAccent.withValues(alpha: 0.26),
-                    child: formContent,
+            final loginCard = TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              tween: Tween(begin: 0.985, end: 1),
+              builder: (context, value, child) {
+                return Transform.scale(scale: value, child: child);
+              },
+              child: SingleChildScrollView(
+                padding: PremiumTokens.pagePadding(context),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: PremiumGlassCard(
+                      borderColor: Colors.cyanAccent.withValues(alpha: 0.26),
+                      child: formContent,
+                    ),
                   ),
                 ),
               ),

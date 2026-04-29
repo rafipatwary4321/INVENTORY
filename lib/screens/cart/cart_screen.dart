@@ -119,11 +119,40 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   Padding(
                     padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-                    child: FeatureHeaderCard(
-                      title: 'Checkout Cart',
-                      subtitle: '${cart.lines.length} line(s) ready for billing review.',
-                      icon: Icons.shopping_cart_checkout_rounded,
-                      trailingIcon: Icons.receipt_long_rounded,
+                    child: Column(
+                      children: [
+                        FeatureHeaderCard(
+                          title: 'Checkout Cart',
+                          subtitle: '${cart.lines.length} line(s) ready for billing review.',
+                          icon: Icons.shopping_cart_checkout_rounded,
+                          trailingIcon: Icons.receipt_long_rounded,
+                        ),
+                        const AnimatedFeatureHero(
+                          title: 'Billing Motion',
+                          subtitle: 'Cart, receipt, and checkout controls aligned.',
+                          icon: Icons.shopping_cart_checkout_rounded,
+                          gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                          animationType: FeatureHeroAnimationType.pos,
+                        ),
+                        PremiumGlassCard(
+                          borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.4),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.bolt_rounded, color: Color(0xFF13A7FF)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Express Checkout • ${cart.lines.fold<int>(0, (s, l) => s + l.quantity)} item(s)',
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Expanded(

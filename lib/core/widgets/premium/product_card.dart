@@ -20,16 +20,32 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final categoryIcon = _categoryIcon(product.category);
+    final lowStock = product.isLowStock;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
-        child: PremiumGlassCard(
-          radius: 20,
-          borderColor: cs.primary.withValues(alpha: 0.2),
-          padding: const EdgeInsets.all(14),
-          child: Row(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: lowStock
+                ? [
+                    BoxShadow(
+                      color: Colors.orangeAccent.withValues(alpha: 0.28),
+                      blurRadius: 16,
+                      spreadRadius: 0.8,
+                    ),
+                  ]
+                : null,
+          ),
+          child: PremiumGlassCard(
+            radius: 20,
+            borderColor: lowStock
+                ? Colors.orangeAccent.withValues(alpha: 0.6)
+                : cs.primary.withValues(alpha: 0.2),
+            padding: const EdgeInsets.all(14),
+            child: Row(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -90,6 +106,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
               ],
+            ),
           ),
         ),
       ),
@@ -108,23 +125,29 @@ class _SmallChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final c = cs.primary;
+    const gradient = [Color(0xFF7A37FF), Color(0xFF1DA1FF)];
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: c.withValues(alpha: 0.12),
+        gradient: const LinearGradient(colors: gradient),
         borderRadius: BorderRadius.circular(999),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x667A37FF),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: c),
+          Icon(icon, size: 12, color: Colors.white),
           const SizedBox(width: 4),
           Text(
             label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: c,
+                  color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
           ),

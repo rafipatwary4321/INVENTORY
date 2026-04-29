@@ -1,4 +1,5 @@
 export 'action_card.dart';
+export 'animated_feature_hero.dart';
 export 'ai_insight_card.dart';
 export 'business_profile_card.dart';
 export 'empty_state_widget.dart';

@@ -56,6 +56,13 @@ class SalesReportScreen extends StatelessWidget {
               icon: Icons.bar_chart_rounded,
               trailingIcon: Icons.receipt_long_outlined,
             ),
+            const AnimatedFeatureHero(
+              title: 'Analytics Pulse',
+              subtitle: 'Business trend visuals with live metric movement.',
+              icon: Icons.bar_chart_rounded,
+              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+              animationType: FeatureHeroAnimationType.reports,
+            ),
             PremiumGlassCard(
               child: Row(
                 children: const [
@@ -66,13 +73,7 @@ class SalesReportScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            PremiumGlassCard(
-              child: const ListTile(
-                leading: Icon(Icons.show_chart_rounded),
-                title: Text('Revenue trend'),
-                subtitle: Text('Chart-style visual placeholder for sales movement'),
-              ),
-            ),
+            _VisualChartCard(todayTotal: todayTotal, totalSales: totalSales),
             const SizedBox(height: 10),
             ReportSummaryCard(
               icon: Icons.summarize_outlined,
@@ -84,6 +85,11 @@ class SalesReportScreen extends StatelessWidget {
               icon: Icons.today_outlined,
               title: 'Today sales total',
               value: BdtFormatter.format(todayTotal),
+            ),
+            const SizedBox(height: 10),
+            _ProfitLossIndicatorStrip(
+              revenue: totalSales,
+              estimatedCost: totalSales * 0.72,
             ),
             const SizedBox(height: 12),
             Text(
@@ -157,6 +163,136 @@ class SalesReportScreen extends StatelessWidget {
               }),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _VisualChartCard extends StatelessWidget {
+  const _VisualChartCard({
+    required this.todayTotal,
+    required this.totalSales,
+  });
+
+  final double todayTotal;
+  final double totalSales;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = totalSales <= 0 ? 0 : (todayTotal / totalSales).clamp(0, 1);
+    return PremiumGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.show_chart_rounded),
+            title: Text('Revenue trend'),
+            subtitle: Text('Visual momentum card'),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              height: 80,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF6A37FF), Color(0xFF13A7FF), Color(0xFF19D49B)],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: ratio.toDouble(),
+            minHeight: 7,
+            borderRadius: BorderRadius.circular(999),
+            backgroundColor: Colors.white.withValues(alpha: 0.1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfitLossIndicatorStrip extends StatelessWidget {
+  const _ProfitLossIndicatorStrip({
+    required this.revenue,
+    required this.estimatedCost,
+  });
+
+  final double revenue;
+  final double estimatedCost;
+
+  @override
+  Widget build(BuildContext context) {
+    final pnl = revenue - estimatedCost;
+    return Row(
+      children: [
+        Expanded(
+          child: _PillMetric(
+            icon: Icons.trending_up_rounded,
+            label: 'Profit',
+            value: BdtFormatter.format(pnl),
+            color: const Color(0xFF19D49B),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _PillMetric(
+            icon: Icons.trending_down_rounded,
+            label: 'Cost',
+            value: BdtFormatter.format(estimatedCost),
+            color: const Color(0xFFFF5C8A),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PillMetric extends StatelessWidget {
+  const _PillMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: color.withValues(alpha: 0.16),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: Theme.of(context).textTheme.labelSmall),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

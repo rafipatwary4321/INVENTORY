@@ -129,6 +129,13 @@ class DashboardScreen extends StatelessWidget {
                 userName: user?.displayName ?? 'User',
               ),
               const SizedBox(height: 10),
+              const AnimatedFeatureHero(
+                title: 'Warehouse Live Flow',
+                subtitle: 'Shelves, boxes, and movement status in sync.',
+                icon: Icons.warehouse_rounded,
+                gradientColors: [Color(0xFF6D38FF), Color(0xFF148CFF), Color(0xFF16D9B4)],
+                animationType: FeatureHeroAnimationType.warehouse,
+              ),
               VisualHeroHeader(
                 title: 'Warehouse Control Center',
                 subtitle:
@@ -160,10 +167,27 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 36,
+                      child: GlowButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.sell),
+                        icon: Icons.flash_on_rounded,
+                        label: 'Quick Sell',
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
+              _StockHealthRingCard(
+                stockHealth: stockHealth,
+                lowStock: lowStock,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
+              ),
+              const SizedBox(height: 10),
+              const _FeatureBannerRow(),
+              const SizedBox(height: 10),
               GridView.count(
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,
@@ -612,6 +636,182 @@ class _DashboardBackdrop extends StatelessWidget {
                 size: 210,
                 color: cs.secondary.withValues(alpha: 0.15),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StockHealthRingCard extends StatelessWidget {
+  const _StockHealthRingCard({
+    required this.stockHealth,
+    required this.lowStock,
+    required this.onTap,
+  });
+
+  final double stockHealth;
+  final int lowStock;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return PremiumGlassCard(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 84,
+              height: 84,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: stockHealth,
+                    strokeWidth: 9,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
+                    ),
+                  ),
+                  Text(
+                    '${(stockHealth * 100).round()}%',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Stock Health',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    lowStock > 0
+                        ? '$lowStock item(s) need restock attention now.'
+                        : 'Inventory status is stable across products.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.white70),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FeatureBannerRow extends StatelessWidget {
+  const _FeatureBannerRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 96,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: const [
+          _FeatureBanner(
+            title: 'POS',
+            subtitle: 'Fast checkout',
+            icon: Icons.point_of_sale_rounded,
+            colors: [Color(0xFF5F2CFF), Color(0xFF1D8BFF)],
+          ),
+          SizedBox(width: 10),
+          _FeatureBanner(
+            title: 'AI',
+            subtitle: 'Smart insights',
+            icon: Icons.auto_awesome_rounded,
+            colors: [Color(0xFF0D92FF), Color(0xFF16D9B4)],
+          ),
+          SizedBox(width: 10),
+          _FeatureBanner(
+            title: 'Reports',
+            subtitle: 'Live metrics',
+            icon: Icons.query_stats_rounded,
+            colors: [Color(0xFF7C3BFF), Color(0xFF2BD972)],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureBanner extends StatelessWidget {
+  const _FeatureBanner({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.colors,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 180,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.first.withValues(alpha: 0.45),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                Text(
+                  subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.88),
+                      ),
+                ),
+              ],
             ),
           ),
         ],

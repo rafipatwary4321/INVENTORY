@@ -147,6 +147,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.settings_suggest_outlined,
               trailingIcon: Icons.tune_rounded,
             ),
+            const AnimatedFeatureHero(
+              title: 'Business Control Hub',
+              subtitle: 'Team, profile, and environment settings at a glance.',
+              icon: Icons.settings_suggest_rounded,
+              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+              animationType: FeatureHeroAnimationType.settings,
+            ),
             PremiumGlassCard(
               child: BusinessProfileCard(
                 businessName: businessName,
@@ -171,6 +178,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 trailing: Chip(
                   label: Text(startup.firebaseEnabled ? 'LIVE' : 'DEMO'),
                 ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            PremiumGlassCard(
+              child: Row(
+                children: [
+                  _SettingsChip(
+                    label: 'Workspace',
+                    icon: Icons.apartment_rounded,
+                    color: const Color(0xFF7C3BFF),
+                  ),
+                  const SizedBox(width: 8),
+                  _SettingsChip(
+                    label: 'Theme',
+                    icon: Icons.palette_outlined,
+                    color: const Color(0xFF13A7FF),
+                  ),
+                  const SizedBox(width: 8),
+                  _SettingsChip(
+                    label: 'Roles',
+                    icon: Icons.admin_panel_settings_outlined,
+                    color: const Color(0xFF1DE2B0),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 10),
@@ -375,6 +406,48 @@ class _AppSettingsCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SettingsChip extends StatelessWidget {
+  const _SettingsChip({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 15, color: color),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

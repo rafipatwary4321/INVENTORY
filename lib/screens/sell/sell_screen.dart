@@ -142,6 +142,13 @@ class _SellScreenState extends State<SellScreen> {
                         icon: Icons.point_of_sale_rounded,
                         trailingIcon: Icons.shopping_bag_outlined,
                       ),
+                      const AnimatedFeatureHero(
+                        title: 'Checkout Operations',
+                        subtitle: 'Cashier lane, cart flow, and billing readiness.',
+                        icon: Icons.point_of_sale_rounded,
+                        gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
+                        animationType: FeatureHeroAnimationType.pos,
+                      ),
                       _ScanManualPanel(
                         search: _search,
                         searchFocus: _searchFocus,
@@ -361,6 +368,43 @@ class _ScanManualPanel extends StatelessWidget {
                   label: const Text('Add'),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: onScan,
+              borderRadius: BorderRadius.circular(14),
+              child: Ink(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF633BFF), Color(0xFF13A7FF)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF13A7FF).withValues(alpha: 0.35),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Scan QR Banner · Tap to add item instantly',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: Colors.white),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Align(
