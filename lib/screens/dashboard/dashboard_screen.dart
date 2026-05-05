@@ -47,13 +47,7 @@ class DashboardScreen extends StatelessWidget {
             : width >= 560
                 ? 2
                 : 1;
-    final cardRatio = width >= 1200
-        ? 1.2
-        : width >= 880
-            ? 1.15
-            : width >= 560
-                ? 1.06
-                : 1.35;
+    final kpiCardHeight = width >= 560 ? 176.0 : 164.0;
     final quickActions = <_QuickActionItem>[
       _QuickActionItem(
         icon: Icons.add_box_outlined,
@@ -65,7 +59,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       _QuickActionItem(
         icon: Icons.qr_code_scanner_rounded,
-        label: 'Stock In',
+        label: 'Scan QR',
         subtitle: 'Receive stock from labels',
         onTap: () async {
           final result = await Navigator.pushNamed(
@@ -94,6 +88,17 @@ class DashboardScreen extends StatelessWidget {
         ? 1.0
         : ((products.length - lowStock) / products.length).clamp(0, 1).toDouble();
     final recentSales = sales.take(5).toList();
+
+    Future<void> openStockInScan() async {
+      final result = await Navigator.pushNamed(
+        context,
+        AppRoutes.qrScan,
+        arguments: QRScanArgs(mode: QRScanMode.stockIn),
+      );
+      final id = result as String?;
+      if (!context.mounted || id == null) return;
+      Navigator.pushNamed(context, AppRoutes.stockIn, arguments: id);
+    }
     return Scaffold(
       appBar: null,
       body: Stack(
@@ -125,52 +130,69 @@ class DashboardScreen extends StatelessWidget {
                 onNotificationTap: () {},
                 onSettingsTap: () => Navigator.pushNamed(context, AppRoutes.settings),
               ),
-              const SizedBox(height: 14),
-              GridView.count(
-                crossAxisCount: crossAxisCount,
+              const SizedBox(height: 16),
+              _DashboardHeroSection(
+                businessName: settings?.businessName ?? 'My Business',
+                totalStockValue: products.fold<double>(0, (a, p) => a + p.stockValue),
+                stockHealth: stockHealth,
+                onStartSelling: () => Navigator.pushNamed(context, AppRoutes.sell),
+                onStockIn: openStockInScan,
+              ),
+              const SizedBox(height: 16),
+              GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: cardRatio,
-                children: [
-                  _DashboardStatCard(
-                    title: 'Total Products',
-                    value: '${products.length}',
-                    icon: Icons.category_outlined,
-                    accentColor: const Color(0xFF3B82F6),
-                    subtitle: 'Inventory size',
-                    subtitleColor: const Color(0xFF22D3EE),
-                  ),
-                  _DashboardStatCard(
-                    title: 'Today sales',
-                    value: BdtFormatter.format(todaySales),
-                    icon: Icons.point_of_sale,
-                    accentColor: const Color(0xFFA855F7),
-                    subtitle: '$totalStockQty units on hand',
-                    subtitleColor: const Color(0xFF22D3EE),
-                  ),
-                  _DashboardStatCard(
-                    title: 'Low stock',
-                    value: '$lowStock',
-                    icon: Icons.warning_amber_rounded,
-                    accentColor: const Color(0xFFF97316),
-                    subtitle: lowStock > 0 ? 'Action needed' : 'Healthy',
-                    subtitleColor: lowStock > 0 ? const Color(0xFFF97316) : Colors.greenAccent,
-                  ),
-                  _DashboardStatCard(
-                    title: 'Profit',
-                    value: auth.canViewProfitLoss
-                        ? BdtFormatter.format(todaySales * 0.28)
-                        : 'Locked',
-                    icon: Icons.trending_up_rounded,
-                    accentColor: const Color(0xFF22D3EE),
-                    subtitle: auth.canViewProfitLoss ? 'Est. today margin' : 'Owner/Admin only',
-                    subtitleColor: auth.canViewProfitLoss ? Colors.greenAccent : Colors.white70,
-                  ),
-                ],
+                itemCount: 4,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisExtent: kpiCardHeight,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemBuilder: (context, i) {
+                  final cards = [
+                    _DashboardStatCard(
+                      title: 'Total Products',
+                      value: '${products.length}',
+                      icon: Icons.category_outlined,
+                      accentColor: const Color(0xFF3B82F6),
+                      subtitle: 'Inventory size',
+                      subtitleColor: const Color(0xFF22D3EE),
+                    ),
+                    _DashboardStatCard(
+                      title: 'Today Sales',
+                      value: BdtFormatter.format(todaySales),
+                      icon: Icons.point_of_sale,
+                      accentColor: const Color(0xFFA855F7),
+                      subtitle: '$totalStockQty units on hand',
+                      subtitleColor: const Color(0xFF22D3EE),
+                    ),
+                    _DashboardStatCard(
+                      title: 'Low Stock',
+                      value: '$lowStock',
+                      icon: Icons.warning_amber_rounded,
+                      accentColor: const Color(0xFFF97316),
+                      subtitle: lowStock > 0 ? 'Action needed' : 'Healthy',
+                      subtitleColor:
+                          lowStock > 0 ? const Color(0xFFF97316) : Colors.greenAccent,
+                    ),
+                    _DashboardStatCard(
+                      title: 'Profit',
+                      value: auth.canViewProfitLoss
+                          ? BdtFormatter.format(todaySales * 0.28)
+                          : 'Locked',
+                      icon: Icons.trending_up_rounded,
+                      accentColor: const Color(0xFF22D3EE),
+                      subtitle:
+                          auth.canViewProfitLoss ? 'Est. today margin' : 'Owner/Admin only',
+                      subtitleColor:
+                          auth.canViewProfitLoss ? Colors.greenAccent : Colors.white70,
+                    ),
+                  ];
+                  return cards[i];
+                },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 24),
               Text(
                 'Analytics',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -178,7 +200,7 @@ class DashboardScreen extends StatelessWidget {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 900;
@@ -186,12 +208,12 @@ class DashboardScreen extends StatelessWidget {
                     return Column(
                       children: [
                         _SalesLineChartCard(todaySales: todaySales),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 16),
                         _CategoryPieChartCard(
                           inStock: products.length - lowStock,
                           lowStock: lowStock,
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 16),
                         _ProfitSummaryCard(
                           canViewProfit: auth.canViewProfitLoss,
                           todaySales: todaySales,
@@ -206,7 +228,7 @@ class DashboardScreen extends StatelessWidget {
                         flex: 3,
                         child: _SalesLineChartCard(todaySales: todaySales),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 16),
                       Expanded(
                         flex: 2,
                         child: _CategoryPieChartCard(
@@ -214,13 +236,13 @@ class DashboardScreen extends StatelessWidget {
                           lowStock: lowStock,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 16),
                       Expanded(
                         flex: 2,
                         child: Column(
                           children: [
                             _StockDistributionCard(stockHealth: stockHealth),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 16),
                             _ProfitSummaryCard(
                               canViewProfit: auth.canViewProfitLoss,
                               todaySales: todaySales,
@@ -232,7 +254,7 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 24),
               Text(
                 'Quick actions',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -240,7 +262,7 @@ class DashboardScreen extends StatelessWidget {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               LayoutBuilder(
                 builder: (context, constraints) {
                   final actionCols = constraints.maxWidth >= 1020
@@ -254,8 +276,8 @@ class DashboardScreen extends StatelessWidget {
                     itemCount: quickActions.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: actionCols,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
                       childAspectRatio: actionCols == 4 ? 1.4 : actionCols == 2 ? 1.25 : 2.4,
                     ),
                     itemBuilder: (context, i) {
@@ -265,13 +287,14 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               if (lowStock > 0)
                 _LowStockAlertCard(
                   lowStock: lowStock,
                   threshold: AppConstants.lowStockThreshold,
                   onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
                 ),
+              const SizedBox(height: 16),
               AIInsightCard(
                 title: 'AI insight preview',
                 body: lowStock > 0
@@ -279,7 +302,7 @@ class DashboardScreen extends StatelessWidget {
                     : 'Stock is currently healthy. Open AI analytics for demand and sales trend predictions.',
                 icon: lowStock > 0 ? Icons.auto_awesome_rounded : Icons.psychology_alt_outlined,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
               _RecentActivityCard(sales: recentSales),
               const SizedBox(height: 24),
             ],
@@ -388,6 +411,183 @@ class _TopDashboardBar extends StatelessWidget {
                 ],
               );
       },
+    );
+  }
+}
+
+class _DashboardHeroSection extends StatelessWidget {
+  const _DashboardHeroSection({
+    required this.businessName,
+    required this.totalStockValue,
+    required this.stockHealth,
+    required this.onStartSelling,
+    required this.onStockIn,
+  });
+
+  final String businessName;
+  final double totalStockValue;
+  final double stockHealth;
+  final VoidCallback onStartSelling;
+  final VoidCallback onStockIn;
+
+  @override
+  Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= 920;
+    return NeonGlassCard(
+      radius: 26,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      businessName,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Warehouse Activity',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Smart inventory movement and shelf health',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: isWide ? 72 : 56,
+                height: isWide ? 72 : 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF22D3EE).withValues(alpha: 0.08),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            BdtFormatter.format(totalStockValue),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Inventory Value',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 14),
+          isWide
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: NeonButton(
+                        onPressed: onStartSelling,
+                        icon: Icons.shopping_cart_checkout_rounded,
+                        label: 'Start Selling',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onStockIn,
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                        label: const Text('Stock In'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.35)),
+                          backgroundColor: Colors.white.withValues(alpha: 0.06),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _HeroStockHealthCircle(stockHealth: stockHealth),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: NeonButton(
+                        onPressed: onStartSelling,
+                        icon: Icons.shopping_cart_checkout_rounded,
+                        label: 'Start Selling',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: onStockIn,
+                        icon: const Icon(Icons.qr_code_scanner_rounded),
+                        label: const Text('Stock In'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.35)),
+                          backgroundColor: Colors.white.withValues(alpha: 0.06),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _HeroStockHealthCircle(stockHealth: stockHealth),
+                  ],
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStockHealthCircle extends StatelessWidget {
+  const _HeroStockHealthCircle({required this.stockHealth});
+
+  final double stockHealth;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 76,
+      height: 76,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: stockHealth,
+            strokeWidth: 6,
+            backgroundColor: Colors.white.withValues(alpha: 0.14),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22D3EE)),
+          ),
+          Text(
+            '${(stockHealth * 100).round()}%',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
