@@ -91,6 +91,9 @@ class _SellScreenState extends State<SellScreen> {
     final cartItems = cart.lines.fold<int>(0, (sum, line) => sum + line.quantity);
     final cartTotal = cart.subtotal;
     final q = _search.text.trim().toLowerCase();
+    final manualPreview = _manualId.text.trim().isEmpty
+        ? null
+        : context.watch<ProductsProvider>().byId(_manualId.text.trim());
     final filtered = q.isEmpty
         ? products
         : products
@@ -100,7 +103,7 @@ class _SellScreenState extends State<SellScreen> {
             .toList();
 
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: 'Sell / POS',
         subtitle: 'Quick checkout workspace',
         actions: [
@@ -120,9 +123,9 @@ class _SellScreenState extends State<SellScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF050C18),
-              Color(0xFF0A1C35),
-              Color(0xFF0F2F57),
+              Color(0xFF0B0F1A),
+              Color(0xFF101B32),
+              Color(0xFF162643),
             ],
           ),
         ),
@@ -135,25 +138,30 @@ class _SellScreenState extends State<SellScreen> {
                   padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
                   child: Column(
                     children: [
-                      FeatureHeaderCard(
-                        title: 'Premium POS Counter',
-                        subtitle:
-                            '$cartItems item(s) in cart • ${filtered.length} visible products',
-                        icon: Icons.point_of_sale_rounded,
-                        trailingIcon: Icons.shopping_bag_outlined,
+                      NeonGlassCard(
+                        radius: 26,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.point_of_sale_rounded, color: Color(0xFF22D3EE)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '$cartItems item(s) in cart • ${filtered.length} visible products',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(height: 10),
                       _PosHeroCard(
                         cartItems: cartItems,
                         cartTotal: cartTotal,
                       ),
                       const SizedBox(height: 8),
-                      const AnimatedFeatureHero(
-                        title: 'Checkout Operations',
-                        subtitle: 'Cashier lane, cart flow, and billing readiness.',
-                        icon: Icons.point_of_sale_rounded,
-                        gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-                        animationType: FeatureHeroAnimationType.pos,
-                      ),
                       _ScanManualPanel(
                         search: _search,
                         searchFocus: _searchFocus,
@@ -161,6 +169,7 @@ class _SellScreenState extends State<SellScreen> {
                         onSearch: () => setState(() {}),
                         onManualSubmit: _addById,
                         onScan: _scanForCart,
+                        preview: manualPreview,
                       ),
                     ],
                   ),
@@ -190,7 +199,8 @@ class _SellScreenState extends State<SellScreen> {
                   SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: PremiumGlassCard(
+                      child: NeonGlassCard(
+                        radius: 24,
                         borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.45),
                         child: Row(
                           children: [
@@ -235,7 +245,7 @@ class _SellScreenState extends State<SellScreen> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: GlowButton(
+                              child: NeonButton(
                                 onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
                                 icon: Icons.shopping_cart_checkout,
                                 label: 'Checkout ($cartItems)',
@@ -337,6 +347,7 @@ class _ScanManualPanel extends StatelessWidget {
     required this.onSearch,
     required this.onManualSubmit,
     required this.onScan,
+    required this.preview,
   });
 
   final TextEditingController search;
@@ -345,10 +356,12 @@ class _ScanManualPanel extends StatelessWidget {
   final VoidCallback onSearch;
   final void Function(String id) onManualSubmit;
   final VoidCallback onScan;
+  final Product? preview;
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 24,
       borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.35),
       child: Padding(
         padding: const EdgeInsets.all(2),
@@ -383,12 +396,10 @@ class _ScanManualPanel extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
+                  child: NeonTextField(
                     controller: manualId,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.pin_outlined),
-                      hintText: 'Enter product ID manually',
-                    ),
+                    prefixIcon: const Icon(Icons.pin_outlined),
+                    hint: 'Enter product ID manually',
                     onSubmitted: (v) {
                       final id = v.trim();
                       if (id.isEmpty) return;
@@ -397,7 +408,7 @@ class _ScanManualPanel extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.tonalIcon(
+                OutlinedButton.icon(
                   onPressed: () {
                     final id = manualId.text.trim();
                     if (id.isEmpty) return;
@@ -408,6 +419,56 @@ class _ScanManualPanel extends StatelessWidget {
                 ),
               ],
             ),
+            if (preview != null) ...[
+              const SizedBox(height: 8),
+              NeonGlassCard(
+                radius: 20,
+                borderColor: const Color(0x663B82F6),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF22D3EE), Color(0xFF3B82F6)],
+                        ),
+                      ),
+                      child: const Icon(Icons.inventory_2_outlined, color: Colors.white),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            preview!.name,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          Text(
+                            'Stock ${preview!.quantity} ${preview!.unit}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.white70,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '৳ ${preview!.sellingPrice.toStringAsFixed(0)}',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             InkWell(
               onTap: onScan,
@@ -482,7 +543,8 @@ class _PosProductCard extends StatelessWidget {
     final lowStock = product.quantity <= 2;
     return Opacity(
       opacity: product.quantity < 1 ? 0.55 : 1,
-      child: PremiumGlassCard(
+      child: NeonGlassCard(
+        radius: 22,
         borderColor: inCartQty > product.quantity - 1
             ? Colors.amber.withValues(alpha: 0.45)
             : null,
@@ -740,7 +802,7 @@ class _CartSummaryPanel extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
-          GlowButton(
+          NeonButton(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.cart),
             icon: Icons.shopping_cart_checkout_rounded,
             label: 'Open Checkout',
@@ -803,54 +865,47 @@ class _PosHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF6E37FF), Color(0xFF148CFF), Color(0xFF1AD3A9)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF6E37FF).withValues(alpha: 0.34),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+    return NeonGlassCard(
+      radius: 26,
+      borderColor: const Color(0x6642D4F7),
       child: Row(
         children: [
-          const AnimatedFeatureHero(
-            title: 'POS Checkout',
-            subtitle: 'Fast billing lane',
-            icon: Icons.point_of_sale_rounded,
-            compact: true,
-            gradientColors: [Color(0x007A37FF), Color(0x0013A7FF)],
-            animationType: FeatureHeroAnimationType.pos,
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFA855F7), Color(0xFF22D3EE)],
+              ),
+            ),
+            child: const Icon(Icons.point_of_sale_rounded, color: Colors.white),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '৳ ${cartTotal.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  'POS Hero',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w800,
                       ),
                 ),
                 Text(
-                  '$cartItems items in cart',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
+                  '$cartItems item(s) ready',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
                 ),
               ],
             ),
+          ),
+          Text(
+            '৳ ${cartTotal.toStringAsFixed(2)}',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
           ),
         ],
       ),

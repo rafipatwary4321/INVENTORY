@@ -93,7 +93,7 @@ class _CartScreenState extends State<CartScreen> {
     final cart = context.watch<CartProvider>();
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Cart',
         subtitle: 'Review & checkout',
       ),
@@ -103,14 +103,14 @@ class _CartScreenState extends State<CartScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF050C18),
-              Color(0xFF0A1C35),
-              Color(0xFF0F2F57),
+              Color(0xFF0B0F1A),
+              Color(0xFF101B32),
+              Color(0xFF162643),
             ],
           ),
         ),
         child: cart.isEmpty
-            ? const EmptyStateVisual(
+            ? const EmptyStatePremium(
                 icon: Icons.shopping_cart_outlined,
                 title: 'Cart is empty',
                 subtitle: 'Add products from Sell / POS to build a sale.',
@@ -121,20 +121,8 @@ class _CartScreenState extends State<CartScreen> {
                     padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
                     child: Column(
                       children: [
-                        FeatureHeaderCard(
-                          title: 'Checkout Cart',
-                          subtitle: '${cart.lines.length} line(s) ready for billing review.',
-                          icon: Icons.shopping_cart_checkout_rounded,
-                          trailingIcon: Icons.receipt_long_rounded,
-                        ),
-                        const AnimatedFeatureHero(
-                          title: 'Billing Motion',
-                          subtitle: 'Cart, receipt, and checkout controls aligned.',
-                          icon: Icons.shopping_cart_checkout_rounded,
-                          gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-                          animationType: FeatureHeroAnimationType.pos,
-                        ),
-                        PremiumGlassCard(
+                        NeonGlassCard(
+                          radius: 24,
                           borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.4),
                           child: Row(
                             children: [
@@ -166,6 +154,7 @@ class _CartScreenState extends State<CartScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: PremiumGlassCard(
+                            radius: 22,
                             borderColor: atStockLimit
                                 ? Colors.amber.withValues(alpha: 0.45)
                                 : null,
@@ -176,10 +165,16 @@ class _CartScreenState extends State<CartScreen> {
                                 children: [
                                   Text(
                                     line.name,
-                                    style: Theme.of(context).textTheme.titleMedium,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                        ),
                                   ),
                                   Text(
                                     '${BdtFormatter.format(line.unitPrice)} × ${line.quantity}',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.white70,
+                                        ),
                                   ),
                                   if (atStockLimit)
                                     Padding(
@@ -204,7 +199,13 @@ class _CartScreenState extends State<CartScreen> {
                                         },
                                         icon: const Icon(Icons.remove_rounded),
                                       ),
-                                      Text('${line.quantity}'),
+                                      Text(
+                                        '${line.quantity}',
+                                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
                                       IconButton.filled(
                                         onPressed: () {
                                           final stock = context
@@ -230,7 +231,7 @@ class _CartScreenState extends State<CartScreen> {
                                         tooltip: 'Remove',
                                         onPressed: () =>
                                             context.read<CartProvider>().removeLine(line.productId),
-                                        icon: const Icon(Icons.delete_outline),
+                                        icon: const Icon(Icons.delete_outline, color: Color(0xFFF97316)),
                                       ),
                                       const Spacer(),
                                       Text(
@@ -238,7 +239,10 @@ class _CartScreenState extends State<CartScreen> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .titleSmall
-                                            ?.copyWith(fontWeight: FontWeight.bold),
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -253,19 +257,22 @@ class _CartScreenState extends State<CartScreen> {
                   SafeArea(
                     child: Padding(
                       padding: PremiumTokens.pagePadding(context),
-                      child: PremiumGlassCard(
+                      child: NeonGlassCard(
+                        radius: 26,
+                        borderColor: const Color(0x6642D4F7),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Text(
                               'Total: ${BdtFormatter.format(cart.subtotal)}',
                               style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w800,
                                   ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
-                            GlowButton(
+                            NeonButton(
                               label: _busy ? 'Processing…' : 'Complete sale',
                               icon: _busy ? null : Icons.check_rounded,
                               onPressed: _busy ? null : _checkout,
