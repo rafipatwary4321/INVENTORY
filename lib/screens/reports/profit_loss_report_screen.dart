@@ -16,13 +16,13 @@ class ProfitLossReportScreen extends StatelessWidget {
     final canView = context.watch<AuthProvider>().canViewProfitLoss;
     if (!canView) {
       return Scaffold(
-        appBar: const PremiumAppBar(title: 'Profit / Loss'),
+        appBar: const NeonAppBar(title: 'Profit / Loss'),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+              colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
             ),
           ),
           child: const Center(
@@ -51,13 +51,13 @@ class ProfitLossReportScreen extends StatelessWidget {
     }
     if (items.isEmpty) {
       return Scaffold(
-        appBar: const PremiumAppBar(title: 'Profit / Loss'),
+        appBar: const NeonAppBar(title: 'Profit / Loss'),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+              colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
             ),
           ),
           child: const Center(
@@ -80,7 +80,7 @@ class ProfitLossReportScreen extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Profit / Loss',
         subtitle: 'Revenue vs cost',
       ),
@@ -89,7 +89,7 @@ class ProfitLossReportScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: ListView(
@@ -108,7 +108,7 @@ class ProfitLossReportScreen extends StatelessWidget {
               gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
               animationType: FeatureHeroAnimationType.reports,
             ),
-            PremiumGlassCard(
+            NeonGlassCard(
               child: Row(
                 children: const [
                   Icon(Icons.date_range_outlined),
@@ -118,7 +118,7 @@ class ProfitLossReportScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            PremiumGlassCard(
+            NeonGlassCard(
               child: const ListTile(
                 leading: Icon(Icons.stacked_line_chart_rounded),
                 title: Text('Profit trend'),
@@ -193,7 +193,7 @@ class ProfitLossReportScreen extends StatelessWidget {
               ...perSaleEntries.map(
                 (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: PremiumGlassCard(
+                  child: NeonGlassCard(
                     child: ListTile(
                       title: Text(
                         'Sale ${entry.key.length > 8 ? entry.key.substring(0, 8) : entry.key}',
@@ -233,7 +233,7 @@ class _MetricTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: PremiumGlassCard(
+      child: NeonGlassCard(
         child: ListTile(
           title: Text(label),
           trailing: Text(
@@ -256,7 +256,7 @@ class _AiRecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
       borderColor: Colors.cyanAccent.withValues(alpha: 0.35),
       child: const AIInsightCard(
         title: 'AI Recommendation',

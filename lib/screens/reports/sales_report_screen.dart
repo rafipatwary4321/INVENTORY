@@ -25,13 +25,13 @@ class SalesReportScreen extends StatelessWidget {
         .fold<double>(0, (sum, s) => sum + s.totalAmount);
     if (sales.isEmpty && items.isEmpty) {
       return Scaffold(
-        appBar: const PremiumAppBar(title: 'Sales report', subtitle: 'Revenue'),
+        appBar: const NeonAppBar(title: 'Sales report', subtitle: 'Revenue'),
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+              colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
             ),
           ),
           child: const Center(
@@ -51,7 +51,7 @@ class SalesReportScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Sales report',
         subtitle: 'Revenue & receipts',
       ),
@@ -60,7 +60,7 @@ class SalesReportScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: ListView(
@@ -79,7 +79,7 @@ class SalesReportScreen extends StatelessWidget {
               gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
               animationType: FeatureHeroAnimationType.reports,
             ),
-            PremiumGlassCard(
+            NeonGlassCard(
               child: Row(
                 children: const [
                   Icon(Icons.date_range_outlined),
@@ -133,7 +133,7 @@ class SalesReportScreen extends StatelessWidget {
                     s.userId.length > 6 ? '${s.userId.substring(0, 6)}…' : s.userId;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: PremiumGlassCard(
+                  child: NeonGlassCard(
                     child: ListTile(
                       title: Text(BdtFormatter.format(s.totalAmount)),
                       subtitle: Text('$when · ${s.itemCount} items · User $shortUser'),
@@ -163,7 +163,7 @@ class SalesReportScreen extends StatelessWidget {
               ...items.map((SaleItem item) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: PremiumGlassCard(
+                  child: NeonGlassCard(
                     child: ListTile(
                       title: Text(item.productName),
                       subtitle: Text(
@@ -198,7 +198,7 @@ class _VisualChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = totalSales <= 0 ? 0 : (todayTotal / totalSales).clamp(0, 1);
-    return PremiumGlassCard(
+    return NeonGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -321,7 +321,7 @@ class _LowStockRiskVisualCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
       borderColor: Colors.orangeAccent.withValues(alpha: 0.35),
       child: Row(
         children: [

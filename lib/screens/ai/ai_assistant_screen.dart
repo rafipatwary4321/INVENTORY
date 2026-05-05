@@ -96,7 +96,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: 'AI Assistant',
         subtitle: _api.isConfigured
             ? 'Provider: Real AI API'
@@ -107,7 +107,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: Column(

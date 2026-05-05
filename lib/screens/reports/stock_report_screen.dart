@@ -19,7 +19,7 @@ class StockReportScreen extends StatelessWidget {
         .length;
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Stock report',
         subtitle: 'On-hand value',
       ),
@@ -28,7 +28,7 @@ class StockReportScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: products.isEmpty
@@ -63,7 +63,7 @@ class StockReportScreen extends StatelessWidget {
                           gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
                           animationType: FeatureHeroAnimationType.reports,
                         ),
-                        PremiumGlassCard(
+                        NeonGlassCard(
                           child: Row(
                             children: const [
                               Icon(Icons.date_range_outlined),
@@ -73,7 +73,7 @@ class StockReportScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        PremiumGlassCard(
+                        NeonGlassCard(
                           child: const ListTile(
                             leading: Icon(Icons.pie_chart_outline_rounded),
                             title: Text('Stock composition'),
@@ -109,7 +109,7 @@ class StockReportScreen extends StatelessWidget {
                       itemBuilder: (context, i) {
                         final p = products[i];
                         final low = p.quantity < AppConstants.lowStockThreshold;
-                        return PremiumGlassCard(
+                        return NeonGlassCard(
                           borderColor: low ? Colors.amber.withValues(alpha: 0.4) : null,
                           child: ListTile(
                             leading: low
@@ -148,7 +148,7 @@ class _StockRiskHeatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
       borderColor: Colors.orangeAccent.withValues(alpha: 0.35),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

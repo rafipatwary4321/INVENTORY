@@ -19,7 +19,7 @@ class SmartInsightsScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Smart Business Insights',
         subtitle: 'AI patterns',
       ),
@@ -28,7 +28,7 @@ class SmartInsightsScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: products.isEmpty && items.isEmpty
@@ -52,7 +52,7 @@ class SmartInsightsScreen extends StatelessWidget {
                           gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
                           animationType: FeatureHeroAnimationType.ai,
                         ),
-                        PremiumGlassCard(
+                        NeonGlassCard(
                           child: Row(
                             children: [
                               Icon(Icons.date_range_outlined),
@@ -64,7 +64,7 @@ class SmartInsightsScreen extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 10),
-                        PremiumGlassCard(
+                        NeonGlassCard(
                           child: ListTile(
                             leading: Icon(Icons.auto_graph_rounded),
                             title: Text('AI trend board'),
@@ -75,7 +75,7 @@ class SmartInsightsScreen extends StatelessWidget {
                     );
                   }
                   final insight = insights[i - 1];
-                  return PremiumGlassCard(
+                  return NeonGlassCard(
                     borderColor: Colors.cyanAccent.withValues(alpha: 0.3),
                     child: AIInsightCard(
                       title: insight.title,

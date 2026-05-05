@@ -19,7 +19,7 @@ class RestockPredictionScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Predictive Restock',
         subtitle: 'Stockout risk',
       ),
@@ -28,7 +28,7 @@ class RestockPredictionScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: forecasts.isEmpty
@@ -62,7 +62,7 @@ class RestockPredictionScreen extends StatelessWidget {
                     builder: (context, value, child) => Transform.scale(scale: value, child: child),
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: PremiumGlassCard(
+                      child: NeonGlassCard(
                         borderColor: riskColor.withValues(alpha: 0.35),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

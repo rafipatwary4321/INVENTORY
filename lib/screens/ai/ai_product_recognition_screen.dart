@@ -155,7 +155,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
         : _findExistingProduct(products, detectedName);
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'AI product recognition',
         subtitle: 'Image → product draft',
       ),
@@ -164,14 +164,14 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: Padding(
           padding: PremiumTokens.pagePadding(context),
           child: ListView(
             children: [
-              PremiumGlassCard(
+              NeonGlassCard(
                 borderColor: Colors.cyanAccent.withValues(alpha: 0.3),
                 child: Row(
                   children: [
@@ -186,7 +186,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
               ),
             const SizedBox(height: 12),
             if (_result != null)
-              PremiumGlassCard(
+              NeonGlassCard(
                 borderColor: Colors.cyanAccent.withValues(alpha: 0.32),
                 child: ListTile(
                   leading: const Icon(Icons.auto_awesome_outlined),
@@ -200,7 +200,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
-              child: PremiumGlassCard(
+              child: NeonGlassCard(
                 padding: EdgeInsets.zero,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(PremiumTokens.radiusMd),
@@ -287,7 +287,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
             if (_result != null) ...[
               const SizedBox(height: 16),
               if (matched != null)
-                ReportCard(
+                NeonGlassCard(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(
@@ -339,7 +339,7 @@ class _AIProductRecognitionScreenState extends State<AIProductRecognitionScreen>
                   ),
                 )
               else
-                ReportCard(
+                NeonGlassCard(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Column(
