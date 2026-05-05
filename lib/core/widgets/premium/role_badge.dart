@@ -29,17 +29,35 @@ class RoleBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (icon, label) = switch (role) {
-      UserRoleVisual.owner => (Icons.workspace_premium_rounded, 'Owner'),
-      UserRoleVisual.admin => (Icons.admin_panel_settings_rounded, 'Admin'),
-      UserRoleVisual.staff => (Icons.badge_rounded, 'Staff'),
+    final (icon, label, accent) = switch (role) {
+      UserRoleVisual.owner => (
+          Icons.workspace_premium_rounded,
+          'Owner',
+          const Color(0xFFA855F7),
+        ),
+      UserRoleVisual.admin => (
+          Icons.admin_panel_settings_rounded,
+          'Admin',
+          const Color(0xFF22D3EE),
+        ),
+      UserRoleVisual.staff => (
+          Icons.badge_rounded,
+          'Staff',
+          const Color(0xFF3B82F6),
+        ),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.22),
+        color: accent.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(PremiumTokens.radiusSm),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+        border: Border.all(color: accent.withValues(alpha: 0.48)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.3),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

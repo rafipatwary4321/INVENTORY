@@ -45,15 +45,15 @@ class PremiumGlassCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(radius),
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF7C3BFF).withValues(alpha: 0.11),
-                const Color(0xFF1A8CFF).withValues(alpha: 0.08),
-                const Color(0xFF0EDFA9).withValues(alpha: 0.05),
+                const Color(0xCC111827),
+                const Color(0xAA151B2E),
+                const Color(0x663B82F6),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             border: Border.all(
-              color: borderColor ?? cs.primary.withValues(alpha: 0.2),
+              color: borderColor ?? const Color(0x5522D3EE),
             ),
             boxShadow: [
               BoxShadow(

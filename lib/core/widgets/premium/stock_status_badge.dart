@@ -12,7 +12,7 @@ class StockStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isLowStock ? Colors.amber.shade800 : Colors.green.shade700;
+    final color = isLowStock ? const Color(0xFFF97316) : const Color(0xFF22D3EE);
     final icon =
         isLowStock ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded;
     final label = isLowStock ? 'Low stock' : 'In stock';
@@ -22,6 +22,7 @@ class StockStatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
