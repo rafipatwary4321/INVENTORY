@@ -165,7 +165,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
     if (!isAdmin) {
       return const Scaffold(
-        appBar: PremiumAppBar(title: 'Product'),
+        appBar: NeonAppBar(title: 'Product'),
         body: EmptyStateWidget(
           icon: Icons.lock_outline_rounded,
           title: 'Admins only',
@@ -175,10 +175,29 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       );
     }
 
+    final saveButton = PremiumButton(
+      label: _busy
+          ? 'Saving...'
+          : (isEdit ? 'Update product' : 'Create product'),
+      expand: true,
+      icon: _busy ? null : Icons.check_rounded,
+      onPressed: _busy ? null : _save,
+    );
+
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: isEdit ? 'Edit product' : 'Add product',
-        subtitle: 'Details & pricing',
+        subtitle: 'Product management',
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: NeonGlassCard(
+            radius: 24,
+            child: saveButton,
+          ),
+        ),
       ),
       body: AbsorbPointer(
         absorbing: _busy,
@@ -195,29 +214,120 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
             ),
           ),
           child: SingleChildScrollView(
-            padding: PremiumTokens.pagePadding(context),
+            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 110),
             child: Form(
               key: _formKey,
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 900;
-                  final mediaSection = Column(
-                    children: [
-                      const FeatureHeaderCard(
-                        title: 'Product Media',
-                        subtitle: 'Add an optional product photo for better catalog visuals.',
+                  final basicInfoSection = NeonGlassCard(
+                    radius: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionTitle(
+                          title: 'Basic Info',
+                          subtitle: 'Product name and category',
+                          icon: Icons.inventory_2_outlined,
+                        ),
+                        const SizedBox(height: 10),
+                        NeonTextField(
+                          controller: _name,
+                          label: 'Product name',
+                          validator: (v) => Validators.required(v, field: 'Name'),
+                        ),
+                        const SizedBox(height: 12),
+                        NeonTextField(
+                          controller: _category,
+                          label: 'Category',
+                          validator: (v) => Validators.required(v, field: 'Category'),
+                        ),
+                      ],
+                    ),
+                  );
+                  final pricingSection = NeonGlassCard(
+                    radius: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionTitle(
+                          title: 'Pricing',
+                          subtitle: 'Buying and selling price',
+                          icon: Icons.sell_outlined,
+                        ),
+                        const SizedBox(height: 10),
+                        NeonTextField(
+                          controller: _buying,
+                          keyboardType: TextInputType.number,
+                          label: 'Buying price (BDT)',
+                          validator: (v) =>
+                              Validators.nonNegativeNumber(v, field: 'Buying price'),
+                        ),
+                        const SizedBox(height: 12),
+                        NeonTextField(
+                          controller: _selling,
+                          keyboardType: TextInputType.number,
+                          label: 'Selling price (BDT)',
+                          validator: (v) =>
+                              Validators.nonNegativeNumber(v, field: 'Selling price'),
+                        ),
+                      ],
+                    ),
+                  );
+                  final stockSection = NeonGlassCard(
+                    radius: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SectionTitle(
+                          title: 'Stock',
+                          subtitle: 'Current quantity and unit',
+                          icon: Icons.warehouse_outlined,
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: NeonTextField(
+                                controller: _quantity,
+                                keyboardType: TextInputType.number,
+                                label: 'Quantity',
+                                validator: (v) =>
+                                    Validators.positiveInt(v, field: 'Quantity'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: NeonTextField(
+                                controller: _unit,
+                                label: 'Unit',
+                                validator: (v) => Validators.required(v, field: 'Unit'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                  final mediaSection = NeonGlassCard(
+                    radius: 24,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      _SectionTitle(
+                        title: 'Image / QR',
+                        subtitle: 'Optional image for premium catalog card',
                         icon: Icons.image_outlined,
-                        trailingIcon: Icons.photo_camera_back_outlined,
                       ),
+                      const SizedBox(height: 10),
                       GestureDetector(
                         onTap: canUploadImage ? _pickImage : null,
                         child: AspectRatio(
                           aspectRatio: 16 / 9,
-                          child: PremiumGlassCard(
+                          child: NeonGlassCard(
                             padding: EdgeInsets.zero,
                             child: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(PremiumTokens.radiusMd),
+                              borderRadius: BorderRadius.circular(20),
                               child: _pickedFile != null
                                   ? Image.file(_pickedFile!, fit: BoxFit.cover)
                                   : _existingImageUrl != null
@@ -252,105 +362,53 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                 ),
                           ),
                         ),
+                      const SizedBox(height: 12),
+                      NeonGlassCard(
+                        radius: 20,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.qr_code_2_rounded, color: Color(0xFF22D3EE)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                isEdit
+                                    ? 'QR label is available after save from Product Details.'
+                                    : 'Create product first, then open Product Details for QR.',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.white70,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    ),
+                  );
+                  final formSection = Column(
+                    children: [
+                      basicInfoSection,
+                      const SizedBox(height: 12),
+                      pricingSection,
+                      const SizedBox(height: 12),
+                      stockSection,
                     ],
                   );
-                final formSection = Column(
-                  children: [
-                    const FeatureHeaderCard(
-                      title: 'Product Information',
-                      subtitle: 'Enter category, pricing, and stock values.',
-                      icon: Icons.inventory_2_outlined,
-                      trailingIcon: Icons.sell_outlined,
-                    ),
-                    PremiumGlassCard(
-                      child: Column(
-                        children: [
-                          PremiumTextField(
-                            controller: _name,
-                            label: 'Product name',
-                            validator: (v) => Validators.required(v, field: 'Name'),
-                          ),
-                          const SizedBox(height: 12),
-                          PremiumTextField(
-                            controller: _category,
-                            label: 'Category',
-                            validator: (v) => Validators.required(v, field: 'Category'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    PremiumGlassCard(
-                      child: Column(
-                        children: [
-                          PremiumTextField(
-                            controller: _buying,
-                            keyboardType: TextInputType.number,
-                            label: 'Buying price (BDT)',
-                            validator: (v) =>
-                                Validators.nonNegativeNumber(v, field: 'Buying price'),
-                          ),
-                          const SizedBox(height: 12),
-                          PremiumTextField(
-                            controller: _selling,
-                            keyboardType: TextInputType.number,
-                            label: 'Selling price (BDT)',
-                            validator: (v) =>
-                                Validators.nonNegativeNumber(v, field: 'Selling price'),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: PremiumTextField(
-                                  controller: _quantity,
-                                  keyboardType: TextInputType.number,
-                                  label: 'Quantity',
-                                  validator: (v) =>
-                                      Validators.positiveInt(v, field: 'Quantity'),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: PremiumTextField(
-                                  controller: _unit,
-                                  label: 'Unit',
-                                  validator: (v) => Validators.required(v, field: 'Unit'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
                   return Column(
                     children: [
                       if (!isWide) ...[
-                        mediaSection,
-                        const SizedBox(height: 16),
                         formSection,
+                        const SizedBox(height: 12),
+                        mediaSection,
                       ] else
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(child: mediaSection),
-                            const SizedBox(width: 12),
                             Expanded(child: formSection),
+                            const SizedBox(width: 12),
+                            Expanded(child: mediaSection),
                           ],
                         ),
-                      const SizedBox(height: 24),
-                      PremiumGlassCard(
-                        child: PremiumButton(
-                          label: _busy
-                              ? 'Saving...'
-                              : (isEdit ? 'Update product' : 'Create product'),
-                          expand: true,
-                          icon: _busy ? null : Icons.check_rounded,
-                          onPressed: _busy ? null : _save,
-                        ),
-                      ),
                     ],
                   );
                 },
@@ -359,6 +417,48 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF22D3EE)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

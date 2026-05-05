@@ -77,7 +77,7 @@ class ProductDetailsScreen extends StatelessWidget {
 
     if (product == null) {
       return Scaffold(
-        appBar: const PremiumAppBar(title: 'Product'),
+        appBar: const NeonAppBar(title: 'Product'),
         body: ErrorStateWidget(
           title: 'Product not found',
           subtitle: 'It may have been removed or you opened an invalid link.',
@@ -88,8 +88,15 @@ class ProductDetailsScreen extends StatelessWidget {
       );
     }
 
+    final outOfStock = product.quantity <= 0;
+    final lowStock = product.quantity > 0 && product.quantity < AppConstants.lowStockThreshold;
+    final statusLabel = outOfStock ? 'Out of Stock' : (lowStock ? 'Low Stock' : 'In Stock');
+    final statusColor = outOfStock
+        ? const Color(0xFFF97316)
+        : (lowStock ? Colors.orangeAccent : const Color(0xFF22D3EE));
+
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: product.name,
         subtitle: 'Details & QR',
         actions: [
@@ -126,27 +133,21 @@ class ProductDetailsScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF050C18),
-              Color(0xFF0A1C35),
-              Color(0xFF0F2F57),
+              Color(0xFF0B0F1A),
+              Color(0xFF101B32),
+              Color(0xFF162643),
             ],
           ),
         ),
         child: ListView(
           padding: PremiumTokens.pagePadding(context),
           children: [
-          FeatureHeaderCard(
-            title: 'Product Details',
-            subtitle: 'Review stock, QR label, and quick actions for this item.',
-            icon: Icons.inventory_2_rounded,
-            trailingIcon: Icons.qr_code_2_rounded,
-          ),
-            PremiumGlassCard(
+            NeonGlassCard(
               padding: EdgeInsets.zero,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(24),
                 child: AspectRatio(
-                  aspectRatio: 16 / 9,
+                  aspectRatio: 16 / 8.8,
                   child: product.imageUrl != null
                       ? CachedNetworkImage(
                           imageUrl: product.imageUrl!,
@@ -159,200 +160,320 @@ class ProductDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Chip(
-                avatar: const Icon(Icons.category_outlined, size: 16),
-                label: Text(product.category),
-              ),
-              Chip(
-                avatar: Icon(
-                  product.isLowStock
-                      ? Icons.warning_amber_rounded
-                      : Icons.check_circle_outline_rounded,
-                  size: 16,
-                  color: product.isLowStock ? Colors.deepOrange : Colors.green,
-                ),
-                label: Text(product.isLowStock ? 'Low stock' : 'In stock'),
-              ),
-            ],
-          ),
-          if (product.isLowStock)
-            Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 12),
-              child: PremiumGlassCard(
-                borderColor: Colors.deepOrange.withValues(alpha: 0.35),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning_amber_rounded, color: Colors.deepOrange),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Low stock warning: below ${AppConstants.lowStockThreshold} ${product.unit}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
+            const SizedBox(height: 12),
+            NeonGlassCard(
+              radius: 24,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            NeonBadge(label: product.category, icon: Icons.category_outlined),
+                            _StatusPill(label: statusLabel, color: statusColor),
+                          ],
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth >= 860;
-              final detailsCard = ReportCard(
-                child: Column(
-                  children: [
-                    _DetailRow('Category', product.category),
-                    _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
-                    _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
-                    _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
-                    _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
-                  ],
-                ),
-              );
-              final qrCard = PremiumGlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'QR preview',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    ProductQrCard(
-                      productId: product.id,
-                      productName: product.name,
-                      embeddedSize: 148,
-                      onViewFullscreen: () => Navigator.pushNamed(
-                        context,
-                        AppRoutes.qrGenerate,
-                        arguments: product.id,
+            if (lowStock)
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 4),
+                child: NeonGlassCard(
+                  borderColor: const Color(0x66F97316),
+                  radius: 22,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning_amber_rounded, color: Color(0xFFF97316)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Low stock warning: below ${AppConstants.lowStockThreshold} ${product.unit}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              );
-              if (!isWide) {
-                return Column(
+              ),
+            const SizedBox(height: 16),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 860;
+                final pricingStock = Column(
                   children: [
-                    detailsCard,
-                    const SizedBox(height: 16),
-                    qrCard,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            title: 'Buy Price',
+                            value: BdtFormatter.format(product.buyingPrice),
+                            color: const Color(0xFF22D3EE),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _MetricCard(
+                            title: 'Sell Price',
+                            value: BdtFormatter.format(product.sellingPrice),
+                            color: const Color(0xFFA855F7),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _MetricCard(
+                      title: 'Current Stock',
+                      value: '${product.quantity} ${product.unit}',
+                      color: const Color(0xFF3B82F6),
+                    ),
                   ],
                 );
-              }
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(flex: 3, child: detailsCard),
-                  const SizedBox(width: 10),
-                  Expanded(flex: 2, child: qrCard),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Scan',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          PremiumGlassCard(
-            child: Row(
-              children: [
-                Expanded(
-                  child: FilledButton.tonalIcon(
-                    onPressed: () =>
-                        ProductQrScanActions.scanThenStockIn(context),
-                    icon: const Icon(Icons.add_box_outlined),
-                    label: const Text('Stock in'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () =>
-                        ProductQrScanActions.scanThenAddToCart(context),
-                    icon: const Icon(Icons.shopping_cart_outlined),
-                    label: const Text('To cart'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Quick actions',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => Navigator.pushNamed(
-              context,
-              AppRoutes.stockIn,
-              arguments: product.id,
-            ),
-            icon: const Icon(Icons.edit_note_outlined),
-            label: const Text('Stock in (this product)'),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => Navigator.pushNamed(
-              context,
-              AppRoutes.sell,
-              arguments: product.id,
-            ),
-            icon: const Icon(Icons.sell_outlined),
-            label: const Text('Sell this product'),
-          ),
-          if (isAdmin) ...[
-            const SizedBox(height: 24),
-            TextButton.icon(
-              onPressed: () async {
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Delete product?'),
-                    content: const Text('This cannot be undone.'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
+                final qrCard = NeonGlassCard(
+                  radius: 24,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'QR Code',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Delete'),
+                      const SizedBox(height: 10),
+                      ProductQrCard(
+                        productId: product.id,
+                        productName: product.name,
+                        embeddedSize: 148,
+                        onViewFullscreen: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.qrGenerate,
+                          arguments: product.id,
+                        ),
                       ),
                     ],
                   ),
                 );
-                if (ok != true || !context.mounted) return;
-                try {
-                  await context.read<ProductService>().deleteProduct(product.id);
-                  if (context.mounted) Navigator.pop(context);
-                } catch (e) {
-                  if (context.mounted) ErrorHandler.showSnack(context, e);
+                if (!isWide) {
+                  return Column(
+                    children: [
+                      pricingStock,
+                      const SizedBox(height: 12),
+                      qrCard,
+                    ],
+                  );
                 }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 3, child: pricingStock),
+                    const SizedBox(width: 12),
+                    Expanded(flex: 2, child: qrCard),
+                  ],
+                );
               },
-              icon: const Icon(Icons.delete_forever, color: Colors.red),
-              label: const Text('Delete product', style: TextStyle(color: Colors.red)),
+            ),
+            const SizedBox(height: 16),
+            NeonGlassCard(
+              radius: 24,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                    SizedBox(
+                      width: 148,
+                      child: NeonButton(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.productEdit,
+                          arguments: product.id,
+                        ),
+                        icon: Icons.edit_outlined,
+                        label: 'Edit',
+                      ),
+                    ),
+                    SizedBox(
+                      width: 148,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.stockIn,
+                          arguments: product.id,
+                        ),
+                        icon: const Icon(Icons.add_box_outlined),
+                        label: const Text('Stock In'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 128,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.sell,
+                          arguments: product.id,
+                        ),
+                        icon: const Icon(Icons.sell_outlined),
+                        label: const Text('Sell'),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 128,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.qrGenerate,
+                          arguments: product.id,
+                        ),
+                        icon: const Icon(Icons.qr_code_2_rounded),
+                        label: const Text('QR / View'),
+                      ),
+                    ),
+                    if (isAdmin)
+                      SizedBox(
+                        width: 128,
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFF97316),
+                            side: BorderSide(
+                              color: const Color(0xFFF97316).withValues(alpha: 0.55),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Delete product?'),
+                                content: const Text('This cannot be undone.'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  FilledButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (ok != true || !context.mounted) return;
+                            try {
+                              await context.read<ProductService>().deleteProduct(product.id);
+                              if (context.mounted) Navigator.pop(context);
+                            } catch (e) {
+                              if (context.mounted) ErrorHandler.showSnack(context, e);
+                            }
+                          },
+                          icon: const Icon(Icons.delete_forever),
+                          label: const Text('Delete'),
+                        ),
+                      ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            NeonGlassCard(
+              radius: 24,
+              child: Column(
+                children: [
+                  _DetailRow('Category', product.category),
+                  _DetailRow('Buying price', BdtFormatter.format(product.buyingPrice)),
+                  _DetailRow('Selling price', BdtFormatter.format(product.sellingPrice)),
+                  _DetailRow('Quantity', '${product.quantity} ${product.unit}'),
+                  _DetailRow('Stock value (cost)', BdtFormatter.format(product.stockValue)),
+                ],
+              ),
             ),
           ],
-          ],
         ),
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({
+    required this.label,
+    required this.color,
+  });
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: color.withValues(alpha: 0.2),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+      ),
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({
+    required this.title,
+    required this.value,
+    required this.color,
+  });
+
+  final String title;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return NeonGlassCard(
+      radius: 22,
+      borderColor: color.withValues(alpha: 0.48),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
+        ],
       ),
     );
   }
