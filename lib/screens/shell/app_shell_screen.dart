@@ -11,6 +11,7 @@ import '../sell/sell_screen.dart';
 import '../reports/sales_report_screen.dart';
 import '../ai/ai_assistant_screen.dart';
 import '../settings/settings_screen.dart';
+import '../../core/widgets/premium/premium_ui.dart';
 
 /// Main shell: bottom navigation between Home, Inventory, POS, and Settings.
 class AppShellScreen extends StatefulWidget {
@@ -95,10 +96,12 @@ class _AppShellScreenState extends State<AppShellScreen> {
 
     if (!isWide) {
       return Scaffold(
-        body: IndexedStack(
-          index: bottomIndex,
-          sizing: StackFit.expand,
-          children: bottomTabs.map((t) => t.screen ?? const SizedBox.shrink()).toList(),
+        body: AnimatedGradientBackground(
+          child: IndexedStack(
+            index: bottomIndex,
+            sizing: StackFit.expand,
+            children: bottomTabs.map((t) => t.screen ?? const SizedBox.shrink()).toList(),
+          ),
         ),
         floatingActionButton: showsScaffoldActionFab
             ? FloatingActionButton.extended(
@@ -109,7 +112,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
               )
             : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomNavigationBar: NavigationBar(
+        bottomNavigationBar: NeonBottomNavigation(
           selectedIndex: bottomIndex,
           onDestinationSelected: (i) => setState(() => _index = i),
           destinations: bottomTabs

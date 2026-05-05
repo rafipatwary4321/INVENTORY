@@ -45,12 +45,20 @@ class DashboardScreen extends StatelessWidget {
         .where((p) => p.quantity < AppConstants.lowStockThreshold)
         .length;
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width >= 1100
+    final crossAxisCount = width >= 1200
         ? 4
-        : width >= 820
+        : width >= 880
             ? 3
-            : 2;
-    final cardRatio = width < 380 ? 1.0 : 1.12;
+            : width >= 560
+                ? 2
+                : 1;
+    final cardRatio = width >= 1200
+        ? 1.2
+        : width >= 880
+            ? 1.15
+            : width >= 560
+                ? 1.06
+                : 1.35;
     final quickActions = <_QuickActionItem>[
       _QuickActionItem(
         icon: Icons.add_box_outlined,
@@ -90,19 +98,8 @@ class DashboardScreen extends StatelessWidget {
     final stockHealth = products.isEmpty
         ? 1.0
         : ((products.length - lowStock) / products.length).clamp(0, 1).toDouble();
-    Future<void> openStockInScan() async {
-      final result = await Navigator.pushNamed(
-        context,
-        AppRoutes.qrScan,
-        arguments: QRScanArgs(mode: QRScanMode.stockIn),
-      );
-      final id = result as String?;
-      if (!context.mounted || id == null) return;
-      Navigator.pushNamed(context, AppRoutes.stockIn, arguments: id);
-    }
-
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: settings?.businessName ?? 'My Business',
         subtitle: 'Dashboard',
         actions: [
@@ -114,7 +111,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          const Positioned.fill(child: _DashboardBackdrop()),
+          const Positioned.fill(child: AnimatedGradientBackground()),
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -139,17 +136,6 @@ class DashboardScreen extends StatelessWidget {
                 userName: user?.displayName ?? 'User',
               ),
               const SizedBox(height: 10),
-              _PremiumDashboardHero(
-                businessName: settings?.businessName ?? 'My Business',
-                userName: user?.displayName ?? 'User',
-                todaySales: todaySales,
-                totalStockValue: totalStockValue,
-                stockHealth: stockHealth,
-                lowStock: lowStock,
-                onStartSelling: () => Navigator.pushNamed(context, AppRoutes.sell),
-                onStockIn: openStockInScan,
-              ),
-              const SizedBox(height: 10),
               GridView.count(
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,
@@ -158,37 +144,47 @@ class DashboardScreen extends StatelessWidget {
                 mainAxisSpacing: 12,
                 childAspectRatio: cardRatio,
                 children: [
-                  GlassStatCard(
+                  _DashboardStatCard(
                     title: 'Products',
                     value: '${products.length}',
                     icon: Icons.category_outlined,
                     accentColor: Colors.blue,
-                    changeLabel: 'Inventory size',
-                    changeColor: Colors.cyanAccent,
+                    subtitle: 'Inventory size',
+                    subtitleColor: Colors.cyanAccent,
                   ),
-                  GlassStatCard(
+                  _DashboardStatCard(
                     title: 'Today sales',
                     value: BdtFormatter.format(todaySales),
                     icon: Icons.point_of_sale,
                     accentColor: Colors.deepPurple,
-                    changeLabel: '$totalStockQty units on hand',
-                    changeColor: Colors.cyanAccent,
+                    subtitle: '$totalStockQty units on hand',
+                    subtitleColor: Colors.cyanAccent,
                   ),
-                  GlassStatCard(
+                  _DashboardStatCard(
                     title: 'Stock value',
                     value: BdtFormatter.format(totalStockValue),
                     icon: Icons.account_balance_wallet_outlined,
                     accentColor: Colors.teal,
-                    changeLabel: 'Cost basis',
-                    changeColor: Colors.greenAccent,
+                    subtitle: 'Cost basis',
+                    subtitleColor: Colors.greenAccent,
                   ),
-                  GlassStatCard(
+                  _DashboardStatCard(
                     title: 'Low stock',
                     value: '$lowStock',
                     icon: Icons.warning_amber_rounded,
                     accentColor: lowStock > 0 ? Colors.deepOrange : Colors.green,
-                    changeLabel: lowStock > 0 ? 'Action needed' : 'Healthy',
-                    changeColor: lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
+                    subtitle: lowStock > 0 ? 'Action needed' : 'Healthy',
+                    subtitleColor: lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
+                  ),
+                  _DashboardStatCard(
+                    title: 'Profit',
+                    value: auth.canViewProfitLoss
+                        ? BdtFormatter.format(todaySales * 0.28)
+                        : 'Locked',
+                    icon: Icons.trending_up_rounded,
+                    accentColor: const Color(0xFF22D3EE),
+                    subtitle: auth.canViewProfitLoss ? 'Est. today margin' : 'Owner/Admin only',
+                    subtitleColor: auth.canViewProfitLoss ? Colors.greenAccent : Colors.white70,
                   ),
                 ],
               ),
@@ -208,44 +204,6 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Quick actions',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final actionCols = constraints.maxWidth >= 920
-                      ? 3
-                      : constraints.maxWidth >= 620
-                          ? 2
-                          : 1;
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: quickActions.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: actionCols,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: actionCols == 1 ? 3.8 : 2.4,
-                    ),
-                    itemBuilder: (context, i) {
-                      final item = quickActions[i];
-                      return PremiumActionCard(
-                        icon: item.icon,
-                        label: item.label,
-                        subtitle: item.subtitle,
-                        onTap: item.onTap,
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              Text(
                 'Analytics',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -259,12 +217,12 @@ class DashboardScreen extends StatelessWidget {
                   if (!isWide) {
                     return Column(
                       children: [
-                        const _ChartPlaceholderCard(
-                          title: 'Sales overview',
-                          subtitle: 'Chart placeholder for daily/weekly trend',
-                        ),
+                        _SalesLineChartCard(todaySales: todaySales),
                         const SizedBox(height: 10),
-                        _StockDistributionCard(stockHealth: stockHealth),
+                        _CategoryPieChartCard(
+                          inStock: products.length - lowStock,
+                          lowStock: lowStock,
+                        ),
                         const SizedBox(height: 10),
                         _ProfitSummaryCard(
                           canViewProfit: auth.canViewProfitLoss,
@@ -276,11 +234,16 @@ class DashboardScreen extends StatelessWidget {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Expanded(
+                      Expanded(
                         flex: 3,
-                        child: _ChartPlaceholderCard(
-                          title: 'Sales overview',
-                          subtitle: 'Chart placeholder for daily/weekly trend',
+                        child: _SalesLineChartCard(todaySales: todaySales),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: _CategoryPieChartCard(
+                          inStock: products.length - lowStock,
+                          lowStock: lowStock,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -298,6 +261,35 @@ class DashboardScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Quick actions',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final actionCols = constraints.maxWidth >= 860 ? 4 : 2;
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: quickActions.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: actionCols,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: actionCols == 4 ? 1.55 : 1.35,
+                    ),
+                    itemBuilder: (context, i) {
+                      final item = quickActions[i];
+                      return _BigQuickActionCard(item: item);
+                    },
                   );
                 },
               ),
@@ -322,248 +314,411 @@ class _TopDashboardBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            readOnly: true,
-            decoration: InputDecoration(
-              hintText: 'Search products, sales, reports...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              filled: true,
-              fillColor: cs.surface.withValues(alpha: 0.7),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+        final searchField = TextField(
+          readOnly: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Search products, sales, reports...',
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.65)),
+            prefixIcon: Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.85)),
+            filled: true,
+            fillColor: cs.surface.withValues(alpha: 0.68),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
             ),
           ),
+        );
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello, ${userName.isEmpty ? 'Owner' : userName}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    businessName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: isWide ? 520 : double.infinity),
+                      child: searchField,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Column(
+                children: [
+                  IconButton.filledTonal(
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0x33111827),
+                    ),
+                    onPressed: () {},
+                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+                  ),
+                  const SizedBox(height: 10),
+                  CircleAvatar(
+                    backgroundColor: cs.primaryContainer.withValues(alpha: 0.95),
+                    child: Text(
+                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                      style: TextStyle(
+                        color: cs.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DashboardStatCard extends StatelessWidget {
+  const _DashboardStatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.accentColor,
+    required this.subtitle,
+    required this.subtitleColor,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color accentColor;
+  final String subtitle;
+  final Color subtitleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return NeonGlassCard(
+      padding: const EdgeInsets.all(14),
+      child: SizedBox.expand(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: accentColor, size: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.88),
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: subtitleColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
-        IconButton.filledTonal(
-          onPressed: () {},
-          icon: const Icon(Icons.notifications_none_rounded),
+      ),
+    );
+  }
+}
+
+class _SalesLineChartCard extends StatelessWidget {
+  const _SalesLineChartCard({required this.todaySales});
+
+  final double todaySales;
+
+  @override
+  Widget build(BuildContext context) {
+    return NeonChartCard(
+      title: 'Sales Graph',
+      subtitle: 'Line trend overview',
+      child: Container(
+        height: 150,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF22D3EE).withValues(alpha: 0.18),
+              const Color(0xFF3B82F6).withValues(alpha: 0.15),
+            ],
+          ),
+          border: Border.all(color: const Color(0x5522D3EE)),
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+                child: CustomPaint(
+                  painter: _LineChartPainter(),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 10,
+              top: 8,
+              child: Text(
+                BdtFormatter.format(todaySales),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryPieChartCard extends StatelessWidget {
+  const _CategoryPieChartCard({
+    required this.inStock,
+    required this.lowStock,
+  });
+
+  final int inStock;
+  final int lowStock;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = (inStock + lowStock).clamp(1, 999999);
+    final lowRatio = (lowStock / total).clamp(0, 1).toDouble();
+    return NeonChartCard(
+      title: 'Category Pie Chart',
+      subtitle: 'Stock health split',
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            height: 120,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: 1 - lowRatio,
+                  strokeWidth: 12,
+                  backgroundColor: Colors.deepOrange.withValues(alpha: 0.28),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22D3EE)),
+                ),
+                Text(
+                  '${((1 - lowRatio) * 100).round()}%',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _LegendLine(
+                  color: const Color(0xFF22D3EE),
+                  label: 'In stock',
+                  value: '$inStock',
+                ),
+                const SizedBox(height: 8),
+                _LegendLine(
+                  color: Colors.deepOrangeAccent,
+                  label: 'Low stock',
+                  value: '$lowStock',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegendLine extends StatelessWidget {
+  const _LegendLine({
+    required this.color,
+    required this.label,
+    required this.value,
+  });
+
+  final Color color;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        CircleAvatar(
-          backgroundColor: cs.primaryContainer,
+        Expanded(
           child: Text(
-            userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-            style: TextStyle(color: cs.onPrimaryContainer),
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white70,
+                ),
           ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
         ),
       ],
     );
   }
 }
 
-class _PremiumDashboardHero extends StatelessWidget {
-  const _PremiumDashboardHero({
-    required this.businessName,
-    required this.userName,
-    required this.todaySales,
-    required this.totalStockValue,
-    required this.stockHealth,
-    required this.lowStock,
-    required this.onStartSelling,
-    required this.onStockIn,
-  });
+class _BigQuickActionCard extends StatelessWidget {
+  const _BigQuickActionCard({required this.item});
 
-  final String businessName;
-  final String userName;
-  final double todaySales;
-  final double totalStockValue;
-  final double stockHealth;
-  final int lowStock;
-  final VoidCallback onStartSelling;
-  final VoidCallback onStockIn;
+  final _QuickActionItem item;
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.985, end: 1),
-      duration: const Duration(milliseconds: 420),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        return Transform.scale(scale: value, child: child);
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF4D2BFF), Color(0xFF127DFF), Color(0xFF15CFA7)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF4D2BFF).withValues(alpha: 0.34),
-              blurRadius: 28,
-              offset: const Offset(0, 12),
+    return NeonGlassCard(
+      padding: const EdgeInsets.all(14),
+      child: InkWell(
+        onTap: item.onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B82F6), Color(0xFFA855F7)],
+                ),
+              ),
+              child: Icon(item.icon, color: Colors.white),
             ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+            const SizedBox(height: 8),
+            Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
           ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: Stack(
-            children: [
-              const Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Color(0xAD02040A),
-                        Color(0x78030A16),
-                        Color(0x22000000),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
-                  child: AnimatedFeatureHero(
-                    title: 'Warehouse Activity',
-                    subtitle: 'Smart inventory movement and shelf health',
-                    icon: Icons.warehouse_rounded,
-                    compact: true,
-                    gradientColors: const [
-                      Color(0x007A37FF),
-                      Color(0x0013A7FF),
-                      Color(0x001DE2B0),
-                    ],
-                    animationType: FeatureHeroAnimationType.warehouse,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      businessName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Hi ${userName.isEmpty ? 'User' : userName} · Today ${BdtFormatter.format(todaySales)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.92),
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      BdtFormatter.format(totalStockValue),
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            shadows: [
-                              Shadow(
-                                color: const Color(0xFF20E3BE).withValues(alpha: 0.7),
-                                blurRadius: 16,
-                              ),
-                            ],
-                          ),
-                    ),
-                    Text(
-                      'Inventory Value',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 168,
-                          child: GlowButton(
-                            onPressed: onStartSelling,
-                            icon: Icons.shopping_cart_checkout_rounded,
-                            label: 'Start Selling',
-                          ),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: onStockIn,
-                          icon: const Icon(Icons.qr_code_scanner_rounded),
-                          label: const Text('Stock In'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.white.withValues(alpha: 0.4)),
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.white.withValues(alpha: 0.08),
-                          ),
-                        ),
-                        _HeroStockRing(stockHealth: stockHealth, lowStock: lowStock),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
   }
 }
 
-class _HeroStockRing extends StatelessWidget {
-  const _HeroStockRing({
-    required this.stockHealth,
-    required this.lowStock,
-  });
+class _LineChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gridPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..strokeWidth = 1;
+    for (var i = 1; i <= 3; i++) {
+      final y = (size.height / 4) * i;
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
 
-  final double stockHealth;
-  final int lowStock;
+    final path = Path()
+      ..moveTo(0, size.height * 0.78)
+      ..quadraticBezierTo(
+        size.width * 0.18,
+        size.height * 0.55,
+        size.width * 0.34,
+        size.height * 0.62,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.52,
+        size.height * 0.72,
+        size.width * 0.68,
+        size.height * 0.46,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.82,
+        size.height * 0.3,
+        size.width,
+        size.height * 0.38,
+      );
+
+    final linePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF22D3EE), Color(0xFF3B82F6)],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(path, linePaint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final valueColor = lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent;
-    return Container(
-      width: 62,
-      height: 62,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black.withValues(alpha: 0.22),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 50,
-            height: 50,
-            child: CircularProgressIndicator(
-              value: stockHealth,
-              strokeWidth: 5,
-              backgroundColor: Colors.white.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(valueColor),
-            ),
-          ),
-          Text(
-            '${(stockHealth * 100).round()}',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _StockDistributionCard extends StatelessWidget {
@@ -627,47 +782,6 @@ class _ProfitSummaryCard extends StatelessWidget {
         trailing: canViewProfit
             ? const Icon(Icons.lock_open_rounded)
             : const Icon(Icons.lock_outline_rounded),
-      ),
-    );
-  }
-}
-
-class _ChartPlaceholderCard extends StatelessWidget {
-  const _ChartPlaceholderCard({
-    required this.title,
-    required this.subtitle,
-  });
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return ReportCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 10),
-          Container(
-            height: 140,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                colors: [
-                  cs.primary.withValues(alpha: 0.16),
-                  cs.tertiary.withValues(alpha: 0.08),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -763,59 +877,5 @@ class _QuickActionItem {
   final String label;
   final String? subtitle;
   final VoidCallback? onTap;
-}
-
-class _DashboardBackdrop extends StatelessWidget {
-  const _DashboardBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    cs.primary.withValues(alpha: 0.2),
-                    cs.secondary.withValues(alpha: 0.14),
-                    cs.surface,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: -18,
-            right: -8,
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Icon(
-                Icons.warehouse_rounded,
-                size: 220,
-                color: cs.primary.withValues(alpha: 0.16),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 90,
-            left: -20,
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: Icon(
-                Icons.storefront_rounded,
-                size: 210,
-                color: cs.secondary.withValues(alpha: 0.15),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 

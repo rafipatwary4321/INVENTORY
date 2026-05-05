@@ -10,6 +10,7 @@ export 'glass_stat_card.dart';
 export 'glow_button.dart';
 export 'gradient_dashboard_header.dart';
 export 'loading_widget.dart';
+export 'neon_widgets.dart';
 export 'pos_cart_card.dart';
 export 'premium_action_card.dart';
 export 'premium_app_bar.dart';
