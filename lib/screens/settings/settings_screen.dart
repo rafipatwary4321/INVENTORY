@@ -25,6 +25,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _businessName = TextEditingController();
   bool _busy = false;
   String _appVersion = '...';
+  bool _notifSales = true;
+  bool _notifLowStock = true;
+  bool _securityBiometric = false;
 
   @override
   void initState() {
@@ -126,7 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeCtrl = context.watch<ThemeModeController>();
     final isWide = MediaQuery.sizeOf(context).width >= 980;
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Settings',
         subtitle: 'Business & app',
       ),
@@ -135,26 +138,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: ListView(
           padding: PremiumTokens.pagePadding(context),
           children: [
-            const FeatureHeaderCard(
-              title: 'Workspace Settings',
-              subtitle: 'Manage business profile, appearance, and account preferences.',
-              icon: Icons.settings_suggest_outlined,
-              trailingIcon: Icons.tune_rounded,
-            ),
-            const AnimatedFeatureHero(
-              title: 'Business Control Hub',
-              subtitle: 'Team, profile, and environment settings at a glance.',
-              icon: Icons.settings_suggest_rounded,
-              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-              animationType: FeatureHeroAnimationType.settings,
-            ),
-            PremiumGlassCard(
+            NeonGlassCard(
+              radius: 26,
               child: BusinessProfileCard(
                 businessName: businessName,
                 businessId: auth.businessId,
@@ -162,7 +153,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            PremiumGlassCard(
+            NeonGlassCard(
+              radius: 24,
+              child: const ListTile(
+                leading: CircleAvatar(
+                  radius: 18,
+                  child: Icon(Icons.store_rounded),
+                ),
+                title: Text('Business Logo'),
+                subtitle: Text('Logo placeholder (upload in next release)'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            NeonGlassCard(
               child: ListTile(
                 leading: Icon(
                   startup.firebaseEnabled
@@ -181,7 +184,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            PremiumGlassCard(
+            _SettingsGroupCard(
+              title: 'General',
+              icon: Icons.tune_rounded,
               child: Row(
                 children: [
                   _SettingsChip(
@@ -205,7 +210,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            PremiumGlassCard(
+            _SettingsGroupCard(
+              title: 'Security',
+              icon: Icons.security_outlined,
               child: ListTile(
                 leading: const Icon(Icons.security_outlined),
                 title: const Text('Security / environment status'),
@@ -214,6 +221,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ? 'Cloud auth and data sync enabled.'
                       : 'Running in local demo environment.',
                 ),
+                trailing: Switch(
+                  value: _securityBiometric,
+                  onChanged: (v) => setState(() => _securityBiometric = v),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _SettingsGroupCard(
+              title: 'Notifications',
+              icon: Icons.notifications_active_outlined,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    value: _notifSales,
+                    onChanged: (v) => setState(() => _notifSales = v),
+                    title: const Text('Sales alerts'),
+                    subtitle: const Text('Checkout and billing updates'),
+                  ),
+                  SwitchListTile(
+                    value: _notifLowStock,
+                    onChanged: (v) => setState(() => _notifLowStock = v),
+                    title: const Text('Low stock alerts'),
+                    subtitle: const Text('Notify when product quantity drops'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _SettingsGroupCard(
+              title: 'Business Settings',
+              icon: Icons.business_center_outlined,
+              child: ListTile(
+                leading: const Icon(Icons.contact_phone_outlined),
+                title: const Text('Contact info'),
+                subtitle: Text('Owner: ${auth.appUser?.displayName ?? 'N/A'}'),
               ),
             ),
             const SizedBox(height: 20),
@@ -255,7 +297,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
             const SizedBox(height: 28),
-            PremiumGlassCard(
+            _SettingsGroupCard(
+              title: 'Logout',
+              icon: Icons.logout_rounded,
               borderColor: Colors.red.withValues(alpha: 0.3),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -308,7 +352,8 @@ class _BusinessSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 24,
       child: Form(
         key: formKey,
         child: Column(
@@ -321,7 +366,7 @@ class _BusinessSettingsCard extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 12),
-            PremiumTextField(
+            NeonTextField(
               controller: businessName,
               label: 'Business name',
               enabled: canManage && !busy,
@@ -360,7 +405,8 @@ class _AppSettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -448,6 +494,48 @@ class _SettingsChip extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SettingsGroupCard extends StatelessWidget {
+  const _SettingsGroupCard({
+    required this.title,
+    required this.icon,
+    required this.child,
+    this.borderColor,
+  });
+
+  final String title;
+  final IconData icon;
+  final Widget child;
+  final Color? borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return NeonGlassCard(
+      radius: 24,
+      borderColor: borderColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color(0xFF22D3EE)),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          child,
+        ],
       ),
     );
   }

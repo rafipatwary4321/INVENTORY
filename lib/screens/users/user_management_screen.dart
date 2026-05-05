@@ -67,7 +67,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     final isWide = MediaQuery.sizeOf(context).width >= 980;
     if (!canView) {
       return const Scaffold(
-        appBar: PremiumAppBar(title: 'Team'),
+        appBar: NeonAppBar(title: 'Team'),
         body: EmptyStateWidget(
           icon: Icons.lock_outline_rounded,
           title: 'Access denied',
@@ -78,7 +78,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
     if (!auth.isFirebaseEnabled) {
       return Scaffold(
-        appBar: const PremiumAppBar(
+        appBar: const NeonAppBar(
           title: 'Team',
           subtitle: 'Demo mode',
         ),
@@ -87,29 +87,23 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+              colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
             ),
           ),
           child: ListView(
             padding: PremiumTokens.pagePadding(context),
             children: [
-              const FeatureHeaderCard(
-                title: 'Team Management',
-                subtitle: 'Switch demo roles to preview owner/admin/staff permissions.',
-                icon: Icons.groups_2_outlined,
-                trailingIcon: Icons.manage_accounts_outlined,
-              ),
-              const AnimatedFeatureHero(
-                title: 'Team Operations',
-                subtitle: 'Role controls and business access orchestration.',
-                icon: Icons.groups_rounded,
-                gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-                animationType: FeatureHeroAnimationType.settings,
+              const NeonGlassCard(
+                child: ListTile(
+                  leading: Icon(Icons.groups_2_outlined),
+                  title: Text('User Management'),
+                  subtitle: Text('Switch demo roles to preview permission differences.'),
+                ),
               ),
               const SizedBox(height: 8),
               const _PermissionGuideCard(),
               const SizedBox(height: 12),
-              PremiumGlassCard(
+              NeonGlassCard(
                 child: ListTile(
                   leading: const Icon(Icons.workspace_premium_outlined),
                   title: const Text('Demo Owner'),
@@ -122,7 +116,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              PremiumGlassCard(
+              NeonGlassCard(
                 child: ListTile(
                   leading: const Icon(Icons.admin_panel_settings_outlined),
                   title: const Text('Demo Admin'),
@@ -135,7 +129,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              PremiumGlassCard(
+              NeonGlassCard(
                 child: ListTile(
                   leading: const Icon(Icons.badge_outlined),
                   title: const Text('Demo Staff'),
@@ -154,7 +148,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Team management',
         subtitle: 'Roles & access',
       ),
@@ -163,28 +157,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF050C18), Color(0xFF0A1C35), Color(0xFF0F2F57)],
+            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
           ),
         ),
         child: Column(
           children: [
           Padding(
             padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-            child: const FeatureHeaderCard(
-              title: 'Business Team',
-              subtitle: 'Manage members, roles, and access permissions.',
-              icon: Icons.groups_rounded,
-              trailingIcon: Icons.shield_outlined,
-            ),
-          ),
-          Padding(
-            padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-            child: const AnimatedFeatureHero(
-              title: 'Access Matrix',
-              subtitle: 'Owners, admins, and staff roles in coordinated flow.',
-              icon: Icons.manage_accounts_rounded,
-              gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-              animationType: FeatureHeroAnimationType.settings,
+            child: const NeonGlassCard(
+              child: ListTile(
+                leading: Icon(Icons.groups_rounded),
+                title: Text('Business Team'),
+                subtitle: Text('Manage members, roles, and access permissions.'),
+              ),
             ),
           ),
           Padding(
@@ -194,7 +179,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           if (auth.isOwner)
             Padding(
               padding: PremiumTokens.pagePadding(context).copyWith(bottom: 0),
-              child: PremiumGlassCard(
+              child: NeonGlassCard(
                 child: Padding(
                   padding: const EdgeInsets.all(4),
                   child: Column(
@@ -205,14 +190,14 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         title: Text('Invite / save member'),
                         subtitle: Text('Owners can assign Admin or Staff access.'),
                       ),
-                      TextField(
+                      NeonTextField(
                         controller: _name,
-                        decoration: const InputDecoration(labelText: 'Display name'),
+                        label: 'Display name',
                       ),
                       const SizedBox(height: 8),
-                      TextField(
+                      NeonTextField(
                         controller: _email,
-                        decoration: const InputDecoration(labelText: 'Email'),
+                        label: 'Email',
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -248,10 +233,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       ),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: FilledButton.icon(
+                        child: NeonButton(
                           onPressed: _busy ? null : _addMember,
-                          icon: const Icon(Icons.save_outlined),
-                          label: Text(_busy ? 'Saving...' : 'Save member'),
+                          icon: Icons.save_outlined,
+                          label: _busy ? 'Saving...' : 'Save member',
                         ),
                       ),
                     ],
@@ -309,7 +294,8 @@ class _UserTeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 22,
       child: ListTile(
         leading: CircleAvatar(
           child: Icon(
@@ -325,7 +311,22 @@ class _UserTeamCard extends StatelessWidget {
           '${user.email}\n${user.isActive ? 'active' : 'inactive'}',
         ),
         isThreeLine: true,
-        trailing: _RolePill(role: user.role),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            _RolePill(role: user.role),
+            const SizedBox(height: 4),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: user.isActive ? Colors.greenAccent : const Color(0xFFF97316),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -339,15 +340,22 @@ class _RolePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color, icon) = switch (role) {
-      UserRole.owner => ('Owner', Colors.amber, Icons.workspace_premium_rounded),
-      UserRole.admin => ('Admin', Colors.indigo, Icons.admin_panel_settings_rounded),
-      UserRole.staff => ('Staff', Colors.teal, Icons.badge_rounded),
+      UserRole.owner => ('Owner', const Color(0xFFA855F7), Icons.workspace_premium_rounded),
+      UserRole.admin => ('Admin', const Color(0xFF22D3EE), Icons.admin_panel_settings_rounded),
+      UserRole.staff => ('Staff', const Color(0xFF3B82F6), Icons.badge_rounded),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.32),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -400,7 +408,8 @@ class _PermissionGuideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 24,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
