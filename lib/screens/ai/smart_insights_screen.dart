@@ -24,15 +24,9 @@ class SmartInsightsScreen extends StatelessWidget {
         subtitle: 'AI patterns',
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0B0F1A), Color(0xFF101B32), Color(0xFF162643)],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: PremiumTokens.darkAnalyticsGradient),
         child: products.isEmpty && items.isEmpty
-            ? const EmptyStateVisual(
+            ? const EmptyStatePremium(
                 title: 'No insight data yet',
                 subtitle: 'Add products and sales to unlock AI pattern insights.',
                 icon: Icons.insights_outlined,
@@ -43,9 +37,9 @@ class SmartInsightsScreen extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
                   if (i == 0) {
-                    return const Column(
+                    return Column(
                       children: [
-                        AnimatedFeatureHero(
+                        const AnimatedFeatureHero(
                           title: 'AI Insight Deck',
                           subtitle: 'Recommendations, risks, and growth patterns.',
                           icon: Icons.auto_graph_rounded,
@@ -55,20 +49,41 @@ class SmartInsightsScreen extends StatelessWidget {
                         NeonGlassCard(
                           child: Row(
                             children: [
-                              Icon(Icons.date_range_outlined),
-                              SizedBox(width: 10),
+                              Icon(
+                                Icons.date_range_outlined,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                              const SizedBox(width: 10),
                               Expanded(
-                                child: Text('Date filter (coming soon): Today / 7 days / 30 days / Custom'),
+                                child: Text(
+                                  'Date filter (coming soon): Today / 7 days / 30 days / Custom',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: Colors.white.withValues(alpha: 0.88),
+                                      ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         NeonGlassCard(
                           child: ListTile(
-                            leading: Icon(Icons.auto_graph_rounded),
-                            title: Text('AI trend board'),
-                            subtitle: Text('Chart-style insight visual placeholder'),
+                            iconColor: const Color(0xFF22D3EE),
+                            textColor: Colors.white,
+                            leading: const Icon(Icons.auto_graph_rounded),
+                            title: Text(
+                              'AI trend board',
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            subtitle: Text(
+                              'Chart-style insight visual placeholder',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.78),
+                                  ),
+                            ),
                           ),
                         ),
                       ],

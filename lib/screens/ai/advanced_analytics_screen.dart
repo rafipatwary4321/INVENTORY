@@ -21,27 +21,32 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
     );
 
     if (products.isEmpty && items.isEmpty) {
-      return const Scaffold(
-        appBar: PremiumAppBar(
+      return Scaffold(
+        appBar: const NeonAppBar(
           title: 'Advanced AI Analytics',
           subtitle: 'Charts & signals',
         ),
-        body: EmptyStateWidget(
-          title: 'No analytics data yet',
-          subtitle: 'Add products and sales to see smart business intelligence.',
-          icon: Icons.analytics_outlined,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(gradient: PremiumTokens.darkAnalyticsGradient),
+          child: const EmptyStatePremium(
+            title: 'No analytics data yet',
+            subtitle: 'Add products and sales to see smart business intelligence.',
+            icon: Icons.analytics_outlined,
+          ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Advanced AI Analytics',
         subtitle: 'Charts & signals',
       ),
-      body: ListView(
-        padding: PremiumTokens.pagePadding(context),
-        children: [
+      body: DecoratedBox(
+        decoration: const BoxDecoration(gradient: PremiumTokens.darkAnalyticsGradient),
+        child: ListView(
+          padding: PremiumTokens.pagePadding(context),
+          children: [
           _MetricSection(title: 'Top selling products', metrics: analytics.topSelling),
           _MetricSection(title: 'Least selling products', metrics: analytics.leastSelling),
           _MetricSection(title: 'High profit products', metrics: analytics.highProfit),
@@ -66,6 +71,7 @@ class AdvancedAnalyticsScreen extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -82,6 +88,7 @@ class _MetricSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: ReportCard(
@@ -90,16 +97,31 @@ class _MetricSection extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface,
+                    ),
+              ),
               const SizedBox(height: 8),
               if (metrics.isEmpty)
-                const Text('No data yet')
+                Text(
+                  'No data yet',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                )
               else
                 for (final m in metrics.take(4))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
                       '${m.productName}: sold ${m.unitsSold}, profit ${BdtFormatter.format(m.profit)}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: cs.onSurface.withValues(alpha: 0.92),
+                            height: 1.35,
+                          ),
                     ),
                   ),
             ],
@@ -117,6 +139,7 @@ class _ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: ReportCard(
@@ -125,7 +148,13 @@ class _ChartCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: cs.onSurface,
+                    ),
+              ),
               const SizedBox(height: 10),
               SizedBox(height: 200, child: child),
             ],
@@ -142,7 +171,20 @@ class _TrendLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (points.isEmpty) return const Center(child: Text('No trend data'));
+    if (points.isEmpty) {
+      return Center(
+        child: Text(
+          'No trend data',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontSize: 10,
+        );
     return LineChart(
       LineChartData(
         gridData: const FlGridData(show: true),
@@ -159,7 +201,7 @@ class _TrendLineChart extends StatelessWidget {
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(points[i].label, style: const TextStyle(fontSize: 10)),
+                  child: Text(points[i].label, style: labelStyle),
                 );
               },
             ),
@@ -186,7 +228,20 @@ class _TrendBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (points.isEmpty) return const Center(child: Text('No data'));
+    if (points.isEmpty) {
+      return Center(
+        child: Text(
+          'No data',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
+    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          fontSize: 10,
+        );
     return BarChart(
       BarChartData(
         borderData: FlBorderData(show: false),
@@ -202,7 +257,7 @@ class _TrendBarChart extends StatelessWidget {
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Text(points[i].label, style: const TextStyle(fontSize: 10)),
+                  child: Text(points[i].label, style: labelStyle),
                 );
               },
             ),
@@ -217,7 +272,7 @@ class _TrendBarChart extends StatelessWidget {
                   toY: points[i].value,
                   width: 16,
                   borderRadius: BorderRadius.circular(4),
-                  color: Theme.of(context).colorScheme.primaryContainer,
+                  color: Theme.of(context).colorScheme.tertiary,
                 ),
               ],
             ),
@@ -240,13 +295,20 @@ class _AlertsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ReportCard(
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Smart alerts', style: Theme.of(context).textTheme.titleSmall),
+            Text(
+              'Smart alerts',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface,
+                  ),
+            ),
             const SizedBox(height: 8),
             ..._render('Low stock', lowStock),
             ..._render('Dead stock', deadStock),
@@ -259,17 +321,42 @@ class _AlertsCard extends StatelessWidget {
 
   List<Widget> _render(String title, List<String> values) {
     return [
-      Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          return Text(
+            title,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+          );
+        },
+      ),
       if (values.isEmpty)
-        const Padding(
-          padding: EdgeInsets.only(bottom: 8),
-          child: Text('No alert'),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Builder(
+            builder: (context) => Text(
+              'No alert',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
         )
       else
         ...values.take(3).map(
               (e) => Padding(
                 padding: const EdgeInsets.only(bottom: 6),
-                child: Text('- $e'),
+                child: Builder(
+                  builder: (context) => Text(
+                    '- $e',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.9),
+                        ),
+                  ),
+                ),
               ),
             ),
       const SizedBox(height: 6),

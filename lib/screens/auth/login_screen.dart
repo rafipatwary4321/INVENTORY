@@ -59,7 +59,8 @@ class _LoginScreenState extends State<LoginScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
                     if (isDemoMode) ...[
-                      PremiumGlassCard(
+                      NeonGlassCard(
+                        radius: 22,
                         borderColor: Colors.amber.withValues(alpha: 0.28),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
                     ],
-                    PremiumTextField(
+                    NeonTextField(
                       controller: _email,
                       label: 'Email',
                       prefixIcon: const Icon(Icons.email_outlined),
@@ -89,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       enabled: !_busy,
                     ),
                     const SizedBox(height: 16),
-                    PremiumTextField(
+                    NeonTextField(
                       controller: _password,
                       label: 'Password',
                       obscureText: _obscure,
@@ -153,24 +154,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0B0F1A),
-              Color(0xFF101B32),
-              Color(0xFF162643),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: PremiumTokens.darkAnalyticsGradient),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 980;
             final brandPanel = Padding(
               padding: const EdgeInsets.fromLTRB(28, 56, 28, 28),
-              child: PremiumGlassCard(
-                borderColor: const Color(0xFF13A7FF).withValues(alpha: 0.35),
+              child: NeonGlassCard(
+                radius: 26,
+                borderColor: const Color(0xFF22D3EE).withValues(alpha: 0.35),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: isWide ? MainAxisAlignment.center : MainAxisAlignment.start,
@@ -240,8 +232,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 480),
-                    child: PremiumGlassCard(
-                      borderColor: Colors.cyanAccent.withValues(alpha: 0.26),
+                    child: NeonGlassCard(
+                      radius: 26,
+                      borderColor: const Color(0xFF22D3EE).withValues(alpha: 0.26),
                       child: formContent,
                     ),
                   ),

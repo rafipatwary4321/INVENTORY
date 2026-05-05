@@ -2,6 +2,17 @@ import 'package:flutter/material.dart';
 
 /// Shared layout tokens for premium UI.
 abstract final class PremiumTokens {
+  /// Standard dark navy background used across analytics / glass UI screens.
+  static const LinearGradient darkAnalyticsGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF0B0F1A),
+      Color(0xFF101B32),
+      Color(0xFF162643),
+    ],
+  );
+
   static const double space2 = 2;
   static const double space4 = 4;
   static const double space6 = 6;

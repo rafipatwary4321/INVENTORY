@@ -58,6 +58,7 @@ class NeonChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return ReportCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,10 +67,17 @@ class NeonChartCard extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
+                  color: cs.onSurface,
                 ),
           ),
           const SizedBox(height: 4),
-          Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  height: 1.35,
+                ),
+          ),
           const SizedBox(height: 12),
           child,
         ],
@@ -262,7 +270,7 @@ class NeonBottomNavigation extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: const [
                 BoxShadow(
-                  color: Color(0x4013A7FF),
+                  color: Color(0x4022D3EE),
                   blurRadius: 18,
                   offset: Offset(0, 8),
                 ),

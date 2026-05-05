@@ -94,17 +94,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF0B0F1A),
-              const Color(0xFF101B32),
-              const Color(0xFF162643),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: PremiumTokens.darkAnalyticsGradient),
         child: SafeArea(
           child: Center(
             child: Column(
