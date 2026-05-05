@@ -63,7 +63,7 @@ class _StockInScreenState extends State<StockInScreen> {
     final product = context.watch<ProductsProvider>().byId(widget.productId);
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Stock in',
         subtitle: 'Receive inventory',
       ),
@@ -73,9 +73,9 @@ class _StockInScreenState extends State<StockInScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF050C18),
-              Color(0xFF0A1C35),
-              Color(0xFF0F2F57),
+              Color(0xFF0B0F1A),
+              Color(0xFF101B32),
+              Color(0xFF162643),
             ],
           ),
         ),
@@ -95,23 +95,19 @@ class _StockInScreenState extends State<StockInScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const FeatureHeaderCard(
-                          title: 'Receive Inventory',
-                          subtitle: 'Add newly arrived units and keep stock accurate.',
-                          icon: Icons.add_box_outlined,
-                          trailingIcon: Icons.local_shipping_outlined,
-                        ),
-                        const AnimatedFeatureHero(
-                          title: 'Scan & Receive Flow',
-                          subtitle: 'Barcode intake to shelf-ready inventory.',
-                          icon: Icons.qr_code_scanner_rounded,
-                          gradientColors: [Color(0xFF6F39FF), Color(0xFF1A8DFF), Color(0xFF1DE2B0)],
-                          animationType: FeatureHeroAnimationType.scanner,
-                        ),
-                        PremiumGlassCard(
+                        NeonGlassCard(
+                          radius: 26,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text(
+                                'Product Preview',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
                               Text(
                                 product.name,
                                 style: Theme.of(context)
@@ -127,11 +123,46 @@ class _StockInScreenState extends State<StockInScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        PremiumGlassCard(
+                        const SizedBox(height: 12),
+                        NeonGlassCard(
+                          radius: 24,
+                          borderColor: const Color(0x663B82F6),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              PremiumTextField(
+                              Text(
+                                'Current Stock',
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${product.quantity} ${product.unit}',
+                                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        NeonGlassCard(
+                          radius: 24,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Quantity Input',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              NeonTextField(
                                 controller: _qty,
                                 keyboardType: TextInputType.number,
                                 label: 'Quantity to add',
@@ -139,16 +170,17 @@ class _StockInScreenState extends State<StockInScreen> {
                                     Validators.positiveInt(v, field: 'Quantity'),
                               ),
                               const SizedBox(height: 12),
-                              PremiumTextField(
+                              NeonTextField(
                                 controller: _note,
                                 label: 'Note (optional)',
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
                         if (product.isLowStock)
-                          PremiumGlassCard(
+                          NeonGlassCard(
+                            radius: 22,
                             borderColor: Colors.deepOrange.withValues(alpha: 0.4),
                             child: Row(
                               children: [
@@ -163,12 +195,30 @@ class _StockInScreenState extends State<StockInScreen> {
                               ],
                             ),
                           ),
-                        const SizedBox(height: 28),
-                        PremiumButton(
+                        const SizedBox(height: 20),
+                        NeonButton(
                           label: _busy ? 'Saving…' : 'Confirm stock in',
-                          expand: true,
                           icon: _busy ? null : Icons.inventory_2_rounded,
                           onPressed: _busy ? null : _submit,
+                        ),
+                        const SizedBox(height: 10),
+                        NeonGlassCard(
+                          radius: 20,
+                          child: Row(
+                            children: [
+                              const Icon(Icons.task_alt_rounded, color: Color(0xFF22D3EE)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'On success, stock quantity updates instantly in inventory.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(color: Colors.white70),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

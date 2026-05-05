@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/error_handler.dart';
@@ -17,7 +18,7 @@ class QRGenerateScreen extends StatelessWidget {
     final product = context.watch<ProductsProvider>().byId(productId);
 
     return Scaffold(
-      appBar: const PremiumAppBar(
+      appBar: const NeonAppBar(
         title: 'Product QR',
         subtitle: 'Print-ready label',
       ),
@@ -27,9 +28,9 @@ class QRGenerateScreen extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF050C18),
-              Color(0xFF0A1C35),
-              Color(0xFF0F2F57),
+              Color(0xFF0B0F1A),
+              Color(0xFF101B32),
+              Color(0xFF162643),
             ],
           ),
         ),
@@ -37,61 +38,96 @@ class QRGenerateScreen extends StatelessWidget {
           padding: PremiumTokens.pagePadding(context),
           child: Column(
             children: [
-              const FeatureHeaderCard(
-                title: 'QR Label',
-                subtitle: 'Generate a premium print-ready code for scan workflows.',
-                icon: Icons.qr_code_2_rounded,
-                trailingIcon: Icons.print_outlined,
-              ),
-              PremiumGlassCard(
-                child: ProductQrCard(
-                  productId: productId,
-                  productName: product?.name,
-                  embeddedSize: 240,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Print or share this screen so staff can scan the code for stock in or sales.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      height: 1.45,
-                    ),
-              ),
-              const SizedBox(height: 20),
-              PremiumGlassCard(
-                child: Row(
+              NeonGlassCard(
+                radius: 26,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: PremiumButton(
-                        label: 'Download',
-                        outlined: true,
-                        icon: Icons.download_outlined,
-                        expand: true,
-                        onPressed: () {
-                          ErrorHandler.showSnack(
-                            context,
-                            Exception('Download QR will be added soon.'),
-                          );
-                        },
-                      ),
+                    Text(
+                      'QR Label',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: PremiumButton(
-                        label: 'Print',
-                        icon: Icons.print_outlined,
-                        expand: true,
-                        onPressed: () {
-                          ErrorHandler.showSnack(
-                            context,
-                            Exception('Print QR will be added soon.'),
-                          );
-                        },
-                      ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Use for stock in, POS sell, and scanner workflows.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 12),
+                    ProductQrCard(
+                      productId: productId,
+                      productName: product?.name,
+                      embeddedSize: 240,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              NeonGlassCard(
+                radius: 24,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product?.name ?? 'Product',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Product ID: $productId',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        SizedBox(
+                          width: 160,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              ErrorHandler.showSnack(
+                                context,
+                                Exception('Download/Print QR will be added soon.'),
+                              );
+                            },
+                            icon: const Icon(Icons.print_outlined),
+                            label: const Text('Download / Print'),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 160,
+                          child: NeonButton(
+                            label: 'Copy Product ID',
+                            icon: Icons.copy_all_outlined,
+                            onPressed: () async {
+                              await Clipboard.setData(ClipboardData(text: productId));
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Product ID copied')),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              NeonGlassCard(
+                radius: 22,
+                child: Text(
+                  'Print or share this screen so staff can scan the code for stock-in or sales quickly.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white70,
+                        height: 1.45,
+                      ),
                 ),
               ),
             ],

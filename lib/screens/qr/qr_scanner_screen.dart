@@ -139,7 +139,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     };
 
     return Scaffold(
-      appBar: PremiumAppBar(
+      appBar: NeonAppBar(
         title: title,
         actions: [
           if (_hasPermission && _controller != null)
@@ -180,27 +180,23 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             padding: const EdgeInsets.all(24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 640),
-              child: PremiumGlassCard(
+              child: NeonGlassCard(
+                radius: 26,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const FeatureHeaderCard(
-                      title: 'QR Scanner',
-                      subtitle: 'Use camera access to scan inventory product labels.',
-                      icon: Icons.qr_code_scanner_rounded,
-                      trailingIcon: Icons.camera_alt_outlined,
+                    Text(
+                      'Camera permission required',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
                     ),
-                      const AnimatedFeatureHero(
-                        title: 'Scanner Visualization',
-                        subtitle: 'QR capture and barcode intake workflow.',
-                        icon: Icons.qr_code_scanner_rounded,
-                        gradientColors: [Color(0xFF7A37FF), Color(0xFF13A7FF), Color(0xFF1DE2B0)],
-                        animationType: FeatureHeroAnimationType.scanner,
-                      ),
+                    const SizedBox(height: 8),
                     Icon(
                       Icons.camera_alt_outlined,
                       size: 72,
-                      color: scheme.outline,
+                      color: Colors.white70,
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -249,185 +245,185 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     }
 
     final c = _controller!;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        MobileScanner(
-          controller: c,
-          onDetect: _onDetect,
-          errorBuilder: (context, error, child) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0B0F1A),
+            Color(0xFF101B32),
+            Color(0xFF162643),
+          ],
+        ),
+      ),
+      child: ListView(
+        padding: PremiumTokens.pagePadding(context),
+        children: [
+          NeonGlassCard(
+            radius: 26,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Scanner Hero',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Align the QR inside the animated frame for stock operations.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: AspectRatio(
+                    aspectRatio: 1.12,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        MobileScanner(
+                          controller: c,
+                          onDetect: _onDetect,
+                          errorBuilder: (context, error, child) {
+                            return Container(
+                              color: const Color(0xD0111827),
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline, size: 48, color: Colors.white),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Camera error',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(color: Colors.white),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    error.errorDetails?.message ?? error.toString(),
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(color: Colors.white70),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          overlayBuilder: (context, constraints) {
+                            final side = constraints.maxWidth * 0.72;
+                            return IgnorePointer(
+                              child: Align(
+                                child: TweenAnimationBuilder<double>(
+                                  tween: Tween(begin: 0.94, end: 1.0),
+                                  duration: const Duration(milliseconds: 1200),
+                                  curve: Curves.easeInOut,
+                                  builder: (context, t, child) => Transform.scale(
+                                    scale: t,
+                                    child: child,
+                                  ),
+                                  child: Container(
+                                    width: side,
+                                    height: side,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: const Color(0xFF22D3EE),
+                                        width: 3,
+                                      ),
+                                      borderRadius: BorderRadius.circular(22),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          blurRadius: 24,
+                                          color:
+                                              const Color(0xFF22D3EE).withValues(alpha: 0.35),
+                                        ),
+                                        BoxShadow(
+                                          blurRadius: 18,
+                                          color:
+                                              const Color(0xFFA855F7).withValues(alpha: 0.28),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Camera error',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      error.errorDetails?.message ?? error.toString(),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'If camera is unavailable, enter product ID manually.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-                    _manualFallbackCard(compact: true),
+                    _OverlayTag(icon: Icons.inventory_2_outlined, label: 'Inventory'),
+                    const SizedBox(width: 8),
+                    _OverlayTag(icon: Icons.qr_code_2_outlined, label: 'QR only'),
                   ],
                 ),
-              ),
-            );
-          },
-          overlayBuilder: (context, constraints) {
-            final side = constraints.maxWidth * 0.72;
-            return IgnorePointer(
-              child: Align(
-                child: Container(
-                  width: side,
-                  height: side,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 3),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 24,
-                        spreadRadius: 2,
-                        color: Colors.black.withValues(alpha: 0.35),
-                      ),
-                    ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _manualFallbackCard(),
+          const SizedBox(height: 10),
+          NeonGlassCard(
+            radius: 22,
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, color: Color(0xFF22D3EE)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Codes must start with “inv:product:” or be a product UUID.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.55),
-                  Colors.black.withValues(alpha: 0),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: IgnorePointer(
-                      child: AnimatedFeatureHero(
-                        title: 'Live Scan Mode',
-                        subtitle: 'Align QR inside frame for instant decode.',
-                        icon: Icons.qr_code_2_rounded,
-                        compact: true,
-                        gradientColors: [
-                          Color(0xCC7A37FF),
-                          Color(0xCC13A7FF),
-                          Color(0xCC1DE2B0),
-                        ],
-                        animationType: FeatureHeroAnimationType.scanner,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    'Point at the product QR code',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _OverlayTag(icon: Icons.inventory_2_outlined, label: 'Inventory'),
-                      const SizedBox(width: 8),
-                      _OverlayTag(icon: Icons.qr_code_2_outlined, label: 'QR only'),
-                    ],
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
-        ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.65),
-                  Colors.black.withValues(alpha: 0),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Text(
-                'Codes must start with “inv:product:” or be a product UUID.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _manualFallbackCard({bool compact = false}) {
-    return PremiumGlassCard(
+    return NeonGlassCard(
+      radius: 22,
       padding: EdgeInsets.all(compact ? 12 : 16),
-      borderColor: Colors.cyanAccent.withValues(alpha: 0.2),
+      borderColor: const Color(0x6622D3EE),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Manual product ID',
+            'Manual Product ID',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
                 ),
           ),
           const SizedBox(height: 8),
-          TextField(
+          NeonTextField(
             controller: _manualController,
-            decoration: const InputDecoration(
-              hintText: 'Paste product ID or inv:product:... payload',
-              prefixIcon: Icon(Icons.edit_note_outlined),
-            ),
+            hint: 'Paste product ID or inv:product:... payload',
+            prefixIcon: const Icon(Icons.edit_note_outlined),
             onSubmitted: (_) => _submitManual(),
           ),
           const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerRight,
-            child: PremiumButton(
+            child: NeonButton(
               label: 'Use ID',
               icon: Icons.arrow_forward_rounded,
               onPressed: _submitManual,
