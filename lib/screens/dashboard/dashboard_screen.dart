@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -33,10 +32,6 @@ class DashboardScreen extends StatelessWidget {
       return !c.isBefore(todayStart);
     }).fold<double>(0, (a, b) => a + b.totalAmount);
 
-    final totalStockValue = products.fold<double>(
-      0,
-      (a, p) => a + p.stockValue,
-    );
     final totalStockQty = products.fold<int>(
       0,
       (a, p) => a + p.quantity,
@@ -98,17 +93,9 @@ class DashboardScreen extends StatelessWidget {
     final stockHealth = products.isEmpty
         ? 1.0
         : ((products.length - lowStock) / products.length).clamp(0, 1).toDouble();
+    final recentSales = sales.take(5).toList();
     return Scaffold(
-      appBar: NeonAppBar(
-        title: settings?.businessName ?? 'My Business',
-        subtitle: 'Dashboard',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
-          ),
-        ],
-      ),
+      appBar: null,
       body: Stack(
         children: [
           const Positioned.fill(child: AnimatedGradientBackground()),
@@ -134,8 +121,11 @@ class DashboardScreen extends StatelessWidget {
               _TopDashboardBar(
                 businessName: settings?.businessName ?? 'My Business',
                 userName: user?.displayName ?? 'User',
+                onSearchTap: () {},
+                onNotificationTap: () {},
+                onSettingsTap: () => Navigator.pushNamed(context, AppRoutes.settings),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               GridView.count(
                 crossAxisCount: crossAxisCount,
                 shrinkWrap: true,
@@ -145,36 +135,28 @@ class DashboardScreen extends StatelessWidget {
                 childAspectRatio: cardRatio,
                 children: [
                   _DashboardStatCard(
-                    title: 'Products',
+                    title: 'Total Products',
                     value: '${products.length}',
                     icon: Icons.category_outlined,
-                    accentColor: Colors.blue,
+                    accentColor: const Color(0xFF3B82F6),
                     subtitle: 'Inventory size',
-                    subtitleColor: Colors.cyanAccent,
+                    subtitleColor: const Color(0xFF22D3EE),
                   ),
                   _DashboardStatCard(
                     title: 'Today sales',
                     value: BdtFormatter.format(todaySales),
                     icon: Icons.point_of_sale,
-                    accentColor: Colors.deepPurple,
+                    accentColor: const Color(0xFFA855F7),
                     subtitle: '$totalStockQty units on hand',
-                    subtitleColor: Colors.cyanAccent,
-                  ),
-                  _DashboardStatCard(
-                    title: 'Stock value',
-                    value: BdtFormatter.format(totalStockValue),
-                    icon: Icons.account_balance_wallet_outlined,
-                    accentColor: Colors.teal,
-                    subtitle: 'Cost basis',
-                    subtitleColor: Colors.greenAccent,
+                    subtitleColor: const Color(0xFF22D3EE),
                   ),
                   _DashboardStatCard(
                     title: 'Low stock',
                     value: '$lowStock',
                     icon: Icons.warning_amber_rounded,
-                    accentColor: lowStock > 0 ? Colors.deepOrange : Colors.green,
+                    accentColor: const Color(0xFFF97316),
                     subtitle: lowStock > 0 ? 'Action needed' : 'Healthy',
-                    subtitleColor: lowStock > 0 ? Colors.orangeAccent : Colors.greenAccent,
+                    subtitleColor: lowStock > 0 ? const Color(0xFFF97316) : Colors.greenAccent,
                   ),
                   _DashboardStatCard(
                     title: 'Profit',
@@ -188,21 +170,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              if (lowStock > 0)
-                _LowStockAlertCard(
-                  lowStock: lowStock,
-                  threshold: AppConstants.lowStockThreshold,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
-                ),
-              AIInsightCard(
-                title: 'AI insight preview',
-                body: lowStock > 0
-                    ? '$lowStock product(s) are under threshold. Open Smart Insights for prioritized restock recommendations.'
-                    : 'Stock is currently healthy. Open AI analytics for demand and sales trend predictions.',
-                icon: lowStock > 0 ? Icons.auto_awesome_rounded : Icons.psychology_alt_outlined,
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Text(
                 'Analytics',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -264,7 +232,7 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Text(
                 'Quick actions',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -275,7 +243,11 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 10),
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final actionCols = constraints.maxWidth >= 860 ? 4 : 2;
+                  final actionCols = constraints.maxWidth >= 1020
+                      ? 4
+                      : constraints.maxWidth >= 560
+                          ? 2
+                          : 1;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -284,7 +256,7 @@ class DashboardScreen extends StatelessWidget {
                       crossAxisCount: actionCols,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
-                      childAspectRatio: actionCols == 4 ? 1.55 : 1.35,
+                      childAspectRatio: actionCols == 4 ? 1.4 : actionCols == 2 ? 1.25 : 2.4,
                     ),
                     itemBuilder: (context, i) {
                       final item = quickActions[i];
@@ -293,6 +265,22 @@ class DashboardScreen extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 14),
+              if (lowStock > 0)
+                _LowStockAlertCard(
+                  lowStock: lowStock,
+                  threshold: AppConstants.lowStockThreshold,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.reportStock),
+                ),
+              AIInsightCard(
+                title: 'AI insight preview',
+                body: lowStock > 0
+                    ? '$lowStock product(s) are under threshold. Open Smart Insights for prioritized restock recommendations.'
+                    : 'Stock is currently healthy. Open AI analytics for demand and sales trend predictions.',
+                icon: lowStock > 0 ? Icons.auto_awesome_rounded : Icons.psychology_alt_outlined,
+              ),
+              const SizedBox(height: 10),
+              _RecentActivityCard(sales: recentSales),
               const SizedBox(height: 24),
             ],
           ),
@@ -306,100 +294,99 @@ class _TopDashboardBar extends StatelessWidget {
   const _TopDashboardBar({
     required this.businessName,
     required this.userName,
+    required this.onSearchTap,
+    required this.onNotificationTap,
+    required this.onSettingsTap,
   });
 
   final String businessName;
   final String userName;
+  final VoidCallback onSearchTap;
+  final VoidCallback onNotificationTap;
+  final VoidCallback onSettingsTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
-        final searchField = TextField(
-          readOnly: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Search products, sales, reports...',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.65)),
-            prefixIcon: Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.85)),
-            filled: true,
-            fillColor: cs.surface.withValues(alpha: 0.68),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        final isWide = constraints.maxWidth >= 760;
+        Widget iconBtn(IconData icon, VoidCallback onTap) {
+          return IconButton.filledTonal(
+            style: IconButton.styleFrom(
+              backgroundColor: const Color(0x33111827),
+              foregroundColor: Colors.white,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-          ),
-        );
-        return Row(
+            onPressed: onTap,
+            icon: Icon(icon),
+          );
+        }
+
+        final textSection = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Hello, ${userName.isEmpty ? 'Owner' : userName}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
+            Text(
+              'Hello, ${userName.isEmpty ? 'Owner' : userName}',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    businessName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: isWide ? 520 : double.infinity),
-                      child: searchField,
-                    ),
-                  ),
-                ],
-              ),
             ),
-            const SizedBox(width: 12),
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Column(
-                children: [
-                  IconButton.filledTonal(
-                    style: IconButton.styleFrom(
-                      backgroundColor: const Color(0x33111827),
-                    ),
-                    onPressed: () {},
-                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.white),
+            const SizedBox(height: 4),
+            Text(
+              businessName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 10),
-                  CircleAvatar(
-                    backgroundColor: cs.primaryContainer.withValues(alpha: 0.95),
-                    child: Text(
-                      userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
-                      style: TextStyle(
-                        color: cs.onPrimaryContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+          ],
+        );
+        final actionSection = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            iconBtn(Icons.search_rounded, onSearchTap),
+            const SizedBox(width: 8),
+            iconBtn(Icons.notifications_none_rounded, onNotificationTap),
+            const SizedBox(width: 8),
+            iconBtn(Icons.settings_outlined, onSettingsTap),
+            const SizedBox(width: 8),
+            CircleAvatar(
+              backgroundColor: cs.primaryContainer.withValues(alpha: 0.95),
+              child: Text(
+                userName.isNotEmpty ? userName[0].toUpperCase() : 'O',
+                style: TextStyle(
+                  color: cs.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
         );
+
+        return isWide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: textSection),
+                  const SizedBox(width: 12),
+                  actionSection,
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  textSection,
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: actionSection.children,
+                  ),
+                ],
+              );
       },
     );
   }
@@ -482,8 +469,8 @@ class _SalesLineChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NeonChartCard(
-      title: 'Sales Graph',
-      subtitle: 'Line trend overview',
+      title: 'Sales Overview',
+      subtitle: 'Today / This week',
       child: Container(
         height: 150,
         decoration: BoxDecoration(
@@ -540,7 +527,7 @@ class _CategoryPieChartCard extends StatelessWidget {
     final total = (inStock + lowStock).clamp(1, 999999);
     final lowRatio = (lowStock / total).clamp(0, 1).toDouble();
     return NeonChartCard(
-      title: 'Category Pie Chart',
+      title: 'Category / Stock Distribution',
       subtitle: 'Stock health split',
       child: Row(
         children: [
@@ -668,6 +655,15 @@ class _BigQuickActionCard extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
             ),
+            if (item.subtitle != null)
+              Text(
+                item.subtitle!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white70,
+                    ),
+              ),
           ],
         ),
       ),
@@ -877,5 +873,62 @@ class _QuickActionItem {
   final String label;
   final String? subtitle;
   final VoidCallback? onTap;
+}
+
+class _RecentActivityCard extends StatelessWidget {
+  const _RecentActivityCard({required this.sales});
+
+  final List<Sale> sales;
+
+  @override
+  Widget build(BuildContext context) {
+    return NeonGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recent Activity',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 8),
+          if (sales.isEmpty)
+            Text(
+              'No recent sales yet.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white70),
+            )
+          else
+            ...sales.map(
+              (s) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.receipt_long_outlined, color: Color(0xFF22D3EE), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${s.itemCount} item(s) sold',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.white70,
+                            ),
+                      ),
+                    ),
+                    Text(
+                      BdtFormatter.format(s.totalAmount),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
